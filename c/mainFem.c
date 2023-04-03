@@ -50,13 +50,14 @@ struct triangleDKT{
     thickness
     forcing 
     */
+   int Nelem;
    int *ID[3]; 
    int *IEN[3];
    int *LM[9];
 };
-
+//
 void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem );
-
+//
 void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem );
 
 /* The main program follows. */
@@ -76,7 +77,15 @@ int main(int argc, char **argv){
 
     /* Create or load from matlab IEN, ID, LM */
     struct triangleDKT wingMeshFem;
+    ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem );
 
+    for (int i=0;i<3;i++)
+    {
+        for (int j=0;j<6;j++)
+        {
+            printf("wingMeshFem->IEN[%d][%d]= %d\n,   ", i,j, wingMeshFem.IEN[i][j]);
+        }
+    }
     /* Boundary conditions nodes */
 
     /* Gauss integration function */
@@ -181,8 +190,23 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     }
 }
 
-void connectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem ){
-    /* */
+void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem ){
+    /* Use the information on Delaunay triangulation from matlab to
+    generate connectivity arrays ID, IEN, LM*/
+    /* IEN = tt(1:3,:)*/
+    for (int i=0;i<3;i++){
+        wingMeshFem->IEN[i] = (int*)malloc(inDataFem->tt_cols *sizeof(int));
+    }
+    //
+    for (int i = 0; i < inDataFem->tt_rows-1; i++)
+    {
+        for (int j = 0; j < inDataFem->tt_cols; j++)
+        {
+            wingMeshFem->IEN[i][j]=inDataFem->tt[i][j];
+        }
+    }
+    wingMeshFem->Nelem=inDataFem->tt_cols;
+    printf("\n Nelem=%d\n",wingMeshFem->Nelem);
 
 }
 
