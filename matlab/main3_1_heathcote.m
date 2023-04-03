@@ -162,14 +162,14 @@ ID(2,:)=2:3:3*NN-1;
 ID(3,:)=3:3:3*NN;
 % LM array degrees of freedom per element edof*elements
 LM=zeros(9,Nelem);
-    for k=1:Nelem
-       for i=1:3
-           for j=1:3
-               P=(3)*(j-1)+i; %the 9 dofs per triangle
-               LM(P,k)=ID(i,IEN(j,k));
-           end
+for k=1:Nelem
+   for i=1:3
+       for j=1:3
+           P=(3)*(j-1)+i; %the 9 dofs per triangle
+           LM(P,k)=ID(i,IEN(j,k));
        end
-    end
+   end
+end
     
 GEN=max(max(LM)); %Total number of nodal unknowns taking into account the 
 % connectivity between the triangles

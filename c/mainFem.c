@@ -1,8 +1,9 @@
-#include <stdio.h>
+#include <stdio.h>COMMENT
 #include <stdlib.h>
 
 /* 
 Search file for TODO
+Search file for COMMENT
 */
 /* Declarations for data structures and functions */
 
@@ -53,9 +54,9 @@ struct triangleDKT{
    int Nelem;
    int NN;
    int GEN;
-   int *ID[3]; 
-   int *IEN[3];
-   int *LM[9];
+   int *ID[3];  // [3,NN]
+   int *IEN[3]; // [3,Nelem]
+   int *LM[9];  // [9,Nelem]
 };
 //
 void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem );
@@ -90,9 +91,22 @@ int main(int argc, char **argv){
     }
     /* Boundary conditions nodes */
 
-    /* Gauss integration function */
+    /* Create output function to check whether the BCs are correct in a figure */
 
-    /* Bending stiffness for each triangle */
+    /* Gauss integration function - read about it */
+
+    /* Bending stiffness for each triangle - using python??? or constant thickness?? */
+
+
+    /* TODO free pointers - after using the malloc() */
+    free(inDataFem.pp[0]);
+    free(inDataFem.pp[1]);
+    free(inDataFem.tt[0]);
+    free(inDataFem.tt[1]);
+    //free(inDataFem.tt);
+    //free(inDataFem.ee);
+    //free(wingMeshFem.ID);
+    //free(wingMeshFem.IEN);
 
     return 0;
 }
@@ -196,6 +210,11 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDK
     /* Use the information on Delaunay triangulation from matlab to
     generate connectivity arrays ID, IEN, LM*/
 
+    /*
+     COMMENT: I keep the values of ID, IEN, LM the same as matlab, but for the 
+    final assembly the number MUST be minus 1. In C matrices start with 0 index!!!!!
+    */
+
     /* IEN = tt(1:3,:) by selecting a triangle of the unstructured mesh
      - pick a column - it gives you the index numbers of the triangle nodes on the 
       global numbering */
@@ -251,6 +270,31 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDK
         printf("\n");
     }
     printf("ID[%d][%d]= %d,   \n", 0,wingMeshFem->NN -1 ,wingMeshFem->ID[0][wingMeshFem->NN -1]);
+
+    /*
+    LM=zeros(9,Nelem);
+    for k=1:Nelem
+       for i=1:3
+           for j=1:3
+               P=(3)*(j-1)+i; %the 9 dofs per triangle
+               LM(P,k)=ID(i,IEN(j,k));
+           end
+       end
+    end
+    */
+    for (int i=0;i<9;i++){
+        wingMeshFem->LM[i] = (int*)malloc(wingMeshFem->Nelem *sizeof(int));
+    }
+    int Pindex;
+    int i,j,k; // for each triangle
+    for (k = 0; k< wingMeshFem->Nelem; k++){
+        for (i=0; i<3; i++){
+            for (j=0; j<3; j++){
+                Pindex=(3)*(j-1)+i; //the 9 dofs per triangle
+                wingMeshFem->LM[Pindex][k]=wingMeshFem->ID[i][wingMeshFem->IEN[j][k]];
+            }
+        }
+    }
 
 }
 
