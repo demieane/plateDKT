@@ -98,6 +98,6 @@ triangle=IEN(:,100);
 plot(pp(1,triangle),pp(2,triangle),'o-','Color',clr(4,:), 'LineWidth',2);
 plot([pp(1,triangle(end)) pp(1,triangle(1))],...
     [pp(2,triangle(end)) pp(2,triangle(1))],'-','Color',clr(4,:),'LineWidth',2);
-set(gca,'FontSize',16);
+set(gca,'FontSize',14);
 saveas(hfig,'ch3_mesh.png');
 % plot(pp(1,triangle),pp(2,triangle),'ro');

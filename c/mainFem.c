@@ -50,9 +50,14 @@ struct triangleDKT{
     thickness
     forcing 
     */
+   int *ID[3]; 
+   int *IEN[3];
+   int *LM[9];
 };
 
 void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem );
+
+void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem );
 
 /* The main program follows. */
 
@@ -70,6 +75,7 @@ int main(int argc, char **argv){
     printf("inDataFem.pp[1][256]: %f\n", inDataFem.pp[1][250]); 
 
     /* Create or load from matlab IEN, ID, LM */
+    struct triangleDKT wingMeshFem;
 
     /* Boundary conditions nodes */
 
@@ -174,3 +180,9 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
         printf("\n");
     }
 }
+
+void connectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem ){
+    /* */
+
+}
+
