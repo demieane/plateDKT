@@ -77,6 +77,13 @@ fclose(file);
 
 system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin')
 
+%% connectivity in c
+
+j = [1,4,7,10];
+jj=[0:3]
+
+
+
 
 %% Understanding the local-to-global assembly
 clr = viridis(10);

@@ -51,6 +51,8 @@ struct triangleDKT{
     forcing 
     */
    int Nelem;
+   int NN;
+   int GEN;
    int *ID[3]; 
    int *IEN[3];
    int *LM[9];
@@ -193,12 +195,16 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
 void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem ){
     /* Use the information on Delaunay triangulation from matlab to
     generate connectivity arrays ID, IEN, LM*/
-    /* IEN = tt(1:3,:)*/
+
+    /* IEN = tt(1:3,:) by selecting a triangle of the unstructured mesh
+     - pick a column - it gives you the index numbers of the triangle nodes on the 
+      global numbering */
     for (int i=0;i<3;i++){
         wingMeshFem->IEN[i] = (int*)malloc(inDataFem->tt_cols *sizeof(int));
     }
     //
-    for (int i = 0; i < inDataFem->tt_rows-1; i++)
+    //for (int i = 0; i < inDataFem->tt_rows-1; i++)
+    for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < inDataFem->tt_cols; j++)
         {
@@ -207,6 +213,44 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDK
     }
     wingMeshFem->Nelem=inDataFem->tt_cols;
     printf("\n Nelem=%d\n",wingMeshFem->Nelem);
+
+    /* ID For each node (column), gives you the dof number */
+    wingMeshFem->NN=inDataFem->pp_cols;
+    printf("\n NN=%d\n",wingMeshFem->NN);
+
+    for (int i=0;i<3;i++){
+        wingMeshFem->ID[i] = (int*)malloc(inDataFem->pp_cols *sizeof(int));
+    }
+    /*
+    ID(1,:)=1:3:3*NN-2;
+    ID(2,:)=2:3:3*NN-1;
+    ID(3,:)=3:3:3*NN;
+    */
+    int cnt=0;
+    for (int j = 1; j < 3*wingMeshFem->NN-2+1; j=j+3){
+        wingMeshFem->ID[0][cnt]= j;
+        cnt = cnt + 1;
+    }
+    cnt=0;
+    for (int j = 2; j < 3*wingMeshFem->NN-1+1; j=j+3){
+        wingMeshFem->ID[1][cnt]= j;
+        cnt = cnt + 1;
+    }
+    cnt=0;
+    for (int j = 3; j < 3*wingMeshFem->NN+1; j=j+3){
+        wingMeshFem->ID[2][cnt]= j;
+        cnt = cnt + 1;
+    }
+    wingMeshFem->GEN=wingMeshFem->ID[2][wingMeshFem->NN-1]; /*or GEN=max(max(LM)); */
+    printf("\n GEN=%d\n",wingMeshFem->GEN);
+
+    for (int i = 0; i < 3; i++){
+        for (int j = 250; j < 253; j++){
+            printf("ID[%d][%d]= %d,   ", i,j,wingMeshFem->ID[i][j]);
+        }
+        printf("\n");
+    }
+    printf("ID[%d][%d]= %d,   \n", 0,wingMeshFem->NN -1 ,wingMeshFem->ID[0][wingMeshFem->NN -1]);
 
 }
 
