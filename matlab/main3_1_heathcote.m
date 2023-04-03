@@ -45,7 +45,7 @@ addpath('mesh');
 
 addpath('mesh/heathcote');
 % load('mesh_h1_half');
-load('mesh_h2_half');
+load('mesh_h1_half');
 
 %Create Rectangular plate
 % pderect([0 0.1 -0.3 0.3],'C1')
@@ -165,7 +165,7 @@ LM=zeros(9,Nelem);
     for k=1:Nelem
        for i=1:3
            for j=1:3
-               P=(3)*(j-1)+i;
+               P=(3)*(j-1)+i; %the 9 dofs per triangle
                LM(P,k)=ID(i,IEN(j,k));
            end
        end
@@ -173,6 +173,9 @@ LM=zeros(9,Nelem);
     
 GEN=max(max(LM)); %Total number of nodal unknowns taking into account the 
 % connectivity between the triangles
+
+error('er')
+
 %
 %% Essential BCs (enforces on the displacements "w" and slopes "bx", "by")   
 Bound1=find(e(5,:)==1);

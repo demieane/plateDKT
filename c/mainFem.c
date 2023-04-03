@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* 
+Search file for TODO
+*/
 /* Declarations for data structures and functions */
 
 struct InDataRecFem{
@@ -29,10 +32,15 @@ struct InDataRecFem{
             tt (triangles)
     */
     //float *ee; /*2-D array*/
-    unsigned int pp_rows;
+    unsigned int pp_rows; // dummy
     unsigned int pp_cols;
     float *pp[2]; /*2-D array*/
-    //float *tt; /*2-D array*/
+    unsigned int tt_rows; // dummy
+    unsigned int tt_cols;
+    int *tt[4]; /*2-D array*/
+    unsigned int ee_rows; // dummy
+    unsigned int ee_cols;
+    float *ee[7]; /*2-D array*/
 };
 
 struct triangleDKT{
@@ -85,30 +93,49 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     fread(&(inDataFem->h), sizeof(float) , 1, file);
     fread(&(inDataFem->CC), sizeof(int) , 1, file);
     fread(&(inDataFem->LL), sizeof(int) , 1, file);
-    //
+    /* TODO: Create a separate function for reading 2-D matrices*/
+    //---------------------------------------------------------------------------->> pp
     fread(&(inDataFem->pp_rows), sizeof(int) , 1, file);
     fread(&(inDataFem->pp_cols), sizeof(int) , 1, file);
-
-    //inDataFem->pp = (float*)malloc(inDataFem->pp_rows * sizeof(float));
-    for (int i=0;i<2;i++){
+    //
+    for (int i=0;i<inDataFem->pp_rows;i++){
         inDataFem->pp[i] = (float*)malloc(inDataFem->pp_cols *sizeof(float));
     }
-
     // Note that arr[i][j] is same as *(*(arr+i)+j)
     for (int i = 0; i < 2; i++){
         for (int j = 0; j < inDataFem->pp_cols; j++){
             fread(&(inDataFem->pp[i][j]), sizeof(float), 1, file);
         }
     }
-
-    for (int i = 0; i < 2; i++){
-        for (int j = 0; j < 10; j++){
-            printf("inDataFem->pp[%d][%d]= %f,   ", i,j,inDataFem->pp[i][j]);
-        }
-        printf("\n");
+    //---------------------------------------------------------------------------->> tt 
+    fread(&(inDataFem->tt_rows), sizeof(int) , 1, file);
+    fread(&(inDataFem->tt_cols), sizeof(int) , 1, file);
+    //
+    for (int i=0;i<inDataFem->tt_rows;i++){
+        inDataFem->tt[i] = (int*)malloc(inDataFem->tt_cols *sizeof(int));
     }
-
+    //
+    for (int i = 0; i < inDataFem->tt_rows; i++){
+        for (int j = 0; j < inDataFem->tt_cols; j++){
+            fread(&(inDataFem->tt[i][j]), sizeof(int), 1, file);
+        }
+    }
+    //---------------------------------------------------------------------------->> ee
+    fread(&(inDataFem->ee_rows), sizeof(int) , 1, file);
+    fread(&(inDataFem->ee_cols), sizeof(int) , 1, file);
+    //
+    for (int i=0;i<inDataFem->ee_rows;i++){
+        inDataFem->ee[i] = (float*)malloc(inDataFem->ee_cols *sizeof(float));
+    }
+    //
+    for (int i = 0; i < inDataFem->ee_rows; i++){
+        for (int j = 0; j < inDataFem->ee_cols; j++){
+            fread(&(inDataFem->ee[i][j]), sizeof(float), 1, file);
+        }
+    }
+    //---------------------------------------------------------------------------->>
     fclose(file);
+
     /* Printing data */
     printf("cRoot = %f\n",inDataFem->cRoot );
 	printf("span  = %f\n",inDataFem->span );
@@ -122,4 +149,28 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     printf("LL = %u\n",inDataFem->LL );
     printf("pp: rows = %u, cols=%u \n",inDataFem->pp_rows, inDataFem->pp_cols );
 
+    for (int i = 0; i < inDataFem->pp_rows; i++){
+        for (int j = 0; j < 5; j++){
+            printf("inDataFem->pp[%d][%d]= %f,   ", i,j,inDataFem->pp[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+    printf("tt: rows = %u, cols=%u \n",inDataFem->tt_rows, inDataFem->tt_cols );
+
+    for (int i = 0; i < inDataFem->tt_rows; i++){
+        for (int j = 0; j < 5; j++){
+            printf("inDataFem->tt[%d][%d]= %d,   ", i,j,inDataFem->tt[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+    printf("ee: rows = %u, cols=%u \n",inDataFem->ee_rows, inDataFem->ee_cols );
+
+    for (int i = 0; i < inDataFem->ee_rows; i++){
+        for (int j = 0; j < 5; j++){
+            printf("inDataFem->ee[%d][%d]= %f,   ", i,j,inDataFem->ee[i][j]);
+        }
+        printf("\n");
+    }
 }
