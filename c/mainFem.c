@@ -10,8 +10,15 @@ Search file for COMMENT
 int main(int argc, char **argv){
 
     struct InDataRecFem inDataFem;
+    struct triangleDKT wingMeshFem;
+    int Ng = 4; // Gauss integration points
+
     /* read input parameters from a file */
+    /* Boundary conditions nodes, dofs */
     CuFEMNum2DReadInData( &inDataFem );
+
+    /* TODO: Create output function to check whether the BCs are correct in a figure */
+
     /*if the structure is given as a reference*/
     //printf("Accessing data structure: %f\n", (&inDataFem)->cRoot);
     /*if the structure is given as a name*/ 
@@ -21,8 +28,20 @@ int main(int argc, char **argv){
     //printf("inDataFem.pp[1][256]: %f\n", inDataFem.pp[1][250]); 
 
     /* Create or load from matlab IEN, ID, LM */
-    struct triangleDKT wingMeshFem;
     ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem );
+
+    float xw[Ng][3]; // {xg,yg,wg}
+    TriGaussPoints(Ng, xw);
+
+#if DEBUG
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<3;j++){
+            printf("xw [%d]:%f,",j,xw[i][j]);
+        }
+        printf("\n");
+    }
+#endif
+    
 
 #if DEBUG
     for (int i=0;i<3;i++){
@@ -41,10 +60,7 @@ int main(int argc, char **argv){
         //}
     }
 #endif
-    /* Boundary conditions nodes */
-
-    /* Create output function to check whether the BCs are correct in a figure */
-
+    
     /* Gauss integration function - read about it */
 
     /* Bending stiffness for each triangle - using python??? or constant thickness?? */

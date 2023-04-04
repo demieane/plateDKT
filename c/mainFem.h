@@ -45,6 +45,10 @@ struct InDataRecFem{
     unsigned int ee_rows; // dummy
     unsigned int ee_cols;
     float *ee[7]; /*2-D array*/
+    unsigned int sizeBBnodes;
+    int *BBnodes; /* id of nodes affected by boundary conditions*/
+    unsigned int sizeBdofs;
+    int *Bdofs; /* global numbering of dofs affected by boundary conditions*/
 };
 
 struct triangleDKT{
@@ -54,9 +58,9 @@ struct triangleDKT{
     thickness
     forcing 
     */
-   int Nelem;
-   int NN;
-   int GEN;
+   int Nelem; // number of triangles
+   int NN; // number of nodes
+   int GEN; // number of dofs (system of eqs. before BCs)
    int *ID[3];  // [3,NN]
    int *IEN[3]; // [3,Nelem]
    int *LM[9];  // [9,Nelem]
@@ -65,6 +69,8 @@ struct triangleDKT{
 void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem );
 //
 void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem );
+
+void TriGaussPoints(int Ng, float xw[Ng][3]);
 
 /*=========================================================================================*/
 /* Definition of the functions follows */
@@ -123,6 +129,21 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
         }
     }
     //---------------------------------------------------------------------------->>
+    fread(&(inDataFem->sizeBBnodes), sizeof(int) , 1, file);
+    inDataFem->BBnodes = (int*)malloc(inDataFem->sizeBBnodes *sizeof(int));
+    for (int i=0;i<inDataFem->sizeBBnodes;i++){
+        fread(&(inDataFem->BBnodes[i]), sizeof(int), 1, file);
+        //printf("i=%d,BBnodes[i]=%d\n", i,inDataFem->BBnodes[i]);
+    }
+    //
+    fread(&(inDataFem->sizeBdofs), sizeof(int) , 1, file);
+    inDataFem->Bdofs = (int*)malloc(inDataFem->sizeBdofs *sizeof(int));
+    for (int i=0;i<inDataFem->sizeBdofs;i++){
+        fread(&(inDataFem->Bdofs[i]), sizeof(int), 1, file);
+        //printf("i=%d,Bdofs[i]=%d\n", i,inDataFem->Bdofs[i]);
+    }
+    //printf("BBnodes = %d, Bdofs=%d\n",inDataFem->sizeBBnodes, inDataFem->sizeBdofs );
+
     fclose(file);
 
 #if DEBUG_ON
@@ -278,4 +299,57 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDK
 #endif
 
     printf("EXITING ConnectivityFEM_IEN_ID_LM...\n\n");
+}
+
+void TriGaussPoints(int Ng, float xw[Ng][3]){
+    
+    int Mcol=Ng;
+    int Ncol=3;
+    //float xw[Ng][3];
+
+    if (Ng==1){
+        float xw_temp[1][3] = {0.33333333333333, 0.33333333333333, 1.00000000000000};
+
+        for (int i=0;i<Mcol;i++){
+            for (int j=0;j<Ncol;j++){
+                //printf("xw_temp [%d]:%f,",j,xw_temp[i][j]);
+                xw[i][j]=xw_temp[i][j];
+                //printf("xw [%d]:%f,",j,xw[i][j]);
+            }
+        }
+    }
+    
+    if (Ng==3){
+        float xw_temp[3][3]={{0.16666666666667, 0.16666666666667, 0.33333333333333},
+                                {0.16666666666667, 0.66666666666667, 0.33333333333333},
+                                {0.66666666666667, 0.16666666666667, 0.33333333333333}};
+
+        for (int i=0;i<Mcol;i++){
+            for (int j=0;j<Ncol;j++){
+                //printf("xw_temp [%d]:%f,",j,xw_temp[i][j]);
+                xw[i][j]=xw_temp[i][j];
+                //printf("xw [%d]:%f,",j,xw[i][j]);
+            }
+        }
+    }
+
+    if (Ng==4){
+        float xw_temp[4][3]={ {0.33333333333333, 0.33333333333333, -0.56250000000000},
+                                {0.20000000000000, 0.20000000000000, 0.52083333333333},
+                                {0.20000000000000, 0.60000000000000, 0.52083333333333},
+                                {0.60000000000000, 0.20000000000000, 0.52083333333333}};
+
+
+        for (int i=0;i<Mcol;i++){
+            for (int j=0;j<Ncol;j++){
+                //printf("xw_temp [%d]:%f,",j,xw_temp[i][j]);
+                xw[i][j]=xw_temp[i][j];
+                //printf("xw [%d]:%f,",j,xw[i][j]);
+            }
+        }
+    }
+
+    /* TODO : Add more options for the gauss integration */
+    
+
 }
