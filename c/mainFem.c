@@ -16,6 +16,9 @@ int main(int argc, char **argv){
     // Preparing to run a script for the purpose of scatter interpolation //
     char command[] = "python3 ";
     char scriptName[] = "dataExchange_BEM_FEM.py";
+    // concatenates str1 and str2
+    // the resultant string is stored in str1.
+    // strcat(str1, str2);
     strcat(command, scriptName);
 
     /* read input parameters from a file */

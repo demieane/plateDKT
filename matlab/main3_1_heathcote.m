@@ -174,7 +174,7 @@ end
 GEN=max(max(LM)); %Total number of nodal unknowns taking into account the 
 % connectivity between the triangles
 
-error('er')
+% error('er')
 
 %
 %% Essential BCs (enforces on the displacements "w" and slopes "bx", "by")   
@@ -342,9 +342,12 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     %***********************************
 end
 
+% error('oo')
 %% Global assembly (uses the LM)
 % COMMENT: The boundary conditions are enforced as extra equations
 % in the sense of constraints in the present version
+
+% HOW TO WRITE THE SAME WITHOUT THE SPARSE MATRIX!!!
 
 iii=1:9; %Elnodes Number of element nodes
 iii=repmat(iii',1,9);
@@ -353,9 +356,21 @@ rr=iii';
 Ig=LM(iii(:),:);  %LM ARRAY (Dofs per Element)X(Elements)   -   (Nnodes*Ndof)X(Nel)
 Jg=LM(rr(:),:);
 Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
-% spy(Kglob)
+% % spy(Kglob)
 Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
+% 
+% clear Kglob
+% cnt = 0;
+% for ii = 1:size(Ig,1)
+%     for jj = 1:size(Ig,2)
+% %         cnt = cnt + 1;
+%             Kglob(Ig(ii,jj),Jg(ii,jj)) = Kg(ii,jj);
+%             Mglob(Ig(ii,jj),Jg(ii,jj)) = Mg(ii,jj);
+%     end
+% end
+% cnt
 
+% error('er')
 BBnodes_old=BBnodes; %DIMITRA
 BBnodes=Bdofs;%DIMITRA
 
