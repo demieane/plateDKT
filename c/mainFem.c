@@ -11,7 +11,12 @@ int main(int argc, char **argv){
 
     struct InDataRecFem inDataFem;
     struct triangleDKT wingMeshFem;
-    int Ng = 4; // Gauss integration points
+    int Ng = 6; // Gauss integration points
+
+    // Preparing to run a script for the purpose of scatter interpolation //
+    char command[] = "python3 ";
+    char scriptName[] = "dataExchange_BEM_FEM.py";
+    strcat(command, scriptName);
 
     /* read input parameters from a file */
     /* Boundary conditions nodes, dofs */
@@ -30,17 +35,21 @@ int main(int argc, char **argv){
     /* Create or load from matlab IEN, ID, LM */
     ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem );
 
+    /* Gauss integration function - read about it */
     float xw[Ng][3]; // {xg,yg,wg}
     TriGaussPoints(Ng, xw);
 
-#if DEBUG
+    /* Bending stiffness for each triangle - using python??? or constant thickness?? */
+    system(command);
+
+//#if DEBUG
     for (int i=0;i<Ng;i++){
         for (int j=0;j<3;j++){
             printf("xw [%d]:%f,",j,xw[i][j]);
         }
         printf("\n");
     }
-#endif
+//#endif
     
 
 #if DEBUG
@@ -61,9 +70,9 @@ int main(int argc, char **argv){
     }
 #endif
     
-    /* Gauss integration function - read about it */
+    
 
-    /* Bending stiffness for each triangle - using python??? or constant thickness?? */
+    
 
 
     /* TODO free pointers - after using the malloc() */

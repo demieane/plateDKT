@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* suppress or not execution times (custom profiler) */
 #define DEBUG_ON 0 /*allow printf for debugging purposes*/
@@ -57,6 +58,7 @@ struct triangleDKT{
     BeSt2
     thickness
     forcing 
+    xm, ym : center of triangles
     */
    int Nelem; // number of triangles
    int NN; // number of nodes
@@ -338,6 +340,24 @@ void TriGaussPoints(int Ng, float xw[Ng][3]){
                                 {0.20000000000000, 0.20000000000000, 0.52083333333333},
                                 {0.20000000000000, 0.60000000000000, 0.52083333333333},
                                 {0.60000000000000, 0.20000000000000, 0.52083333333333}};
+
+
+        for (int i=0;i<Mcol;i++){
+            for (int j=0;j<Ncol;j++){
+                //printf("xw_temp [%d]:%f,",j,xw_temp[i][j]);
+                xw[i][j]=xw_temp[i][j];
+                //printf("xw [%d]:%f,",j,xw[i][j]);
+            }
+        }
+    }
+
+    if (Ng==6){
+        float xw_temp[6][3]={{0.44594849091597, 0.44594849091597, 0.22338158967801},
+                                {0.44594849091597, 0.10810301816807, 0.22338158967801},
+                                {0.10810301816807, 0.44594849091597, 0.22338158967801},
+                                {0.09157621350977, 0.09157621350977, 0.10995174365532},
+                                {0.09157621350977, 0.81684757298046, 0.10995174365532},
+                                {0.81684757298046, 0.09157621350977, 0.10995174365532}};
 
 
         for (int i=0;i<Mcol;i++){
