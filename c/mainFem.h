@@ -530,9 +530,31 @@ void TrigElCoefsDKT(struct InDataRecFem *inDataFem, struct triangleDKT *wingMesh
         wingMeshFem->a5[i]=-wingMeshFem->x31[i]/pow(wingMeshFem->l31[i],2);
         wingMeshFem->a6[i]=-wingMeshFem->x12[i]/pow(wingMeshFem->l12[i],2);
 
-        b4=3/4.*x23.*y23./l23.^2;
-        b5=3/4.*x31.*y31./l31.^2;
-        b6=3/4.*x12.*y12./l12.^2;
+        wingMeshFem->b4[i]=(3.0/4.0)*(wingMeshFem->x23[i])*(wingMeshFem->y23[i])/pow(wingMeshFem->l23[i],2);
+        wingMeshFem->b5[i]=(3.0/4.0)*(wingMeshFem->x31[i])*(wingMeshFem->y31[i])/pow(wingMeshFem->l31[i],2);
+        wingMeshFem->b6[i]=(3.0/4.0)*(wingMeshFem->x12[i])*(wingMeshFem->y12[i])/pow(wingMeshFem->l12[i],2);
+
+        wingMeshFem->c4[i]=((1.0/4.0)*pow(wingMeshFem->x23[i],2)-(1.0/2.0)*pow(wingMeshFem->y23[i],2))/pow(wingMeshFem->l23[i],2);
+        wingMeshFem->c5[i]=((1.0/4.0)*pow(wingMeshFem->x31[i],2)-(1.0/2.0)*pow(wingMeshFem->y31[i],2))/pow(wingMeshFem->l31[i],2);
+        wingMeshFem->c6[i]=((1.0/4.0)*pow(wingMeshFem->x12[i],2)-(1.0/2.0)*pow(wingMeshFem->y12[i],2))/pow(wingMeshFem->l12[i],2);
+
+        wingMeshFem->d4[i]=-wingMeshFem->y23[i]/pow(wingMeshFem->l23[i],2);
+        wingMeshFem->d5[i]=-wingMeshFem->y31[i]/pow(wingMeshFem->l31[i],2);
+        wingMeshFem->d6[i]=-wingMeshFem->y12[i]/pow(wingMeshFem->l12[i],2);
+
+        wingMeshFem->e4[i]=((1.0/4.0)*pow(wingMeshFem->y23[i],2)-(1.0/2.0)*pow(wingMeshFem->x23[i],2))/pow(wingMeshFem->l23[i],2);
+        wingMeshFem->e5[i]=((1.0/4.0)*pow(wingMeshFem->y31[i],2)-(1.0/2.0)*pow(wingMeshFem->x31[i],2))/pow(wingMeshFem->l31[i],2);
+        wingMeshFem->e6[i]=((1.0/4.0)*pow(wingMeshFem->y12[i],2)-(1.0/2.0)*pow(wingMeshFem->x12[i],2))/pow(wingMeshFem->l12[i],2);
+
+        wingMeshFem->area[i]=(1.0/2.0)*(wingMeshFem->x31[i]*wingMeshFem->y12[i]-wingMeshFem->x12[i]*wingMeshFem->y31[i]);
+
+        wingMeshFem->C4[i]=-wingMeshFem->y23[i]/wingMeshFem->l23[i];
+        wingMeshFem->C5[i]=-wingMeshFem->y31[i]/wingMeshFem->l31[i];
+        wingMeshFem->C6[i]=-wingMeshFem->y12[i]/wingMeshFem->l12[i];
+
+        wingMeshFem->S4[i]=wingMeshFem->x23[i]/wingMeshFem->l23[i];
+        wingMeshFem->S5[i]=wingMeshFem->x31[i]/wingMeshFem->l31[i];
+        wingMeshFem->S6[i]=wingMeshFem->x12[i]/wingMeshFem->l12[i];
 
     }
 

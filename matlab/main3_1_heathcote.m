@@ -253,6 +253,26 @@ xg=xw(:,1);
 yg=xw(:,2);
 [l23,l31,l12,y12,y31,y23,x12,x31,x23,Area,a4,a5,a6,b4,b5,b6,...
     c4,c5,c6,d4,d5,d6,e4,e5,e6,C4,C5,C6,S4,S5,S6]=TrigElCoefsDKT(x,y,IEN);
+
+[l23(1), l23(end)]
+[l31(1), l31(end)]
+[l12(1), l12(end)]
+%
+[y23(1), y23(end)]
+[y31(1), y31(end)]
+[y12(1), y12(end)]
+%
+[x23(1), x23(end)]
+[x31(1), x31(end)]
+[x12(1), x12(end)]   
+%
+[C4(1), C4(end)]
+[C5(1), C5(end)]
+[C6(1), C6(end)]
+%
+[c4(1), c4(end)]
+[c5(1), c5(end)]
+[c6(1), c6(end)]  
 error('er')
 % Calculation of shape functions and their derivatives at gauss points on
 % the parent element
