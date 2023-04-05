@@ -1,2 +1,2 @@
-gcc mainFem.C
+gcc mainFem.C -lm
 ./a.out

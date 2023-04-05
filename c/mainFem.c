@@ -43,6 +43,22 @@ int main(int argc, char **argv){
     TriGaussPoints(Ng, xw);
 
     /* Bending stiffness for each triangle - using python??? or constant thickness?? */
+    printf("BeSt");
+    float BeSt[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
+    BendingStiffness(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
+    for (int i=0;i<3;i++){
+        for (int j=0;j<3;j++){
+            printf("%f\n", BeSt[i][j]);
+        }
+    }
+
+    /* DKT */
+    TrigElCoefsDKT(&inDataFem, &wingMeshFem);
+    printf("1: %f\n", wingMeshFem.l23[0]);
+    printf("Nelem: %f\n", wingMeshFem.l23[wingMeshFem.Nelem-1]);
+    //for (int i=0; i<wingMeshFem.Nelem; i++){
+    //    printf("%f\n", wingMeshFem.l23[i]);
+    //}
     system(command);
 
 //#if DEBUG

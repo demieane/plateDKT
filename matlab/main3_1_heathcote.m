@@ -231,6 +231,11 @@ end
 % Number of GP
 Ng=6; %TO-DO
 [xw]=TriGaussPoints(Ng);
+
+% xm=(1/3)*(x(IEN(1,:))+x(IEN(2,:))+x(IEN(3,:)));   % x barycentric coordinate
+% ym=(1/3)*(y(IEN(1,:))+y(IEN(2,:))+y(IEN(3,:)));    % y barycentric coordinate
+% 
+% error('er')
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
 d=1;
@@ -239,7 +244,8 @@ d=1;
     fluid_dens, Uvel, h, d);
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
 
-% error('er')
+BeSt2(:,:,1)
+
 % [BeSt]=BendingStiffness(E,v,h); %[3,3] matrix
 % Ds=sc*G*h*eye(2,2);
 
@@ -247,7 +253,7 @@ xg=xw(:,1);
 yg=xw(:,2);
 [l23,l31,l12,y12,y31,y23,x12,x31,x23,Area,a4,a5,a6,b4,b5,b6,...
     c4,c5,c6,d4,d5,d6,e4,e5,e6,C4,C5,C6,S4,S5,S6]=TrigElCoefsDKT(x,y,IEN);
-
+error('er')
 % Calculation of shape functions and their derivatives at gauss points on
 % the parent element
 [ SF,DxsiSF,DetaSF,D2xsiSF,D2xsietaSF,D2etaSF ] = LNShapeFunDST(xg,yg);

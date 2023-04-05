@@ -1,7 +1,7 @@
 function [BeSt]=BendingStiffness2(E,v,thick,h)
 
 % calculates bending stiffness for constant properties
-% thick = thick.*0 + 0.0396;%0.001;
+thick = thick.*0 + h;
 % thick = thick.*0 + 1/1000;%min(thick);
 
 % thick = thick + 0.0005;%h;
@@ -20,7 +20,7 @@ BeSt=zeros(3,3,length(thick));
 % la=(E*thick^3/(12*(1-v^2)));
 % -------------------------------------------------------------------------
 for kk = 1:length(thick)   
-    la=(E*thick(kk)^3/(12*(1-v^2))); %[1,Nelem]
+    la=(E*thick(kk)^3/(12*(1-v^2))) %[1,Nelem]
     BeSt(1,1,kk)=la;
     BeSt(2,2,kk)=la;
     BeSt(3,3,kk)=(1-v)*la/2;
