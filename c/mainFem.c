@@ -11,7 +11,7 @@ int main(int argc, char **argv){
 
     struct InDataRecFem inDataFem;
     struct triangleDKT wingMeshFem;
-    int Ng = 6; // Gauss integration points
+    int Ng = 3; // Gauss integration points
 
     // Preparing to run a script for the purpose of scatter interpolation //
     char command[] = "python3 ";
@@ -42,7 +42,18 @@ int main(int argc, char **argv){
     float xw[Ng][3]; // {xg,yg,wg}
     TriGaussPoints(Ng, xw);
 
+//#if DEBUG
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<3;j++){
+            printf("MAIN: xw [%d]:%f,",j,xw[i][j]);
+        }
+        printf("\n");
+    }
+//#endif
+
     /* Bending stiffness for each triangle - using python??? or constant thickness?? */
+    system(command);
+
     printf("BeSt");
     float BeSt[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
     BendingStiffness(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
@@ -55,6 +66,7 @@ int main(int argc, char **argv){
     /* DKT */
     TrigElCoefsDKT(&inDataFem, &wingMeshFem);
 
+#if DEBUG
     printf("l23 1: %f, Nelem: %f\n", wingMeshFem.l23[0],wingMeshFem.l23[wingMeshFem.Nelem-1]);
     printf("l31 1: %f, Nelem: %f\n", wingMeshFem.l31[0],wingMeshFem.l31[wingMeshFem.Nelem-1]);
     printf("l12 1: %f, Nelem: %f\n", wingMeshFem.l12[0],wingMeshFem.l12[wingMeshFem.Nelem-1]);
@@ -74,21 +86,14 @@ int main(int argc, char **argv){
     printf("c4 1: %f, Nelem: %f\n", wingMeshFem.c4[0],wingMeshFem.c4[wingMeshFem.Nelem-1]);
     printf("c5 1: %f, Nelem: %f\n", wingMeshFem.c5[0],wingMeshFem.c5[wingMeshFem.Nelem-1]);
     printf("c6 1: %f, Nelem: %f\n", wingMeshFem.c6[0],wingMeshFem.c6[wingMeshFem.Nelem-1]);
+#endif
+
+    LNShapeFunDST(Ng, xw, &wingMeshFem);
 
 
-    //for (int i=0; i<wingMeshFem.Nelem; i++){
-    //    printf("%f\n", wingMeshFem.l23[i]);
-    //}
-    system(command);
+   
 
-//#if DEBUG
-    for (int i=0;i<Ng;i++){
-        for (int j=0;j<3;j++){
-            printf("xw [%d]:%f,",j,xw[i][j]);
-        }
-        printf("\n");
-    }
-//#endif
+
     
 
 #if DEBUG

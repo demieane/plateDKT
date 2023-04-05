@@ -62,29 +62,32 @@ struct triangleDKT{
     forcing 
     xm, ym : center of triangles
     */
-   int Nelem; // number of triangles
-   int NN; // number of nodes
-   int GEN; // number of dofs (system of eqs. before BCs)
-   int *ID[3];  // [3,NN]
-   int *IEN[3]; // [3,Nelem]
-   int *LM[9];  // [9,Nelem]
-   //
-   float *xm; // x barycentric coordinate [Nelem]
-   float *ym; // y barycentric coordinate [Nelem]
+    int Nelem; // number of triangles
+    int NN; // number of nodes
+    int GEN; // number of dofs (system of eqs. before BCs)
+    int *ID[3];  // [3,NN]
+    int *IEN[3]; // [3,Nelem]
+    int *LM[9];  // [9,Nelem]
+    //
+    float *xm; // x barycentric coordinate [Nelem]
+    float *ym; // y barycentric coordinate [Nelem]
 
-   /* output of TrigElCoefsDKT() */ 
-   float *l23, *l31, *l12;
-   float *y12, *y31, *y23;
-   float *x12, *x31, *x23;
-   float *area;
-   float *a4, *a5, *a6, *b4, *b5, *b6, *c4, *c5, *c6;
-   float *d4, *d5, *d6, *e4, *e5, *e6;
-   float *C4, *C5, *C6, *S4, *S5, *S6;
-   /*
-   The C language is case-sensitive. This means that all language keywords,
-   identifiers, function names, and other variables
-   must be entered with consistent letter capitalization. 
-   */
+    /* output of TrigElCoefsDKT() */ 
+    float *l23, *l31, *l12; // [1 x Nelem]
+    float *y12, *y31, *y23;
+    float *x12, *x31, *x23;
+    float *area;
+    float *a4, *a5, *a6, *b4, *b5, *b6, *c4, *c5, *c6;
+    float *d4, *d5, *d6, *e4, *e5, *e6;
+    float *C4, *C5, *C6, *S4, *S5, *S6;
+    /*
+    The C language is case-sensitive. This means that all language keywords,
+    identifiers, function names, and other variables
+    must be entered with consistent letter capitalization. 
+    */
+    /* output of LNShapeFunDST() */
+    float **SF, **DxsiSF, **DetaSF; //[Ng x 6]
+    float *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
 
 
 };
@@ -102,7 +105,8 @@ void TrigElCoefsDKT(struct InDataRecFem *inDataFem, struct triangleDKT *wingMesh
 
 // Calculation of shape functions and their derivatives at gauss points on
 // the parent element
-void LNShapeFunDST();
+void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem);
+
 void LNShapeFunMassDST();
 
 // ax, ay, bx,by are constant for constant h (independednt of î,ç)
@@ -559,5 +563,113 @@ void TrigElCoefsDKT(struct InDataRecFem *inDataFem, struct triangleDKT *wingMesh
     }
 
     printf("EXITING TrigElCoefsDKT...\n\n");
+
+}
+
+void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem){
+    // Ng, xw are given data based on which we will fill up some matrices
+
+#if DEBUG    
+    printf("Ng: %d\n", Ng);
+
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<3;j++){
+            printf("xw [%d]:%f,",j,xw[i][j]);
+        }
+        printf("\n");
+    }
+#endif
+
+    // Initialize matrices that are Ng x 6
+    wingMeshFem->SF = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
+    wingMeshFem->DxsiSF = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
+    wingMeshFem->DetaSF = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
+    for (int i=0;i<6;i++){
+        wingMeshFem->SF[i] = (float*)malloc(6 *sizeof(float));
+        wingMeshFem->DxsiSF[i] = (float*)malloc(6 *sizeof(float));
+        wingMeshFem->DetaSF[i] = (float*)malloc(6 *sizeof(float));
+    }
+
+    float xg, yg;
+    int i;
+    for (i=0; i<Ng; i++){
+        
+        xg = xw[i][0];
+        yg = xw[i][1];
+
+        wingMeshFem->SF[i][0]=(1.0 - xg-yg)*(1.0-2.0*xg-2.0*yg); //checked
+        wingMeshFem->SF[i][1]=xg*(2.0*xg-1.0);//checked
+        wingMeshFem->SF[i][2]=yg*(2.0*yg-1.0);  
+        wingMeshFem->SF[i][3]=4.0*xg*yg;
+        wingMeshFem->SF[i][4]=4.0*yg*(1.0-xg-yg);
+        wingMeshFem->SF[i][5]=4.0*xg*(1.0-xg-yg);
+        
+        // 1st derivative --> î
+        wingMeshFem->DxsiSF[i][0]=-3.0+4.0*(xg+yg);//checked
+        wingMeshFem->DxsiSF[i][1]=4.0*xg-1.0;//checked
+        wingMeshFem->DxsiSF[i][2]=0.0;//checked
+        wingMeshFem->DxsiSF[i][3]=4.0*yg;//checked                  
+        wingMeshFem->DxsiSF[i][4]=-4.0*yg;//checked
+        wingMeshFem->DxsiSF[i][5]=4.0-8.0*xg-4.0*yg;
+        
+        //1st derivative ç
+        wingMeshFem->DetaSF[i][0]=-3.0+4.0*(xg+yg);
+        wingMeshFem->DetaSF[i][1]=0.0;
+        wingMeshFem->DetaSF[i][2]=4.0*yg-1.0;
+        wingMeshFem->DetaSF[i][3]=4.0*xg;        
+        wingMeshFem->DetaSF[i][4]=4.0-4.0*xg-8.0*yg;
+        wingMeshFem->DetaSF[i][5]=-4.0*xg; 
+    }
+
+#if DEBUG
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<6;j++){
+            //printf("SF[%d][%d]=%f, ", i,j,wingMeshFem->SF[i][j] );
+            //printf("DxsiSF[%d][%d]=%f, ", i,j,wingMeshFem->DxsiSF[i][j] );
+            printf("DetaSF[%d][%d]=%f, ", i,j,wingMeshFem->DetaSF[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+#endif
+    //float *SF, *DxsiSF, *DetaSF; //[Ng x 6]
+    //float *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
+
+    wingMeshFem->D2xsiSF = (float*)malloc(Ng *sizeof(float)); // [1 x 6]
+    wingMeshFem->D2xsietaSF = (float*)malloc(Ng *sizeof(float)); // [1 x 6]
+    wingMeshFem->D2etaSF = (float*)malloc(Ng *sizeof(float)); // [1 x 6]
+
+    // 2nd derivative--> î    %checked
+    wingMeshFem->D2xsiSF[0]=4.0;
+    wingMeshFem->D2xsiSF[1]=4.0;
+    wingMeshFem->D2xsiSF[2]=0.0;
+    wingMeshFem->D2xsiSF[3]=0.0;
+    wingMeshFem->D2xsiSF[4]=0.0;
+    wingMeshFem->D2xsiSF[5]=-8.0;
+
+    // mixed derivative--> î,ç symmetric!%checked
+    wingMeshFem->D2xsietaSF[0]=4.0;
+    wingMeshFem->D2xsietaSF[1]=0.0;
+    wingMeshFem->D2xsietaSF[2]=0.0;
+    wingMeshFem->D2xsietaSF[3]=4.0;
+    wingMeshFem->D2xsietaSF[4]=-4.0;
+    wingMeshFem->D2xsietaSF[5]=-4.0;
+    
+    // 2nd derivative ç    %checked
+    wingMeshFem->D2etaSF[0]=4.0;
+    wingMeshFem->D2etaSF[1]=0.0;
+    wingMeshFem->D2etaSF[2]=4.0;
+    wingMeshFem->D2etaSF[3]=0.0;
+    wingMeshFem->D2etaSF[4]=-8.0;
+    wingMeshFem->D2etaSF[5]=0.0;
+
+#if DEBUG
+    for (int j=0;j<6;j++){
+            //printf("D2xsiSF[%d]=%f, ", j,wingMeshFem->D2xsiSF[j]);
+            //printf("D2xsietaSF[%d]=%f, ", j,wingMeshFem->D2xsietaSF[j]);
+            printf("D2etaSF[%d]=%f, ", j,wingMeshFem->D2etaSF[j]);
+    }
+#endif
 
 }

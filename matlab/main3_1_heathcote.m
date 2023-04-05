@@ -229,7 +229,7 @@ end
 % for sparse triangular meshes. 
 
 % Number of GP
-Ng=6; %TO-DO
+Ng=3; %TO-DO
 [xw]=TriGaussPoints(Ng);
 
 % xm=(1/3)*(x(IEN(1,:))+x(IEN(2,:))+x(IEN(3,:)));   % x barycentric coordinate
@@ -273,10 +273,13 @@ yg=xw(:,2);
 [c4(1), c4(end)]
 [c5(1), c5(end)]
 [c6(1), c6(end)]  
-error('er')
+
 % Calculation of shape functions and their derivatives at gauss points on
 % the parent element
 [ SF,DxsiSF,DetaSF,D2xsiSF,D2xsietaSF,D2etaSF ] = LNShapeFunDST(xg,yg);
+
+error('er')
+
 [ SFm, DxsiSFm,DetaSFm] = LNShapeFunMassDST(xg,yg); 
 
 %
