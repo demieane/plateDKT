@@ -92,6 +92,8 @@ struct triangleDKT{
     /* output of LNShapeFunMassDST() */
     float **SFm, **DxsiSFm, **DetaSFm; //[Ng x 3]
 
+    float **GGDST, **GGDKT; //[10 x 10]  
+
 
 };
 //
@@ -113,7 +115,7 @@ void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem);
 void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem);
 
 // ax, ay, bx,by are constant for constant h (independednt of î,ç)
-void matrixG();
+void matrixG(struct triangleDKT *wingMeshFem);
 //---------------------------
 
 /*=========================================================================================*/
@@ -742,5 +744,74 @@ void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem)
 
     printf("EXITING LNShapeFunMassDST...\n\n");
 
+
+}
+
+void matrixG(struct triangleDKT *wingMeshFem){
+
+    float **GGDST, **GGDKT; //[10 x 10]  
+    int M=10,N=10;
+
+    // Initialize matrices that are Ng x 3
+    wingMeshFem->GGDST = (float**)malloc(M *sizeof(float)); // pointer array with M=10 rows
+    wingMeshFem->GGDKT = (float**)malloc(M *sizeof(float)); // pointer array with M=10 rows
+    for (int i=0;i<M;i++){
+        wingMeshFem->SFm[i] = (float*)malloc(N *sizeof(float));
+        wingMeshFem->DxsiSFm[i] = (float*)malloc(N *sizeof(float));
+        wingMeshFem->DetaSFm[i] = (float*)malloc(N *sizeof(float));
+    }
+
+    float xsi=0.0;
+    float eta=0.0;
+    /*
+    GGDST(1,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+
+    xsi=1; eta=0;
+    GGDST(2,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+
+    xsi=0; eta=1;
+    GGDST(3,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+
+    xsi=1/3; eta=1/3;
+    GGDST(4,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+
+    xsi=2/3; eta=1/3;
+    GGDST(5,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+
+    xsi=1/3; eta=2/3;
+    GGDST(6,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+
+    xsi=0; eta=2/3;
+    GGDST(7,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+
+    xsi=0; eta=1/3;
+    GGDST(8,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+
+    xsi=1/3; eta=0;
+    GGDST(9,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+
+    xsi=2/3; eta=0;
+    GGDST(10,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+    */
+
+    /*
+    xsi=0; eta=0;
+    GGDKT(1,:)=[1 xsi eta xsi*eta xsi^2 eta^2];
+
+    xsi=1; eta=0;
+    GGDKT(2,:)=[1 xsi eta xsi*eta xsi^2 eta^2 ];
+
+    xsi=0; eta=1;
+    GGDKT(3,:)=[1 xsi eta xsi*eta xsi^2 eta^2 ];
+
+    xsi=1/2; eta=1/2;
+    GGDKT(4,:)=[1 xsi eta xsi*eta xsi^2 eta^2 ];
+
+    xsi=0; eta=1/2;
+    GGDKT(5,:)=[1 xsi eta xsi*eta xsi^2 eta^2];
+
+    xsi=1/2; eta=0;
+    GGDKT(6,:)=[1 xsi eta xsi*eta xsi^2 eta^2 ];
+    */
 
 }

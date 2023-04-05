@@ -281,11 +281,13 @@ yg=xw(:,2);
 
 
 [ SFm, DxsiSFm,DetaSFm] = LNShapeFunMassDST(xg,yg); 
-error('er')
+
 %
 %---> ax, ay, bx,by are constant for constant h (independednt of î,ç)
 % %%
 [ GGDST,GGDKT] = matrixG();
+error('er')
+
 
 GGin=inv(GGDST);
 GGin2=inv(GGDKT);
