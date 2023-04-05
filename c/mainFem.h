@@ -89,6 +89,9 @@ struct triangleDKT{
     float **SF, **DxsiSF, **DetaSF; //[Ng x 6]
     float *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
 
+    /* output of LNShapeFunMassDST() */
+    float **SFm, **DxsiSFm, **DetaSFm; //[Ng x 3]
+
 
 };
 //
@@ -100,14 +103,14 @@ void TriGaussPoints(int Ng, float xw[Ng][3]);
 
 void BendingStiffness(float E, float v, float tx, float BeSt[3][3]);
 
-//---------------------------
+//--------------------------- 05/04/2023 ADDED
 void TrigElCoefsDKT(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem);
 
 // Calculation of shape functions and their derivatives at gauss points on
 // the parent element
 void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem);
 
-void LNShapeFunMassDST();
+void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem);
 
 // ax, ay, bx,by are constant for constant h (independednt of î,ç)
 void matrixG();
@@ -584,7 +587,7 @@ void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem){
     wingMeshFem->SF = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
     wingMeshFem->DxsiSF = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
     wingMeshFem->DetaSF = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
-    for (int i=0;i<6;i++){
+    for (int i=0;i<Ng;i++){
         wingMeshFem->SF[i] = (float*)malloc(6 *sizeof(float));
         wingMeshFem->DxsiSF[i] = (float*)malloc(6 *sizeof(float));
         wingMeshFem->DetaSF[i] = (float*)malloc(6 *sizeof(float));
@@ -671,5 +674,73 @@ void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem){
             printf("D2etaSF[%d]=%f, ", j,wingMeshFem->D2etaSF[j]);
     }
 #endif
+
+    printf("EXITING LNShapeFunDST...\n\n");
+
+}
+
+void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem){
+    // Ng, xw are given data based on which we will fill up some matrices
+
+
+#if DEBUG    
+    printf("Ng: %d\n", Ng);
+
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<3;j++){
+            printf("xw [%d]:%f,",j,xw[i][j]);
+        }
+        printf("\n");
+    }
+#endif
+
+    // Initialize matrices that are Ng x 3
+    wingMeshFem->SFm = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
+    wingMeshFem->DxsiSFm = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
+    wingMeshFem->DetaSFm = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
+    for (int i=0;i<Ng;i++){
+        wingMeshFem->SFm[i] = (float*)malloc(3 *sizeof(float));
+        wingMeshFem->DxsiSFm[i] = (float*)malloc(3 *sizeof(float));
+        wingMeshFem->DetaSFm[i] = (float*)malloc(3 *sizeof(float));
+    }
+
+    float xg, yg;
+    int i;
+    for (i=0; i<Ng; i++){
+        
+        xg = xw[i][0];
+        yg = xw[i][1];
+
+        wingMeshFem->SFm[i][0]=(1.0-xg-yg); //checked
+        wingMeshFem->SFm[i][1]=xg;//checked
+        wingMeshFem->SFm[i][2]=yg;
+
+        // 1st derivative --> î
+        wingMeshFem->DxsiSFm[i][0]=-1.0; //checked
+        wingMeshFem->DxsiSFm[i][1]=1.0; //checked
+        wingMeshFem->DxsiSFm[i][2]=0.0; //checked
+
+        //1st derivative ç
+        wingMeshFem->DetaSFm[i][0]=-1.0;
+        wingMeshFem->DetaSFm[i][1]=0.0;
+        wingMeshFem->DetaSFm[i][2]=1.0;
+
+    }
+
+#if DEBUG
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<3;j++){
+            //printf("SFm[%d][%d]=%f, ", i,j,wingMeshFem->SFm[i][j] );
+            //printf("DxsiSFm[%d][%d]=%f, ", i,j,wingMeshFem->DxsiSFm[i][j] );
+            printf("DetaSFm[%d][%d]=%f, ", i,j,wingMeshFem->DetaSFm[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+#endif
+
+    printf("EXITING LNShapeFunMassDST...\n\n");
+
 
 }

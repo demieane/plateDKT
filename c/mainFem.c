@@ -66,6 +66,7 @@ int main(int argc, char **argv){
     /* DKT */
     TrigElCoefsDKT(&inDataFem, &wingMeshFem);
 
+
 #if DEBUG
     printf("l23 1: %f, Nelem: %f\n", wingMeshFem.l23[0],wingMeshFem.l23[wingMeshFem.Nelem-1]);
     printf("l31 1: %f, Nelem: %f\n", wingMeshFem.l31[0],wingMeshFem.l31[wingMeshFem.Nelem-1]);
@@ -89,6 +90,8 @@ int main(int argc, char **argv){
 #endif
 
     LNShapeFunDST(Ng, xw, &wingMeshFem);
+
+    LNShapeFunMassDST(Ng, xw, &wingMeshFem);
 
 
    

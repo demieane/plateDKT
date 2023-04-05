@@ -278,10 +278,10 @@ yg=xw(:,2);
 % the parent element
 [ SF,DxsiSF,DetaSF,D2xsiSF,D2xsietaSF,D2etaSF ] = LNShapeFunDST(xg,yg);
 
-error('er')
+
 
 [ SFm, DxsiSFm,DetaSFm] = LNShapeFunMassDST(xg,yg); 
-
+error('er')
 %
 %---> ax, ay, bx,by are constant for constant h (independednt of î,ç)
 % %%
