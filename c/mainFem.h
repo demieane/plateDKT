@@ -3,6 +3,10 @@
 #include <string.h>
 #include <math.h>
 
+//#include <clapacke.h>
+#include <cblas.h> // use -lblas 
+#include <lapack.h> // use -llapack
+
 /* suppress or not execution times (custom profiler) */
 #define DEBUG_ON 0 /*allow printf for DEBUG_ONging purposes*/
 #ifndef DEBUG_ON
@@ -815,9 +819,9 @@ void assignRowArrayMatrixG_DST(int rowID, float xsi, float eta, float **array){
     //}
 
     //printf("\nInside assignRowArrayMatrixG_DST()... \n\n");
-    int I = rowID -1;
+    int i = rowID -1;
     for (int j=0;j<10;j++){
-        array[I][j]=rowMat[j];
+        array[i][j]=rowMat[j];
         //printf("%d, %f, ",j, array[I][j]);
     }
     //printf("\n\n");
@@ -832,9 +836,9 @@ void assignRowArrayMatrixG_DKT(int rowID, float xsi, float eta, float **array){
     //}
 
     //printf("\nInside assignRowArrayMatrixG_DKT()... \n\n");
-    int I = rowID -1;
+    int i = rowID -1;
     for (int j=0;j<6;j++){
-        array[I][j]=rowMat[j];
+        array[i][j]=rowMat[j];
     //    printf("%d, %f, ",j, array[I][j]);
     }
     //printf("\n\n");

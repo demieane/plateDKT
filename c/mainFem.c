@@ -1,4 +1,4 @@
-#include"mainFem.h"
+#include "mainFem.h"
 /* 
 Search file for TODO
 Search file for COMMENT
@@ -94,6 +94,60 @@ int main(int argc, char **argv){
     LNShapeFunMassDST(Ng, xw, &wingMeshFem);
 
     matrixG(&wingMeshFem);
+
+
+    printf("Testing BLAS\n\n");
+
+    // EXAMPLE FROM cblas.h
+    float a[2] = {-1, -1};
+    float summ;
+    summ = cblas_sasum(2, a, 1);
+    printf("cblas_sasum: %f",summ);
+
+    printf("\n----------------------------------\n\n");
+    printf("\n         Testing LAPACK\n\n");
+
+    float *AA;
+    int r = 2, c = 2;
+    AA = (float*)malloc((r*c) *sizeof(float));
+    AA[0] = 1.0;    
+    AA[1] = 75.0;     
+    AA[2] = 2.0;
+    AA[3] = 1.0; 
+
+    for (int i = 0; i < r; i++) {
+        for (int j = 0; j < c; j++)
+            printf("%f ", AA[i * c + j]);
+        printf("\n");
+    }
+    printf("\n----------------------------------\n\n");
+    //const int Mrows = 2, Ncols = 2;
+    int *IPIV = (int*)malloc((r) *sizeof(int));
+    int INFO;
+    //!     Factorize A
+    sgetrf_(&r,&c,AA,&r,IPIV,&INFO); //A = PLU
+
+
+    if (INFO==0){
+    //    !       Compute inverse of A
+        int LWORK = 64*c;
+        float *WORK = (float*)malloc((LWORK) *sizeof(float));
+        sgetri_(&r, AA, &c, IPIV, WORK, &LWORK, &INFO);
+    }
+
+    printf("\n INVERSE MATRIX ------------------\n\n");
+    for (int i = 0; i < r; i++) {
+        for (int j = 0; j < c; j++)
+            printf("%f ", AA[i * c + j]);
+        printf("\n");
+    }
+    printf("\n----------------------------------\n\n");
+
+    for (int i = 0; i < r; i++) {
+        printf("%d ", IPIV[i]);
+    }
+    printf("\n%d,----------------------------------\n\n",INFO);
+
 
 #if DEBUG_ON
     printf("from matrixG() \n");

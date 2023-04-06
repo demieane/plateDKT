@@ -1,5 +1,5 @@
->>  gcc mainFem.c -lm
->>  gcc -o mainFem mainFem.c -lm -llapack -lblas
+>>  gcc -o mainFem mainFem.c -lm -L/usr/local/lib -llapack -lblas # <-- local libraries
+>>  gcc -o mainFem mainFem.c -lm -llapack -lblas # <-- vendor libraries
 >>  ./a.out
 
 Also see: https://www.math.utah.edu/software/lapack.html, for example
@@ -8,6 +8,15 @@ pgf77 foo.f -L/usr/local/lib -llapack -lblas    # <-- local libraries
 pgf77 foo.f -llapack -lblas                     # <-- vendor libraries
 
 Check whether lapack library is installed on the system. 
+
+https://netlib.org/blas/
+
+sudo apt-get install build-essential
+sudo apt-get install liblapack*
+sudo apt-get install libblas*
+
+
+
 
 >>  dpkg -L liblapack3
 
