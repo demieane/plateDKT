@@ -286,6 +286,7 @@ yg=xw(:,2);
 %---> ax, ay, bx,by are constant for constant h (independednt of î,ç)
 % %%
 [ GGDST,GGDKT] = matrixG();
+
 error('er')
 
 

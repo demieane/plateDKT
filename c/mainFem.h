@@ -4,7 +4,7 @@
 #include <math.h>
 
 /* suppress or not execution times (custom profiler) */
-#define DEBUG_ON 0 /*allow printf for debugging purposes*/
+#define DEBUG_ON 0 /*allow printf for DEBUG_ONging purposes*/
 #ifndef DEBUG_ON
     #define DEBUG_ON 1
 #endif
@@ -118,7 +118,9 @@ void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem)
 void matrixG(struct triangleDKT *wingMeshFem);
 
 // utilities
-void assignRowArrayMatrixG(int rowID, float xsi, float eta, float **array);
+void assignRowArrayMatrixG_DST(int rowID, float xsi, float eta, float **array);
+//
+void assignRowArrayMatrixG_DKT(int rowID, float xsi, float eta, float **array);
 //---------------------------
 
 /*=========================================================================================*/
@@ -195,7 +197,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
 
     fclose(file);
 
-#if DEBUG_ON
+#if DEBUG_ON_ON
     /* Printing data */
     printf("cRoot = %f\n",inDataFem->cRoot );
 	printf("span  = %f\n",inDataFem->span );
@@ -317,7 +319,7 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDK
         }
     }
 
-#if DEBUG_ON
+#if DEBUG_ON_ON
     for (int i=0;i<3;i++){
     //for (int j=0;j<5;j++){
         int j = wingMeshFem->Nelem-1;
@@ -577,7 +579,7 @@ void TrigElCoefsDKT(struct InDataRecFem *inDataFem, struct triangleDKT *wingMesh
 void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem){
     // Ng, xw are given data based on which we will fill up some matrices
 
-#if DEBUG    
+#if DEBUG_ON    
     printf("Ng: %d\n", Ng);
 
     for (int i=0;i<Ng;i++){
@@ -589,9 +591,9 @@ void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem){
 #endif
 
     // Initialize matrices that are Ng x 6
-    wingMeshFem->SF = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
-    wingMeshFem->DxsiSF = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
-    wingMeshFem->DetaSF = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
+    wingMeshFem->SF = (float**)malloc(Ng *sizeof(float*)); // pointer array with Ng rows
+    wingMeshFem->DxsiSF = (float**)malloc(Ng *sizeof(float*)); // pointer array with Ng rows
+    wingMeshFem->DetaSF = (float**)malloc(Ng *sizeof(float*)); // pointer array with Ng rows
     for (int i=0;i<Ng;i++){
         wingMeshFem->SF[i] = (float*)malloc(6 *sizeof(float));
         wingMeshFem->DxsiSF[i] = (float*)malloc(6 *sizeof(float));
@@ -629,7 +631,7 @@ void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem){
         wingMeshFem->DetaSF[i][5]=-4.0*xg; 
     }
 
-#if DEBUG
+#if DEBUG_ON
     for (int i=0;i<Ng;i++){
         for (int j=0;j<6;j++){
             //printf("SF[%d][%d]=%f, ", i,j,wingMeshFem->SF[i][j] );
@@ -672,7 +674,7 @@ void LNShapeFunDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem){
     wingMeshFem->D2etaSF[4]=-8.0;
     wingMeshFem->D2etaSF[5]=0.0;
 
-#if DEBUG
+#if DEBUG_ON
     for (int j=0;j<6;j++){
             //printf("D2xsiSF[%d]=%f, ", j,wingMeshFem->D2xsiSF[j]);
             //printf("D2xsietaSF[%d]=%f, ", j,wingMeshFem->D2xsietaSF[j]);
@@ -688,7 +690,7 @@ void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem)
     // Ng, xw are given data based on which we will fill up some matrices
 
 
-#if DEBUG    
+#if DEBUG_ON    
     printf("Ng: %d\n", Ng);
 
     for (int i=0;i<Ng;i++){
@@ -700,9 +702,9 @@ void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem)
 #endif
 
     // Initialize matrices that are Ng x 3
-    wingMeshFem->SFm = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
-    wingMeshFem->DxsiSFm = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
-    wingMeshFem->DetaSFm = (float**)malloc(Ng *sizeof(float)); // pointer array with Ng rows
+    wingMeshFem->SFm = (float**)malloc(Ng *sizeof(float*)); // pointer array with Ng rows
+    wingMeshFem->DxsiSFm = (float**)malloc(Ng *sizeof(float*)); // pointer array with Ng rows
+    wingMeshFem->DetaSFm = (float**)malloc(Ng *sizeof(float*)); // pointer array with Ng rows
     for (int i=0;i<Ng;i++){
         wingMeshFem->SFm[i] = (float*)malloc(3 *sizeof(float));
         wingMeshFem->DxsiSFm[i] = (float*)malloc(3 *sizeof(float));
@@ -732,7 +734,7 @@ void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem)
 
     }
 
-#if DEBUG
+#if DEBUG_ON
     for (int i=0;i<Ng;i++){
         for (int j=0;j<3;j++){
             //printf("SFm[%d][%d]=%f, ", i,j,wingMeshFem->SFm[i][j] );
@@ -752,40 +754,39 @@ void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem)
 
 void matrixG(struct triangleDKT *wingMeshFem){
 
-    float **GGDST;//, **GGDKT; //[10 x 10]  
-    int M=10;//DST
-    int N=10;
-
-    // Allocate memory for **GGDST, matrix 10 x 10 
-    wingMeshFem->GGDST = (float**)malloc(10 *sizeof(float)); // pointer array with M rows
-    for (int i=0;i<M;i++){
-        wingMeshFem->GGDST[i] = (float*)malloc(N *sizeof(float));
+    int r = 10, c = 10, i, j;
+    float xsi, eta, rowID;
+ 
+    wingMeshFem->GGDST = (float**)malloc(r * sizeof(float*));
+    for (i = 0; i < r; i++){
+        wingMeshFem->GGDST[i] = (float*)malloc(c * sizeof(float));
     }
 
-    printf("from matrixG() \n");
-    for (int i=0;i<7;i++){
-        for (int j=0;j<10;j++){
-            wingMeshFem->GGDST[i][j] = 99.0;
-            printf("%f, ", wingMeshFem->GGDST[i][j]);
+    // Note that arr[i][j] is same as *(*(arr+i)+j)
+    for (i = 0; i < r; i++){
+        for (j = 0; j < c; j++){
+                wingMeshFem->GGDST[i][j] = 0.0;
+                //printf("%f, ", wingMeshFem->GGDST[i][j]);
         }
-        printf("\n\n");
+        //printf("\n\n");
     }
 
-    // Allocate memory for **GGDKT matrix 6 x 6 
-    /*
-    wingMeshFem->GGDKT = (float**)malloc(N *sizeof(float)); // pointer array with 6 rows
-    for (int i=0;i<N;i++){
-        wingMeshFem->GGDKT[i] = (float*)malloc(N *sizeof(float));
+    r = 6; c = 6;
+    wingMeshFem->GGDKT = (float**)malloc(r * sizeof(float*));
+    for (i = 0; i < r; i++){
+        wingMeshFem->GGDKT[i] = (float*)malloc(c * sizeof(float));
     }
-    */
 
-    float xsi;//=0.0;
-    float eta;//=0.0;
-    int rowID;// = 1;
+    // Note that arr[i][j] is same as *(*(arr+i)+j)
+    for (i = 0; i < r; i++){
+        for (j = 0; j < c; j++){
+                wingMeshFem->GGDKT[i][j] = 0.0;
+                //printf("%f, ", wingMeshFem->GGDKT[i][j]);
+        }
+        //printf("\n\n");
+    }
 
-
-    assignRowArrayMatrixG(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDST);
-    /*
+    assignRowArrayMatrixG_DST(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDST);
     assignRowArrayMatrixG_DST(rowID = 2.0, xsi=1.0, eta = 0.0, wingMeshFem->GGDST);
     assignRowArrayMatrixG_DST(rowID = 3.0, xsi=0.0, eta = 1.0, wingMeshFem->GGDST);
     assignRowArrayMatrixG_DST(rowID = 4.0, xsi=(1.0/3.0), eta = (1.0/3.0), wingMeshFem->GGDST);
@@ -795,47 +796,46 @@ void matrixG(struct triangleDKT *wingMeshFem){
     assignRowArrayMatrixG_DST(rowID = 8.0, xsi=0.0, eta = (1.0/3.0), wingMeshFem->GGDST);
     assignRowArrayMatrixG_DST(rowID = 9.0, xsi=(1.0/3.0), eta = 0.0, wingMeshFem->GGDST);
     assignRowArrayMatrixG_DST(rowID = 10.0, xsi=(2.0/3.0), eta = 0.0, wingMeshFem->GGDST);
-    */
- 
-    /*
-    xsi=0; eta=0;
-    GGDKT(1,:)=[1 xsi eta xsi*eta xsi^2 eta^2];
-
-    xsi=1; eta=0;
-    GGDKT(2,:)=[1 xsi eta xsi*eta xsi^2 eta^2 ];
-
-    xsi=0; eta=1;
-    GGDKT(3,:)=[1 xsi eta xsi*eta xsi^2 eta^2 ];
-
-    xsi=1/2; eta=1/2;
-    GGDKT(4,:)=[1 xsi eta xsi*eta xsi^2 eta^2 ];
-
-    xsi=0; eta=1/2;
-    GGDKT(5,:)=[1 xsi eta xsi*eta xsi^2 eta^2];
-
-    xsi=1/2; eta=0;
-    GGDKT(6,:)=[1 xsi eta xsi*eta xsi^2 eta^2 ];
-    */
-
+    //
+    assignRowArrayMatrixG_DKT(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 2.0, xsi=1.0, eta = 0.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 3.0, xsi=0.0, eta = 1.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 4.0, xsi=(1.0/2.0), eta = (1.0/2.0), wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 5.0, xsi=0.0, eta = (1.0/2.0), wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 6.0, xsi=(1.0/2.0), eta = 0.0, wingMeshFem->GGDKT);
 }
 
-void assignRowArrayMatrixG(int rowID, float xsi, float eta, float **array){
+void assignRowArrayMatrixG_DST(int rowID, float xsi, float eta, float **array){
 
     float rowMat[10] = {1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2),
      pow(xsi,2)*eta, pow(eta,2)*xsi, pow(xsi,3), pow(eta,3)};
 
-    for (int i=0;i<10;i++){
-        printf("%f, ", rowMat[i]);
-    }
+    //for (int i=0;i<10;i++){
+    //    printf("%f, ", rowMat[i]);
+    //}
 
-
-    printf("Inside assignRowArrayMatrixG_DST()... \n\n");
+    //printf("\nInside assignRowArrayMatrixG_DST()... \n\n");
     int I = rowID -1;
     for (int j=0;j<10;j++){
         array[I][j]=rowMat[j];
-        printf("%d, %f, ",j, array[I][j]);
+        //printf("%d, %f, ",j, array[I][j]);
     }
-    printf("\n\n");
+    //printf("\n\n");
+}
 
+void assignRowArrayMatrixG_DKT(int rowID, float xsi, float eta, float **array){
 
+    float rowMat[6] = {1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2)};
+
+    //for (int i=0;i<6;i++){
+    //    printf("%f, ", rowMat[i]);
+    //}
+
+    //printf("\nInside assignRowArrayMatrixG_DKT()... \n\n");
+    int I = rowID -1;
+    for (int j=0;j<6;j++){
+        array[I][j]=rowMat[j];
+    //    printf("%d, %f, ",j, array[I][j]);
+    }
+    //printf("\n\n");
 }

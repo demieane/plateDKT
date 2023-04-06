@@ -42,7 +42,7 @@ int main(int argc, char **argv){
     float xw[Ng][3]; // {xg,yg,wg}
     TriGaussPoints(Ng, xw);
 
-//#if DEBUG
+//#if DEBUG_ON
     for (int i=0;i<Ng;i++){
         for (int j=0;j<3;j++){
             printf("MAIN: xw [%d]:%f,",j,xw[i][j]);
@@ -67,7 +67,7 @@ int main(int argc, char **argv){
     TrigElCoefsDKT(&inDataFem, &wingMeshFem);
 
 
-#if DEBUG
+#if DEBUG_ON
     printf("l23 1: %f, Nelem: %f\n", wingMeshFem.l23[0],wingMeshFem.l23[wingMeshFem.Nelem-1]);
     printf("l31 1: %f, Nelem: %f\n", wingMeshFem.l31[0],wingMeshFem.l31[wingMeshFem.Nelem-1]);
     printf("l12 1: %f, Nelem: %f\n", wingMeshFem.l12[0],wingMeshFem.l12[wingMeshFem.Nelem-1]);
@@ -95,7 +95,7 @@ int main(int argc, char **argv){
 
     matrixG(&wingMeshFem);
 
-/*
+
     printf("from matrixG() \n");
     for (int i=0;i<10;i++){
         for (int j=0;j<10;j++){
@@ -103,14 +103,21 @@ int main(int argc, char **argv){
         }
         printf("\n\n");
     }
+    printf("from matrixG() \n");
+    for (int i=0;i<6;i++){
+        for (int j=0;j<6;j++){
+            printf("%f, ", wingMeshFem.GGDKT[i][j]);
+        }
+        printf("\n\n");
+    }
 
-*/
+
    
 
 
     
 
-#if DEBUG
+#if DEBUG_ON
     for (int i=0;i<3;i++){
         //for (int j=0;j<5;j++){
             int j = wingMeshFem.NN-1;
