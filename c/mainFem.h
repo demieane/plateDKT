@@ -116,6 +116,9 @@ void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem)
 
 // ax, ay, bx,by are constant for constant h (independednt of î,ç)
 void matrixG(struct triangleDKT *wingMeshFem);
+
+// utilities
+void assignRowArrayMatrixG(int rowID, float xsi, float eta, float **array);
 //---------------------------
 
 /*=========================================================================================*/
@@ -749,51 +752,51 @@ void LNShapeFunMassDST(int Ng, float xw[Ng][3], struct triangleDKT *wingMeshFem)
 
 void matrixG(struct triangleDKT *wingMeshFem){
 
-    float **GGDST, **GGDKT; //[10 x 10]  
-    int M=10,N=10;
+    float **GGDST;//, **GGDKT; //[10 x 10]  
+    int M=10;//DST
+    int N=10;
 
-    // Initialize matrices that are Ng x 3
-    wingMeshFem->GGDST = (float**)malloc(M *sizeof(float)); // pointer array with M=10 rows
-    wingMeshFem->GGDKT = (float**)malloc(M *sizeof(float)); // pointer array with M=10 rows
+    // Allocate memory for **GGDST, matrix 10 x 10 
+    wingMeshFem->GGDST = (float**)malloc(10 *sizeof(float)); // pointer array with M rows
     for (int i=0;i<M;i++){
-        wingMeshFem->SFm[i] = (float*)malloc(N *sizeof(float));
-        wingMeshFem->DxsiSFm[i] = (float*)malloc(N *sizeof(float));
-        wingMeshFem->DetaSFm[i] = (float*)malloc(N *sizeof(float));
+        wingMeshFem->GGDST[i] = (float*)malloc(N *sizeof(float));
     }
 
-    float xsi=0.0;
-    float eta=0.0;
+    printf("from matrixG() \n");
+    for (int i=0;i<7;i++){
+        for (int j=0;j<10;j++){
+            wingMeshFem->GGDST[i][j] = 99.0;
+            printf("%f, ", wingMeshFem->GGDST[i][j]);
+        }
+        printf("\n\n");
+    }
+
+    // Allocate memory for **GGDKT matrix 6 x 6 
     /*
-    GGDST(1,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
-
-    xsi=1; eta=0;
-    GGDST(2,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
-
-    xsi=0; eta=1;
-    GGDST(3,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
-
-    xsi=1/3; eta=1/3;
-    GGDST(4,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
-
-    xsi=2/3; eta=1/3;
-    GGDST(5,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
-
-    xsi=1/3; eta=2/3;
-    GGDST(6,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
-
-    xsi=0; eta=2/3;
-    GGDST(7,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
-
-    xsi=0; eta=1/3;
-    GGDST(8,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
-
-    xsi=1/3; eta=0;
-    GGDST(9,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
-
-    xsi=2/3; eta=0;
-    GGDST(10,:)=[1 xsi eta xsi*eta xsi^2 eta^2 xsi^2*eta eta^2*xsi xsi^3 eta^3];
+    wingMeshFem->GGDKT = (float**)malloc(N *sizeof(float)); // pointer array with 6 rows
+    for (int i=0;i<N;i++){
+        wingMeshFem->GGDKT[i] = (float*)malloc(N *sizeof(float));
+    }
     */
 
+    float xsi;//=0.0;
+    float eta;//=0.0;
+    int rowID;// = 1;
+
+
+    assignRowArrayMatrixG(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDST);
+    /*
+    assignRowArrayMatrixG_DST(rowID = 2.0, xsi=1.0, eta = 0.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 3.0, xsi=0.0, eta = 1.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 4.0, xsi=(1.0/3.0), eta = (1.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 5.0, xsi=(2.0/3.0), eta = (1.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 6.0, xsi=(1.0/3.0), eta = (2.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 7.0, xsi=0.0, eta = (2.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 8.0, xsi=0.0, eta = (1.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 9.0, xsi=(1.0/3.0), eta = 0.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 10.0, xsi=(2.0/3.0), eta = 0.0, wingMeshFem->GGDST);
+    */
+ 
     /*
     xsi=0; eta=0;
     GGDKT(1,:)=[1 xsi eta xsi*eta xsi^2 eta^2];
@@ -813,5 +816,26 @@ void matrixG(struct triangleDKT *wingMeshFem){
     xsi=1/2; eta=0;
     GGDKT(6,:)=[1 xsi eta xsi*eta xsi^2 eta^2 ];
     */
+
+}
+
+void assignRowArrayMatrixG(int rowID, float xsi, float eta, float **array){
+
+    float rowMat[10] = {1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2),
+     pow(xsi,2)*eta, pow(eta,2)*xsi, pow(xsi,3), pow(eta,3)};
+
+    for (int i=0;i<10;i++){
+        printf("%f, ", rowMat[i]);
+    }
+
+
+    printf("Inside assignRowArrayMatrixG_DST()... \n\n");
+    int I = rowID -1;
+    for (int j=0;j<10;j++){
+        array[I][j]=rowMat[j];
+        printf("%d, %f, ",j, array[I][j]);
+    }
+    printf("\n\n");
+
 
 }
