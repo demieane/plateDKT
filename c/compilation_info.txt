@@ -1,2 +1,32 @@
-gcc mainFem.C -lm
-./a.out
+>>  gcc mainFem.c -lm
+>>  gcc -o mainFem mainFem.c -lm -llapack -lblas
+>>  ./a.out
+
+Also see: https://www.math.utah.edu/software/lapack.html, for example
+
+pgf77 foo.f -L/usr/local/lib -llapack -lblas    # <-- local libraries
+pgf77 foo.f -llapack -lblas                     # <-- vendor libraries
+
+Check whether lapack library is installed on the system. 
+
+>>  dpkg -L liblapack3
+
+BLAS (Basic Linear Algebra Subprograms) is a set of definitions of common operations 
+on vectors and (dense) matrices. LAPACK is the Linear Algebra Package 
+that builds on BLAS and that offers numerical algorithms such as 
+linear system solving and eigenvalue calculations.
+
+BLAS is a collection of low-level matrix and vector arithmetic operations
+ (“multiply a vector by a scalar”, “multiply two matrices and add to a third matrix”, etc ...).
+
+LAPACK is a collection of higher-level linear algebra operations. 
+Things like matrix factorizations (LU, LLt, QR, SVD, Schur, etc) that are used to do things
+like “find the eigenvalues of a matrix”, or “find the singular values of a matrix”, 
+or “solve a linear system”. LAPACK is built on top of the BLAS; many users of LAPACK 
+only use the LAPACK interfaces and never need to be aware of the BLAS at all. 
+LAPACK is generally compiled separately from the BLAS, and can use whatever 
+highly-optimized BLAS implementation you have available.
+
+ATLAS is a portable reasonably good implementation of the BLAS 
+interfaces, that also implements a few of the most commonly used LAPACK operations.
+

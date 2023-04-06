@@ -287,12 +287,11 @@ yg=xw(:,2);
 % %%
 [ GGDST,GGDKT] = matrixG();
 
-error('er')
-
 
 GGin=inv(GGDST);
 GGin2=inv(GGDKT);
 
+error('er')
 % error('er')
 % for i=1:Ng;
 %     

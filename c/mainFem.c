@@ -42,14 +42,14 @@ int main(int argc, char **argv){
     float xw[Ng][3]; // {xg,yg,wg}
     TriGaussPoints(Ng, xw);
 
-//#if DEBUG_ON
+#if DEBUG_ON
     for (int i=0;i<Ng;i++){
         for (int j=0;j<3;j++){
             printf("MAIN: xw [%d]:%f,",j,xw[i][j]);
         }
         printf("\n");
     }
-//#endif
+#endif
 
     /* Bending stiffness for each triangle - using python??? or constant thickness?? */
     system(command);
@@ -95,7 +95,7 @@ int main(int argc, char **argv){
 
     matrixG(&wingMeshFem);
 
-
+#if DEBUG_ON
     printf("from matrixG() \n");
     for (int i=0;i<10;i++){
         for (int j=0;j<10;j++){
@@ -110,7 +110,7 @@ int main(int argc, char **argv){
         }
         printf("\n\n");
     }
-
+#endif
 
    
 
