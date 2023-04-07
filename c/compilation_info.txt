@@ -39,3 +39,23 @@ highly-optimized BLAS implementation you have available.
 ATLAS is a portable reasonably good implementation of the BLAS 
 interfaces, that also implements a few of the most commonly used LAPACK operations.
 
+Also
+
+nvcc -o mainFem mainFem.c -lm -llapack -lblas
+
+gcc -o mainFem2 mainFem.c femFunctions.c -lm -lblas -llapack
+
+
+Once-Only Headers
+
+If a header file happens to be included twice, the compiler will 
+process its contents twice and it will result in an error. 
+The standard way to prevent this is to enclose the entire real 
+contents of the file in a conditional, like this −
+
+#ifndef HEADER_FILE
+#define HEADER_FILE
+
+the entire header file file
+
+#endif

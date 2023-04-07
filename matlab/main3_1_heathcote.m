@@ -304,7 +304,6 @@ inv(AA)
 % [L,U,P] = lu(AA);
 % AA = P'*L*U
 
-
 GGin=inv(GGDST);
 GGin2=inv(GGDKT);
 
