@@ -193,13 +193,38 @@ int main(int argc, char **argv){
     //************************************************************************************
     printf("%f =>  P_load in [Pa]", inDataFem.P_load);
 
+    /*
+    initialize structure that contains all the arrays
+    needed for the final global matrix assembly
+    */
+    struct femArraysDKT elemFemArr;
+
+    float **arrIn; 
+    allocate2Darray(2, 2, &arrIn); // TODO
+    //printf("\n main START: address of arrin = %d\n", &arrIn);
+
+    printf("arrIn: %f:",arrIn[0][0]);
+
+    //allocate2Darray(3, 9, elemFemArr.Bb);
+
+    //if(elemFemArr.Bb == NULL){
+    //    printf("Memory allocation failed. allocate2Darray()");
+    //}
+
+    //printf("%f:",elemFemArr.Bb[0][0]);
+
+    
+    /*
+    //for each triangle in the mesh
     for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
-        //for each triangle in the mesh
+        // for each gauss point
+        for (int ii = 0; ii<Ng; ii++){
+
+        }
 
 
-
-        
     }
+    */
     
 
     //************************************************************************************

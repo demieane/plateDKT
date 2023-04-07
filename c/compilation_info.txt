@@ -59,3 +59,7 @@ contents of the file in a conditional, like this −
 the entire header file file
 
 #endif
+
+3. What graphics card is available in the system (linux)?
+
+>> lspci | grep VGA

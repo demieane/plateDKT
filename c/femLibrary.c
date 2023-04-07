@@ -65,3 +65,34 @@ void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut){
     printf("         Inverse 2D OK..          \n");
     printf("------------------------------------\n");
 }
+
+// Allocate 2-D array based on double pointer type
+void allocate2Darray(int rows, int cols, float ***arrIn){
+
+    int i, j;
+
+    // allocate local 2D array and pass the pointer to 
+    // the pointer to double pointer, otherwise the main
+    // can't access the memory.
+    float **arrTemp = (float**)malloc(rows * sizeof(float*));
+    if(arrIn == NULL){
+        printf("Memory allocation failed. allocate2Darray()");
+        return;
+    }
+
+    for (i = 0; i < rows; i++){
+        arrTemp[i] = (float*)malloc(cols * sizeof(float));
+    }
+
+    printf("\nInside allocate2Darray()..\n");
+    // Note that arr[i][j] is same as *(*(arr+i)+j)
+    for (i = 0; i < rows; i++){
+        for (j = 0; j < cols; j++){
+            arrTemp[i][j] = 99.0;
+            printf("%f,",arrTemp[i][j]);
+        } 
+        printf("\n");
+    }
+
+    *arrIn = arrTemp; // this will do?
+}

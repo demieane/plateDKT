@@ -114,7 +114,7 @@ struct femArraysDKT{
     float **kloc, **mloc, **floc; //[9 x 9]
     float **Hxx, **Hyy; // [6 x 9] overwrite rotationMass2()
     float *Hx, *Hy; // [1 x 9] from ShapeFunDKT2()
-    float *Bb; // [3 x 9] from ShapeFunDKT2()
+    float **Bb; // [3 x 9] from ShapeFunDKT2()
     float *LW; // [1 x 9] from pseudoMassDKT()
     float **Mg, **Kg; // [81 x Nelem] pre-assembly matrices
 };
@@ -147,6 +147,8 @@ void assignRowArrayMatrixG_DKT(int rowID, float xsi, float eta, float **array);
 
 //---------------------------07/04/2023 ADDED
 void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut);
+//
+void allocate2Darray(int rows, int cols, float ***arrIn);
 
 
 /*=========================================================================================*/
