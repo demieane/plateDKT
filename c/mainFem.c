@@ -142,7 +142,7 @@ int main(int argc, char **argv){
         printf("\n");
     }
 #endif
-s
+
 
 #if DEBUG_ON
     printf("from matrixG() \n");
