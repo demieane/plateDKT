@@ -102,6 +102,7 @@ struct triangleDKT{
     float **SFm, **DxsiSFm, **DetaSFm; //[Ng x 3]
 
     float **GGDST, **GGDKT; //[10 x 10]  
+    float **GGin, **GGin2; //inverse of above
 
 
 };
@@ -130,7 +131,10 @@ void matrixG(struct triangleDKT *wingMeshFem);
 void assignRowArrayMatrixG_DST(int rowID, float xsi, float eta, float **array);
 //
 void assignRowArrayMatrixG_DKT(int rowID, float xsi, float eta, float **array);
-//---------------------------
+
+//---------------------------07/04/2023 ADDED
+void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut);
+
 
 /*=========================================================================================*/
 /* Definition of the functions follows */
@@ -767,14 +771,17 @@ void matrixG(struct triangleDKT *wingMeshFem){
     float xsi, eta, rowID;
  
     wingMeshFem->GGDST = (float**)malloc(r * sizeof(float*));
+    wingMeshFem->GGin = (float**)malloc(r * sizeof(float*));//inverse matrix
     for (i = 0; i < r; i++){
         wingMeshFem->GGDST[i] = (float*)malloc(c * sizeof(float));
+        wingMeshFem->GGin[i] = (float*)malloc(c * sizeof(float));
     }
 
     // Note that arr[i][j] is same as *(*(arr+i)+j)
     for (i = 0; i < r; i++){
         for (j = 0; j < c; j++){
                 wingMeshFem->GGDST[i][j] = 0.0;
+                wingMeshFem->GGin[i][j] = 0.0;
                 //printf("%f, ", wingMeshFem->GGDST[i][j]);
         }
         //printf("\n\n");
@@ -782,14 +789,17 @@ void matrixG(struct triangleDKT *wingMeshFem){
 
     r = 6; c = 6;
     wingMeshFem->GGDKT = (float**)malloc(r * sizeof(float*));
+    wingMeshFem->GGin2 = (float**)malloc(r * sizeof(float*));
     for (i = 0; i < r; i++){
         wingMeshFem->GGDKT[i] = (float*)malloc(c * sizeof(float));
+        wingMeshFem->GGin2[i] = (float*)malloc(c * sizeof(float));
     }
 
     // Note that arr[i][j] is same as *(*(arr+i)+j)
     for (i = 0; i < r; i++){
         for (j = 0; j < c; j++){
                 wingMeshFem->GGDKT[i][j] = 0.0;
+                wingMeshFem->GGin2[i][j] = 0.0;
                 //printf("%f, ", wingMeshFem->GGDKT[i][j]);
         }
         //printf("\n\n");
@@ -814,6 +824,45 @@ void matrixG(struct triangleDKT *wingMeshFem){
     assignRowArrayMatrixG_DKT(rowID = 6.0, xsi=(1.0/2.0), eta = 0.0, wingMeshFem->GGDKT);
 }
 
+/* 
+COMMENT: The following functions are not dependent on my new datatypes! Therefore,
+they can be included without the structure declaration in a separate .c file! That is why in the BEM code
+the DATASTRUCTURES are defined in multiple destinations within preprocessor directives.
+*/
+void assignRowArrayMatrixG_DST(int rowID, float xsi, float eta, float **array){
+
+    float rowMat[10] = {1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2),
+     pow(xsi,2)*eta, pow(eta,2)*xsi, pow(xsi,3), pow(eta,3)};
+
+    //for (int i=0;i<10;i++){
+    //    printf("%f, ", rowMat[i]);
+    //}
+
+    //printf("\nInside assignRowArrayMatrixG_DST()... \n\n");
+    int i = rowID -1;
+    for (int j=0;j<10;j++){
+        array[i][j]=rowMat[j];
+        //printf("%d, %f, ",j, array[I][j]);
+    }
+    //printf("\n\n");
+}
+
+void assignRowArrayMatrixG_DKT(int rowID, float xsi, float eta, float **array){
+
+    float rowMat[6] = {1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2)};
+
+    //for (int i=0;i<6;i++){
+    //    printf("%f, ", rowMat[i]);
+    //}
+
+    //printf("\nInside assignRowArrayMatrixG_DKT()... \n\n");
+    int i = rowID -1;
+    for (int j=0;j<6;j++){
+        array[i][j]=rowMat[j];
+    //    printf("%d, %f, ",j, array[I][j]);
+    }
+    //printf("\n\n");
+}
 
 
 

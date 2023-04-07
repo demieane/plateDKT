@@ -110,10 +110,7 @@ int main(int argc, char **argv){
 
     //int rows, cols;
     squareMatInverse2(10, 10, wingMeshFem.GGDST, wingMeshFem.GGin);
-    squareMatInverse2(6, 6, wingMeshFem.GGDKT, wingMeshFem.GGin2);
 
-
-#if DEBUG_ON
     for (int i=0;i<10;i++){
         for (int j=0;j<10;j++){
             printf("%f, ",wingMeshFem.GGDST[i][j]);
@@ -128,21 +125,50 @@ int main(int argc, char **argv){
         printf("\n");
     }
 
-    for (int i=0;i<6;i++){
-        for (int j=0;j<6;j++){
-            printf("%f, ",wingMeshFem.GGDKT[i][j]);
-        }
-        printf("\n\n");
-    }
+/*
+    printf("\n----------------------------------\n\n");
+    printf("\n         Testing LAPACK\n\n");
 
-    for (int i=0;i<6;i++){
-        for (int j=0;j<6;j++){
-            printf("%f, ",wingMeshFem.GGin2[i][j]);
-        }
+    float *AA;
+    int r = 2, c = 2;
+    AA = (float*)malloc((r*c) *sizeof(float));
+    AA[0] = 1.0;    
+    AA[1] = 75.0;     
+    AA[2] = 2.0;
+    AA[3] = 1.0; 
+
+    for (int i = 0; i < r; i++) {
+        for (int j = 0; j < c; j++)
+            printf("%f ", AA[i * c + j]);
         printf("\n");
     }
-#endif
-s
+    printf("\n----------------------------------\n\n");
+    //const int Mrows = 2, Ncols = 2;
+    int *IPIV = (int*)malloc((r) *sizeof(int));
+    int INFO;
+    //!     Factorize A
+    sgetrf_(&r,&c,AA,&r,IPIV,&INFO); //A = PLU
+
+    if (INFO==0){
+    //    !       Compute inverse of A
+        int LWORK = 64*c;
+        float *WORK = (float*)malloc((LWORK) *sizeof(float));
+        sgetri_(&r, AA, &c, IPIV, WORK, &LWORK, &INFO);
+    }
+
+    printf("\n INVERSE MATRIX ------------------\n\n");
+    for (int i = 0; i < r; i++) {
+        for (int j = 0; j < c; j++)
+            printf("%f ", AA[i * c + j]);
+        printf("\n");
+    }
+    printf("\n----------------------------------\n\n");
+
+    for (int i = 0; i < r; i++) {
+        printf("%d ", IPIV[i]);
+    }
+    printf("\n%d,----------------------------------\n\n",INFO);
+*/
 
 #if DEBUG_ON
     printf("from matrixG() \n");

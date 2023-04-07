@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "mainfem.h": "c"
+        "mainfem.h": "c",
+        "cblas.h": "c"
     }
 }
