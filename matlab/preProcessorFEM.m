@@ -131,6 +131,8 @@ fwrite(file, length(BBnodes), 'int');
 fwrite(file, BBnodes, 'int');
 fwrite(file, length(Bdofs), 'int');
 fwrite(file, Bdofs, 'int');
+
+fwrite(file, P_load, precision);
 fclose(file);
 
 system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin')

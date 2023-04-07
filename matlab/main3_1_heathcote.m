@@ -20,6 +20,9 @@
 clear all;
 close all;
 clc;
+
+tstart = tic;   
+
 debugOn=1;
 %==========================================================================
 % INFORMATION ABOUT MESH GENERATION USING pdeModeler
@@ -243,8 +246,8 @@ d=1;
 [~,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, debugOn, importFromFile,...
     fluid_dens, Uvel, h, d);
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
-
-BeSt2(:,:,1)
+% 
+% BeSt2(:,:,1)
 
 % [BeSt]=BendingStiffness(E,v,h); %[3,3] matrix
 % Ds=sc*G*h*eye(2,2);
@@ -307,7 +310,9 @@ inv(AA)
 GGin=inv(GGDST);
 GGin2=inv(GGDKT);
 
-error('er')
+telapsed = toc(tstart)
+
+% error('er')
 % error('er')
 % for i=1:Ng;
 %     
@@ -333,7 +338,7 @@ end
 % error('pp')
 Fglob=zeros(GEN,1);
 
-for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
+for kk=1:1%Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
   
 % %% Mass matrix
     [ Hm,HW] = massHmDKT(kk,l23,l31,l12,C4,C5,C6,S4,S5,S6,GGin);
@@ -351,10 +356,12 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     for ii=1:Ng % for each gauss point
     %% Stiffness
 %        [Hx, Hy, Hx_xsi, Hx_eta,Hy_xsi, Hy_eta, Bb ] = ShapeFunDKT(ii,kk,a4,a5,a6,b4,b5,b6,c4,c5,c6,d4,d5,d6,e4,e5,e6,Area,SF,DxsiSF,DetaSF,y31,x31,y12,x12) ;
-      [Hx, Hy, Hx_xsi,Hx_eta,Hy_xsi, Hy_eta, Bb ] = ShapeFunDKT2(ii,kk,C4,C5,C6,S4,S5,S6,Area, SF, DxsiSF,DetaSF,y31,x31,y12,x12,l23,l31,l12);
+      [Hx, Hy, Hx_xsi,Hx_eta,Hy_xsi, Hy_eta, Bb ] = ShapeFunDKT2(ii,kk,C4,C5,C6,S4,S5,S6,Area,...
+          SF, DxsiSF,DetaSF,y31,x31,y12,x12,l23,l31,l12);
 %       [Hx1, Hy1, Hx_xsi1, Hx_eta1,Hy_xsi1, Hy_eta1, Bb1 ] = ShapeFunDKT(ii,kk,a4,a5,a6,b4,b5,b6,c4,c5,c6,d4,d5,d6,e4,e5,e6,Area,SF,DxsiSF,DetaSF,y31,x31,y12,x12) ;
        
-       [ Nm, HW,LW,L,HX3,HY3] = pseudoMassDKT(ii,kk,l23,l31,l12,y12,y31,x12,x31,Area,Hm,GGin,GGin2,xg, yg,IEN,x,y,Hx,Hy,SFm,C4,C5,C6,S4,S5,S6,Hxx,Hyy,HW )   ;
+       [ Nm, HW,LW,L,HX3,HY3] = pseudoMassDKT(ii,kk,l23,l31,l12,y12,y31,x12,x31,Area,...
+           Hm,GGin,GGin2,xg, yg,IEN,x,y,Hx,Hy,SFm,C4,C5,C6,S4,S5,S6,Hxx,Hyy,HW );
 % %        [ Nm,LW,L] = pseudoMassDKT(ii,kk,l23,l31,l12,y12,y31,x12,x31,Area,Hm,GGin,GGin2,xg, yg,IEN,x,y,Hx,Hy,SFm,C4,C5,C6,S4,S5,S6,HW)   ;
 
        % we give one more dimension 
@@ -389,7 +396,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     %***********************************
 end
 
-% error('oo')
+error('oo')
 %% Global assembly (uses the LM)
 % COMMENT: The boundary conditions are enforced as extra equations
 % in the sense of constraints in the present version

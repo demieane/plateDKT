@@ -15,6 +15,7 @@
 
 //***********************************************************************************
 // Interface for lapack functions
+// sgetrf_() & sgetri_(): combination for inverse
 //***********************************************************************************
 
 void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut){

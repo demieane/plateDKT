@@ -61,6 +61,8 @@ struct InDataRecFem{
     int *BBnodes; /* id of nodes affected by boundary conditions*/
     unsigned int sizeBdofs;
     int *Bdofs; /* global numbering of dofs affected by boundary conditions*/
+
+    float P_load; // Pa: positive values point towards the positive Z-axis (reverse for ANSYS) 
 };
 
 struct triangleDKT{
@@ -103,9 +105,20 @@ struct triangleDKT{
 
     float **GGDST, **GGDKT; //[10 x 10]  
     float **GGin, **GGin2; //inverse of above
-
-
 };
+
+struct femArraysDKT{
+    /* global intermediate matrices Mg, Kg, Fglob */
+    float *Fglob; //[GEN x 1] global
+    float **Hm, **HW; //[10 x 9] overwrite massHmDKT()
+    float **kloc, **mloc, **floc; //[9 x 9]
+    float **Hxx, **Hyy; // [6 x 9] overwrite rotationMass2()
+    float *Hx, *Hy; // [1 x 9] from ShapeFunDKT2()
+    float *Bb; // [3 x 9] from ShapeFunDKT2()
+    float *LW; // [1 x 9] from pseudoMassDKT()
+    float **Mg, **Kg; // [81 x Nelem] pre-assembly matrices
+};
+
 //
 void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem );
 //
@@ -207,6 +220,8 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
         //printf("i=%d,Bdofs[i]=%d\n", i,inDataFem->Bdofs[i]);
     }
     //printf("BBnodes = %d, Bdofs=%d\n",inDataFem->sizeBBnodes, inDataFem->sizeBdofs );
+
+    fread(&(inDataFem->P_load), sizeof(float) , 1, file);
 
     fclose(file);
 

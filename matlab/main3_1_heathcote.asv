@@ -20,6 +20,9 @@
 clear all;
 close all;
 clc;
+
+tStart = tic;   
+
 debugOn=1;
 %==========================================================================
 % INFORMATION ABOUT MESH GENERATION USING pdeModeler
@@ -287,8 +290,9 @@ yg=xw(:,2);
 % %%
 [GGDST,GGDKT] = matrixG();
 
-AA = [1.0, 2.0;
-      2.0, 1.0]
+AA = [1.0, 75.0;
+      2.0, 1.0];
+inv(AA)
 
 % AA = [ 1.0  1.2  1.4  1.6  1.8  2.0  2.2  2.4  2.6 ;
 %         1.2  1.0  1.2  1.4  1.6  1.8  2.0  2.2  2.4 ;
@@ -300,13 +304,13 @@ AA = [1.0, 2.0;
 %         2.4  2.2  2.0  1.8  1.6  1.4  1.2  1.0  1.2 ;
 %         2.6  2.4  2.2  2.0  1.8  1.6  1.4  1.2  1.0 ];
 
-[L,U,P] = lu(AA);
-AA = P'*L*U
-
+% [L,U,P] = lu(AA);
+% AA = P'*L*U
 
 GGin=inv(GGDST);
 GGin2=inv(GGDKT);
 
+telapsed = toc(tstart)
 error('er')
 % error('er')
 % for i=1:Ng;

@@ -3,6 +3,7 @@ It searches for a file named 'file' in the directory containing the current file
 You can prepend directories to this list with the -I 
 option while compiling your source code. */
 #include "mainFem.h"
+#include <time.h>
 /* 
 Search file for TODO
 Search file for COMMENT
@@ -12,6 +13,11 @@ Search file for COMMENT
 /*  The main program follows. */
 /*=========================================================================================*/
 int main(int argc, char **argv){
+
+    clock_t tstart, tend;
+
+    tstart = clock();
+    /* Do the work. */
 
     struct InDataRecFem inDataFem;
     struct triangleDKT wingMeshFem;
@@ -185,7 +191,15 @@ int main(int argc, char **argv){
     //************************************************************************************
     //  DKT PLATE SOLVER: LOCAL MATRIX (mloc, kloc, floc)
     //************************************************************************************
+    printf("%f =>  P_load in [Pa]", inDataFem.P_load);
 
+    for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
+        //for each triangle in the mesh
+
+
+
+        
+    }
     
 
     //************************************************************************************
@@ -220,6 +234,11 @@ int main(int argc, char **argv){
     //free(wingMeshFem.ID);
     //free(wingMeshFem.IEN);
 
+    tend = clock();
+
+    double cpu_time_used = ((double) (tend-tstart))/ CLOCKS_PER_SEC;
+    printf("\n----\n Elapsed time [s]: %f\n----\n", cpu_time_used);
+    printf("In Matlab the same operations using vectorization take 0.2493 sec.\n");
     return 0;
 }
 
