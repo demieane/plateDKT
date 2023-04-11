@@ -243,15 +243,33 @@ int main(int argc, char **argv){
     //for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
     for (int kk = 0;kk<1;kk++){   
 
+        massHmDKT(kk, &wingMeshFem, &elemFemArr);
 
-        // for each gauss point
-        for (int ii = 0; ii<Ng; ii++){
-
+#if DEBUG_ON
+        printf("\nPrinting HW...(in main)\n");
+        for (int i=0;i<10;i++){
+            for (int j=0;j<9;j++){
+                printf("%f, ", elemFemArr.HW[i][j]);
+            }
+            printf("\n");
         }
+
+        printf("\nPrinting GGin...(in main)\n");
+        for (int i=0;i<10;i++){
+            for (int j=0;j<9;j++){
+                printf("%f, ", wingMeshFem.GGin[i][j]);
+            }
+            printf("\n");
+        }
+    #endif
+        // for each gauss point
+        //for (int ii = 0; ii<Ng; ii++){
+
+        //}
 
 
     }
-    
+
     
 
     //************************************************************************************

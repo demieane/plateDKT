@@ -66,6 +66,75 @@ void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut){
     printf("------------------------------------\n");
 }
 
+void matMatMultiplication2(int rowsA, int colsA, int colsB, float **arrA, float **arrB, float **arrOut){
+    //   SGEMM - perform one of the matrix-matrix operations   
+    //   C := alpha*op( A )*op( B ) + beta*C,
+    //   M number of rows (A)
+    //   N number of columns for (B)
+
+    float alpha = 1.0, beta = 0.0;
+    int rowsB = colsA;
+    //
+    int rowsC = rowsA;
+    int colsC = colsB;
+
+    printf("\n------------------------------------");
+    printf("\nMatMat Mult: [M x P] [P x N]    \n");
+    // assuming that the given arrA, arrB are 2D arrays. 
+    // transform it to 1D- array for lapack functions
+    float *AA;
+    AA = (float*)malloc((rowsA*colsA) *sizeof(float));
+
+    for (int i = 0; i < rowsA; i++) {
+        for (int j = 0; j < colsA; j++){
+            AA[i * colsA + j] = arrA[i][j];
+            //printf("Local: %f, In: %f ", AA[i * cols + j],arrIn[i][j]);
+        } 
+        //printf("\n");
+    }
+
+    float *BB;
+    BB = (float*)malloc((rowsB*colsB) *sizeof(float));
+    for (int i = 0; i < rowsB; i++) {
+        for (int j = 0; j < colsB; j++){
+            BB[i * colsB + j] = arrB[i][j];
+            //printf("Local: %f, In: %f ", AA[i * cols + j],arrIn[i][j]);
+        } 
+        //printf("\n");
+    }
+
+    float *CC;
+    CC = (float*)malloc((rowsC*colsC) *sizeof(float));
+
+    int LDA = colsA; // increment in the array (due to row major order)
+    int LDB = colsB;
+    int LDC = colsC;
+    /*
+    The leading dimension for a two-dimensional array is an 
+    increment that is used to find the starting 
+    point for the matrix elements. (length of the leading dimension - ROW)
+    */
+    cblas_sgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, rowsC, colsC, rowsA,
+     alpha, AA, LDA, BB, LDB, beta, CC, LDC);
+    //cblas_sgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, 10, 9, 10, alpha,
+    //        AA, 10, BB, 9, beta, CC, 9);
+     
+    
+    //printf("\n INVERSE MATRIX ------------------\n\n");
+    for (int i = 0; i < rowsC; i++) {
+        for (int j = 0; j < colsC; j++){
+            arrOut[i][j] = CC[i * colsC+ j];
+            //printf("%f, ",arrOut[i][j]);
+        }
+        //printf("\n");
+    }
+
+    free(AA);
+    free(BB);
+    printf("         Inverse 2D OK..          \n");
+    printf("------------------------------------\n");
+}
+
 // Allocate 2-D array based on double pointer type
 void allocate2Darray(int rows, int cols, float ***arrIn){
 

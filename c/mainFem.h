@@ -154,6 +154,8 @@ void allocate1Darray(int rows, float **arrIn);
 //
 void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
 //
+void matMatMultiplication2(int rowsA, int colsA, int colsB, float **arrA, float **arrB, float **arrOut);
+//
 void rotationMass2();
 //
 void ShapeFunDKT2();
@@ -893,9 +895,75 @@ void assignRowArrayMatrixG_DKT(int rowID, float xsi, float eta, float **array){
 
 void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr){
 
+    elemFemArr->Hm[0][0] = 1.0;// Hm(1,:)
+    elemFemArr->Hm[1][3] = 1.0;// Hm(2,:)
+    elemFemArr->Hm[2][6] = 1.0;// Hm(3,:)
 
+    elemFemArr->Hm[3][0] = (1.0/3.0);// Hm(4,:)
+    elemFemArr->Hm[3][3] = (1.0/3.0);
+    elemFemArr->Hm[3][6] = (1.0/3.0);
+
+    printf("\nPrinting Hm...\n");
+    for (int i=0;i<10;i++){
+        for (int j=0;j<9;j++){
+            printf("%f, ", elemFemArr->Hm[i][j]);
+        }
+        printf("\n");
+    }
+
+    float Hm_5[] = {0.0, 0.0, 0.0,
+     (20.0/27.0), 4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), -4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk]),
+     (7.0/27.0), -2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), 2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk])};
+
+    float Hm_6[] = {0.0, 0.0, 0.0,
+     (7.0/27.0), 2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), -2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk]),
+     (20.0/27.0), -4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), 4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk])};
+
+    float Hm_7[] = {(7.0/27.0), -2.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->S5[kk], 2.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->C5[kk],
+     0.0, 0.0, 0.0,
+     (20.0/27.0), 4.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->S5[kk], -4.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->C5[kk]};
+
+    float Hm_8[] = {(20.0/27.0), -4.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->S5[kk], 4.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->C5[kk],
+     0.0, 0.0, 0.0,
+     (7.0/27.0), 2.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->S5[kk], -2.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->C5[kk]};
+
+    float Hm_9[] = {(20.0/27.0), 4.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->S6[kk], -4.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->C6[kk],
+     (7.0/27.0), -2.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->S6[kk], 2.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->C6[kk],
+      0.0, 0.0, 0.0};
+
+    float Hm_10[] = {(7.0/27.0), 2.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->S6[kk], -2.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->C6[kk],
+     (20.0/27.0), -4.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->S6[kk], 4.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->C6[kk],
+      0.0, 0.0, 0.0};
+
+    for (int j=0; j<9; j++){
+        elemFemArr->Hm[4][j]=Hm_5[j];
+        elemFemArr->Hm[5][j]=Hm_6[j];
+        elemFemArr->Hm[6][j]=Hm_7[j];
+        elemFemArr->Hm[7][j]=Hm_8[j];
+        elemFemArr->Hm[8][j]=Hm_9[j];
+        elemFemArr->Hm[9][j]=Hm_10[j];
+    }
+
+    printf("\nPrinting Hm...\n");
+    for (int i=0;i<10;i++){
+        for (int j=0;j<9;j++){
+            printf("%f, ", elemFemArr->Hm[i][j]);
+        }
+        printf("\n");
+    }
+
+    int myVariable = -5;
+    /*
+    with op( A ) an m by k matrix, op( B )  a  k by n matrix
     
+    HW=GGin*Hm;  % [10 x10] x[10 x 9] 
+    */
+    int M = 10, P = 10, N = 9;
+    matMatMultiplication2(M,P,N, wingMeshFem->GGin, elemFemArr->Hm, elemFemArr->HW);
+
+    printf("\n EXITING massHmDKT...");
 }
+
 
 
 
