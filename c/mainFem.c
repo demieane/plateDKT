@@ -262,11 +262,12 @@ int main(int argc, char **argv){
             }
             printf("\n");
         }
-    #endif
+#endif
         // for each gauss point
+        for (int ii = 0; ii<1; ii++){
         //for (int ii = 0; ii<Ng; ii++){
 
-        //}
+        }
 
 
     }

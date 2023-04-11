@@ -158,9 +158,10 @@ void matMatMultiplication2(int rowsA, int colsA, int colsB, float **arrA, float 
 //
 void rotationMass2(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
 //
-void ShapeFunDKT2();
+void ShapeFunDKT2(int ii, int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
 //
 void pseudoMassDKT();
+
 
 /*=========================================================================================*/
 /* Definition of the functions follows */
@@ -1049,8 +1050,11 @@ for (int i=0; i<6; i++){
     printf("\n");
 }
 */
+}
 
+void ShapeFunDKT2(int ii, int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr){
 
+    
 }
 
 
