@@ -66,11 +66,13 @@ void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut){
     printf("------------------------------------\n");
 }
 
-void matMatMultiplication2(int rowsA, int colsA, int colsB, float **arrA, float **arrB, float **arrOut){
+void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, float **arrA, float **arrB, float **arrOut){
     //   SGEMM - perform one of the matrix-matrix operations   
     //   C := alpha*op( A )*op( B ) + beta*C,
     //   M number of rows (A)
     //   N number of columns for (B)
+
+    // optionCalc == 1: no transpose
 
     float alpha = 1.0, beta = 0.0;
     int rowsB = colsA;
@@ -106,19 +108,20 @@ void matMatMultiplication2(int rowsA, int colsA, int colsB, float **arrA, float 
     float *CC;
     CC = (float*)malloc((rowsC*colsC) *sizeof(float));
 
-    int LDA = colsA; // increment in the array (due to row major order)
-    int LDB = colsB;
-    int LDC = colsC;
-    /*
-    The leading dimension for a two-dimensional array is an 
-    increment that is used to find the starting 
-    point for the matrix elements. (length of the leading dimension - ROW)
-    */
-    cblas_sgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, rowsC, colsC, rowsA,
-     alpha, AA, LDA, BB, LDB, beta, CC, LDC);
-    //cblas_sgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, 10, 9, 10, alpha,
-    //        AA, 10, BB, 9, beta, CC, 9);
-     
+    if (optionCalc == 1){
+        int LDA = colsA; // increment in the array (due to row major order)
+        int LDB = colsB;
+        int LDC = colsC;
+        /*
+        The leading dimension for a two-dimensional array is an 
+        increment that is used to find the starting 
+        point for the matrix elements. (length of the leading dimension - ROW)
+        */
+        cblas_sgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, rowsC, colsC, rowsA,
+        alpha, AA, LDA, BB, LDB, beta, CC, LDC);
+        //cblas_sgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, 10, 9, 10, alpha,
+        //        AA, 10, BB, 9, beta, CC, 9);
+    }
     
     //printf("\n INVERSE MATRIX ------------------\n\n");
     for (int i = 0; i < rowsC; i++) {

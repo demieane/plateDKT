@@ -219,7 +219,7 @@ int main(int argc, char **argv){
     allocate1Darray(9, &(elemFemArr.Hy_eta)); // [1 x 9]
 
     allocate1Darray(9, &(elemFemArr.Hy)); 
-    allocate1Darray(9, &(elemFemArr.LW)); 
+    allocate1Darray(10, &(elemFemArr.LW)); 
     allocate1Darray(6, &(elemFemArr.L)); 
     //
     allocate2Darray(3, 9, &(elemFemArr.Bb));
@@ -254,7 +254,7 @@ int main(int argc, char **argv){
         massHmDKT(kk, &wingMeshFem, &elemFemArr); // Hm, HW
         rotationMass2(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
 
-#if DEBUG_ON
+//#if DEBUG_ON
         printf("\nPrinting HW...(in main)\n");
         for (int i=0;i<10;i++){
             for (int j=0;j<9;j++){
@@ -270,11 +270,21 @@ int main(int argc, char **argv){
             }
             printf("\n");
         }
-#endif
+//#endif
         // for each gauss point
         for (int ii = 0; ii<1; ii++){
         //for (int ii = 0; ii<Ng; ii++){
             ShapeFunDKT2(ii, kk, &wingMeshFem, &elemFemArr);
+            pseudoMassDKT(ii, kk, &wingMeshFem, &elemFemArr); // not exactly used (only LW)
+
+            // TODO: Use the available CBLAS & LAPACKE routines 
+            
+            //matrix addition needed 
+            // kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
+
+            // kb_temp = Bb'*BeSt2(:,:,kk)
+            //matMatMultiplication2(9, 3, 3, float **arrA, float **arrB, float **arrOut)
+
         }
 
 

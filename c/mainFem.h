@@ -120,7 +120,7 @@ struct femArraysDKT{
     float *Hx_xsi, *Hx_eta, *Hy_xsi, *Hy_eta; // [1 x 9] from ShapeFunDKT2()
 
     float **Bb; // [3 x 9] from ShapeFunDKT2()
-    float *LW; // [1 x 9] from pseudoMassDKT()
+    float *LW; // [1 x 10] from pseudoMassDKT()
     float *L; // [1 x 6] from pseudoMassDKT()
     float **Mg, **Kg; // [81 x Nelem] pre-assembly matrices
 };
@@ -160,7 +160,7 @@ void allocate1Darray(int rows, float **arrIn);
 //
 void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
 //
-void matMatMultiplication2(int rowsA, int colsA, int colsB, float **arrA, float **arrB, float **arrOut);
+void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, float **arrA, float **arrB, float **arrOut);
 //
 void rotationMass2(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
 //
@@ -966,7 +966,8 @@ void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *ele
     HW=GGin*Hm;  % [10 x10] x[10 x 9] 
     */
     int M = 10, P = 10, N = 9;
-    matMatMultiplication2(M,P,N, wingMeshFem->GGin, elemFemArr->Hm, elemFemArr->HW);
+    int optionCalc = 1;
+    matMatMultiplication2(optionCalc, M,P,N, wingMeshFem->GGin, elemFemArr->Hm, elemFemArr->HW);
 
 #if DEBUG_ON
     printf("\n EXITING massHmDKT...");
@@ -1223,6 +1224,20 @@ for (int i=0;i<3;i++){
 
 void pseudoMassDKT(int ii, int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr){
 
+float xsi = wingMeshFem->SFm[ii][1];
+float eta = wingMeshFem->SFm[ii][2];
+
+float LWtemp[]={1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2), pow(xsi,2)*eta, pow(eta,2)*xsi, pow(xsi,3), pow(eta,3)}; //[1 x 10]
+float Ltemp[]={1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2)}; // [1 x 6]
+
+for (int i = 0; i<10; i++){
+    elemFemArr->LW[i] = LWtemp[i];
+}
+
+printf("\n\nelemFemArr->LW...\n");
+for (int i=0;i<10;i++){
+    printf("%f, ",elemFemArr->LW[i]);
+}
 
 }
 
