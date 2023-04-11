@@ -156,7 +156,7 @@ void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *ele
 //
 void matMatMultiplication2(int rowsA, int colsA, int colsB, float **arrA, float **arrB, float **arrOut);
 //
-void rotationMass2();
+void rotationMass2(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
 //
 void ShapeFunDKT2();
 //
@@ -964,9 +964,94 @@ void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *ele
     printf("\n EXITING massHmDKT...");
 }
 
+void rotationMass2(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr){
+
+// Hxx, Hyy [6 x 9]
+float A4 = wingMeshFem->a4[kk];
+float A6 = wingMeshFem->a6[kk];
+float A5 = wingMeshFem->a5[kk];
+//
+float B4 = wingMeshFem->b4[kk];
+float B5 = wingMeshFem->b5[kk];
+float B6 = wingMeshFem->b6[kk];
+//
+float C4 = wingMeshFem->c4[kk];
+float C5 = wingMeshFem->c5[kk];
+float C6 = wingMeshFem->c6[kk];
+//
+float D4 = wingMeshFem->d4[kk];
+float D5 = wingMeshFem->d5[kk];
+float D6 = wingMeshFem->d6[kk];
+//
+float E4 = wingMeshFem->e4[kk];
+float E5 = wingMeshFem->e5[kk];
+float E6 = wingMeshFem->e6[kk];
+//
+float Hxx1[]={0.0, 6.0*A6, -6.0*A5, 6.0*A5-6.0*A6, -6.0*A6, 6.0*A5}; //columns of Hxx
+float Hxx2[]={0.0, 4.0*B6, 4.0*B5, -4.0*B5-4.0*B6, -4.0*B6, -4*B5};  
+float Hxx3[]={1.0, -4.0*C6-3, -3.0-4.0*C5, 4.0+4.0*C5+4.0*C6, 4.0*C6+2.0, 4.0*C5+2.0};
+float Hxx4[]={0.0, -6.0*A6, 0.0, 6.0*A4+6.0*A6, 6.0*A6, 0.0};
+float Hxx5[]={0.0, 4.0*B6, 0.0, 4.0*B4-4.0*B6, -4.0*B6, 0.0};
+float Hxx6[]={0.0, -1.0-4.0*C6, 0.0, 4.0*C6-4.0*C4, 2.0+4.0*C6, 0.0};
+float Hxx7[]={0.0, 0.0, 6.0*A5, -6.0*A5-6.0*A4, 0.0, -6.0*A5};
+float Hxx8[]={0.0, 0.0, 4.0*B5, 4.0*B4-4.0*B5, 0.0, -4.0*B5};
+float Hxx9[]={0.0, 0.0, -4.0*C5-1.0, 4.0*C5-4.0*C4, 0.0, 4.0*C5+2.0};
+
+for (int i=0; i<6; i++){
+    elemFemArr->Hxx[i][0]=Hxx1[i];
+    elemFemArr->Hxx[i][1]=Hxx2[i];
+    elemFemArr->Hxx[i][2]=Hxx3[i];
+    elemFemArr->Hxx[i][3]=Hxx4[i];
+    elemFemArr->Hxx[i][4]=Hxx5[i];
+    elemFemArr->Hxx[i][5]=Hxx6[i];
+    elemFemArr->Hxx[i][6]=Hxx7[i];
+    elemFemArr->Hxx[i][7]=Hxx8[i];
+    elemFemArr->Hxx[i][8]=Hxx9[i];
+}
+/*
+printf("\n");
+for (int i=0; i<6; i++){
+    for (int j=0; j<9; j++){
+        printf("%f, ", elemFemArr->Hxx[i][j]);
+    }
+    printf("\n");
+}
+*/
+
+// now we do the same for Hyy
+float Hyy1[]={0.0, 6.0*D6, -6.0*D5, 6.0*D5-6.0*D6, -6.0*D6, 6.0*D5}; //column
+float Hyy2[]={-1.0, 4,0*E6+3.0, 4.0*E5+3.0, -4.0*E5-4.0*E6-4.0, -4.0*E6-2.0, -4.0*E5-2.0};
+float Hyy3[]={0.0, -4.0*B6, -4.0*B5, 4.0*B5+4.0*B6, 4.0*B6, 4.0*B5};
+float Hyy4[]={0.0, -6.0*D6, 0.0, 6.0*D4+6.0*D6, 6.0*D6, 0.0};
+float Hyy5[]={0.0, 1.0+4.0*E6, 0.0, 4.0*E4-4.0*E6, -4.0*E6-2.0, 0.0};
+float Hyy6[]={0.0, -4.0*B6, 0.0, -4.0*B4+4.0*B6, 4.0*B6, 0.0};
+float Hyy7[]={0.0, 0.0, 6.0*D5, -6.0*D5-6.0*D4, 0.0, -6.0*D5};
+float Hyy8[]={0.0, 0.0, 1.0+4.0*E5, 4.0*E4-4.0*E5, 0.0, -4.0*E5-2.0};
+float Hyy9[]={0.0, 0.0, -4.0*B5, -4.0*B4+4.0*B5, 0.0, 4.0*B5};
+
+for (int i=0; i<6; i++){
+    elemFemArr->Hyy[i][0]=Hyy1[i];
+    elemFemArr->Hyy[i][1]=Hyy2[i];
+    elemFemArr->Hyy[i][2]=Hyy3[i];
+    elemFemArr->Hyy[i][3]=Hyy4[i];
+    elemFemArr->Hyy[i][4]=Hyy5[i];
+    elemFemArr->Hyy[i][5]=Hyy6[i];
+    elemFemArr->Hyy[i][6]=Hyy7[i];
+    elemFemArr->Hyy[i][7]=Hyy8[i];
+    elemFemArr->Hyy[i][8]=Hyy9[i];
+}
+/*
+printf("\n");
+for (int i=0; i<6; i++){
+    for (int j=0; j<9; j++){
+        printf("%f, ", elemFemArr->Hyy[i][j]);
+    }
+    printf("\n");
+}
+*/
 
 
-
+}
 
 
 

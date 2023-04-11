@@ -205,7 +205,7 @@ int main(int argc, char **argv){
     //
     allocate2Darray(9, 9, &(elemFemArr.kloc));
     allocate2Darray(9, 9, &(elemFemArr.mloc));
-    allocate2Darray(9, 9, &(elemFemArr.floc));
+    allocate2Darray(10, 1, &(elemFemArr.floc));
     //
     allocate2Darray(6, 9, &(elemFemArr.Hxx));
     allocate2Darray(6, 9, &(elemFemArr.Hyy));
@@ -243,7 +243,8 @@ int main(int argc, char **argv){
     //for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
     for (int kk = 0;kk<1;kk++){   
 
-        massHmDKT(kk, &wingMeshFem, &elemFemArr);
+        massHmDKT(kk, &wingMeshFem, &elemFemArr); // Hm, HW
+        rotationMass2(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
 
 #if DEBUG_ON
         printf("\nPrinting HW...(in main)\n");
