@@ -211,6 +211,13 @@ int main(int argc, char **argv){
     allocate2Darray(6, 9, &(elemFemArr.Hyy));
     //
     allocate1Darray(9, &(elemFemArr.Hx)); // [1 x 9]
+
+    /* NEW */
+    allocate1Darray(9, &(elemFemArr.Hx_xsi)); // [1 x 9]
+    allocate1Darray(9, &(elemFemArr.Hx_eta)); // [1 x 9]
+    allocate1Darray(9, &(elemFemArr.Hy_xsi)); // [1 x 9]
+    allocate1Darray(9, &(elemFemArr.Hy_eta)); // [1 x 9]
+
     allocate1Darray(9, &(elemFemArr.Hy)); 
     allocate1Darray(9, &(elemFemArr.LW)); 
     //
@@ -266,7 +273,7 @@ int main(int argc, char **argv){
         // for each gauss point
         for (int ii = 0; ii<1; ii++){
         //for (int ii = 0; ii<Ng; ii++){
-
+            ShapeFunDKT2(ii, kk, &wingMeshFem, &elemFemArr);
         }
 
 

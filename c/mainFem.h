@@ -114,6 +114,12 @@ struct femArraysDKT{
     float **kloc, **mloc, **floc; //[9 x 9]
     float **Hxx, **Hyy; // [6 x 9] overwrite rotationMass2()
     float *Hx, *Hy; // [1 x 9] from ShapeFunDKT2()
+
+    /*
+    NEW
+    */
+    float *Hx_xsi, *Hx_eta, *Hy_xsi, *Hy_eta; // [1 x 9] from ShapeFunDKT2()
+
     float **Bb; // [3 x 9] from ShapeFunDKT2()
     float *LW; // [1 x 9] from pseudoMassDKT()
     float **Mg, **Kg; // [81 x Nelem] pre-assembly matrices
@@ -1053,6 +1059,107 @@ for (int i=0; i<6; i++){
 }
 
 void ShapeFunDKT2(int ii, int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr){
+
+/* output of LNShapeFunDST() */
+//float **SF, **DxsiSF, **DetaSF; //[Ng x 6]
+//float *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
+
+/* output of LNShapeFunMassDST() */
+//float **SFm, **DxsiSFm, **DetaSFm; //[Ng x 3]
+
+float S4=wingMeshFem->S4[kk];
+float S5=wingMeshFem->S5[kk];
+float S6=wingMeshFem->S6[kk];
+float C4=wingMeshFem->C4[kk];
+float C5=wingMeshFem->C5[kk];
+float C6=wingMeshFem->C6[kk];
+//
+float l31=wingMeshFem->l31[kk];
+float l12=wingMeshFem->l12[kk];
+float l23=wingMeshFem->l23[kk];
+
+//size Hx [1 x 9]
+elemFemArr->Hx[0]=S5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4])-S6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hx[1]=-(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5)-(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hx[2]=(wingMeshFem->SF[ii][0])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->SF[ii][4])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->SF[ii][5]);
+//
+elemFemArr->Hx[3]=S6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5])-S4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3]);
+elemFemArr->Hx[4]=-(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hx[5]=(wingMeshFem->SF[ii][1])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->SF[ii][5]);
+//
+elemFemArr->Hx[6]=S4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3])-S5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4]);
+elemFemArr->Hx[7]=-(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5);
+elemFemArr->Hx[8]=(wingMeshFem->SF[ii][2])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->SF[ii][4]);
+
+printf("ShapeFunDKT2 ...\n");
+printf("\nelemFemArr->Hx...\n");
+for (int i=0;i<9;i++){
+    printf("%f, ",elemFemArr->Hx[i]);
+}
+
+//size Hx_xsi [1 x 9]
+elemFemArr->Hx_xsi[0]=S5*3.0/(2.0*l31)*(wingMeshFem->DxsiSF[ii][4])-S6*3.0/(2.0*l12)*(wingMeshFem->DxsiSF[ii][5]);
+elemFemArr->Hx_xsi[1]=-(wingMeshFem->DxsiSF[ii][4])*(3.0/4.0*S5*C5)-(wingMeshFem->DxsiSF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hx_xsi[2]=(wingMeshFem->DxsiSF[ii][0])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->DxsiSF[ii][4])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->DxsiSF[ii][5]);
+//
+elemFemArr->Hx_xsi[3]=S6*3.0/(2.0*l12)*(wingMeshFem->DxsiSF[ii][5])-S4*3.0/(2.0*l23)*(wingMeshFem->DxsiSF[ii][3]);
+elemFemArr->Hx_xsi[4]=-(wingMeshFem->DxsiSF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->DxsiSF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hx_xsi[5]=(wingMeshFem->DxsiSF[ii][1])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->DxsiSF[ii][3])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->DxsiSF[ii][5]);
+//
+elemFemArr->Hx_xsi[6]=S4*3.0/(2.0*l23)*(wingMeshFem->DxsiSF[ii][3])-S5*3.0/(2.0*l31)*(wingMeshFem->DxsiSF[ii][4]);
+elemFemArr->Hx_xsi[7]=-(wingMeshFem->DxsiSF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->DxsiSF[ii][4])*(3.0/4.0*S5*C5);
+elemFemArr->Hx_xsi[8]=(wingMeshFem->DxsiSF[ii][2])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->DxsiSF[ii][3])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->DxsiSF[ii][4]);
+
+printf("\n\nelemFemArr->Hx_xsi...\n");
+for (int i=0;i<9;i++){
+    printf("%f, ",elemFemArr->Hx_xsi[i]);
+}
+
+elemFemArr->Hx_eta[0]=S5*3.0/(2.0*l31)*(wingMeshFem->DetaSF[ii][4])-S6*3.0/(2.0*l12)*(wingMeshFem->DetaSF[ii][5]);
+elemFemArr->Hx_eta[1]=-(wingMeshFem->DetaSF[ii][4])*(3.0/4.0*S5*C5)-(wingMeshFem->DetaSF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hx_eta[2]=(wingMeshFem->DetaSF[ii][0])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->DetaSF[ii][4])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->DetaSF[ii][5]);
+//
+elemFemArr->Hx_eta[3]=S6*3.0/(2.0*l12)*(wingMeshFem->DetaSF[ii][5])-S4*3.0/(2.0*l23)*(wingMeshFem->DetaSF[ii][3]);
+elemFemArr->Hx_eta[4]=-(wingMeshFem->DetaSF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->DetaSF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hx_eta[5]=(wingMeshFem->DetaSF[ii][1])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->DetaSF[ii][3])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->DetaSF[ii][5]);
+//
+elemFemArr->Hx_eta[6]=S4*3.0/(2.0*l23)*(wingMeshFem->DetaSF[ii][3])-S5*3.0/(2.0*l31)*(wingMeshFem->DetaSF[ii][4]);
+elemFemArr->Hx_eta[7]=-(wingMeshFem->DetaSF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->DetaSF[ii][4])*(3.0/4.0*S5*C5);
+elemFemArr->Hx_eta[8]=(wingMeshFem->DetaSF[ii][2])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->DetaSF[ii][3])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->DetaSF[ii][4]);
+
+printf("\n\nelemFemArr->Hx_eta...\n");
+for (int i=0;i<9;i++){
+    printf("%f, ",elemFemArr->Hx_eta[i]);
+}
+
+elemFemArr->Hy[0]=-C5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4])+C6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hy[1]=-(wingMeshFem->SF[ii][0])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->SF[ii][4])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hy[2]=(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5)+(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
+//
+elemFemArr->Hy[3]=-C6*3/(2*l12)*(wingMeshFem->SF[ii][5])+C4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3]);
+elemFemArr->Hy[4]=-(wingMeshFem->SF[ii][1])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hy[5]=(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
+//
+elemFemArr->Hy[6]=-C4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3])+C5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hy[7]=-(wingMeshFem->SF[ii][2])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->SF[ii][4]);
+elemFemArr->Hy[8]=(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5);
+
+printf("\n\nelemFemArr->Hy...\n");
+for (int i=0;i<9;i++){
+    printf("%f, ",elemFemArr->Hy[i]);
+}
+
+elemFemArr->Hy_xsi[0]=-C5*3.0/(2.0*l31)*(wingMeshFem->DxsiSF[ii][4])+C6*3.0/(2.0*l12)*(wingMeshFem->DxsiSF[ii][5]);
+elemFemArr->Hy_xsi[1]=-(wingMeshFem->DxsiSF[ii][0])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->DxsiSF[ii][4])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->DxsiSF[ii][5]);
+elemFemArr->Hy_xsi[2]=DxsiSF(ii,5)*(3/4*S5*C5)+DxsiSF(ii,6)*(3/4*S6*C6);%
+
+elemFemArr->Hy_xsi[3]=-C6*3/(2*l12(k))*DxsiSF(ii,6)+C4*3/(2*l23(k))*DxsiSF(ii,4);
+elemFemArr->Hy_xsi[4]=-DxsiSF(ii,2)-(0.5*S4^2-0.25*C4^2)*DxsiSF(ii,4)-(0.5*S6^2-0.25*C6^2)*DxsiSF(ii,6);%
+elemFemArr->Hy_xsi[5]=DxsiSF(ii,4)*(3/4*S4*C4)+DxsiSF(ii,6)*(3/4*S6*C6);%
+
+elemFemArr->Hy_xsi[6]=-C4*3/(2*l23(k))*DxsiSF(ii,4)+C5*3/(2*l31(k))*DxsiSF(ii,5);
+elemFemArr->Hy_xsi[7]=-DxsiSF(ii,3)-(0.5*S4^2-0.25*C4^2)*DxsiSF(ii,4)-(0.5*S5^2-0.25*C5^2)*DxsiSF(ii,5);%
+elemFemArr->Hy_xsi[8]=DxsiSF(ii,4)*(3/4*S4*C4)+DxsiSF(ii,5)*(3/4*S5*C5);%
 
     
 }
