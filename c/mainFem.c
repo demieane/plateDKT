@@ -220,6 +220,7 @@ int main(int argc, char **argv){
 
     allocate1Darray(9, &(elemFemArr.Hy)); 
     allocate1Darray(9, &(elemFemArr.LW)); 
+    allocate1Darray(6, &(elemFemArr.L)); 
     //
     allocate2Darray(3, 9, &(elemFemArr.Bb));
     allocate2Darray(81, wingMeshFem.Nelem, &(elemFemArr.Mg));
