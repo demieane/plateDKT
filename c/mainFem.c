@@ -199,24 +199,51 @@ int main(int argc, char **argv){
     */
     struct femArraysDKT elemFemArr;
 
+    allocate2Darray(wingMeshFem.GEN, 1, &(elemFemArr.Fglob)); //[GEN x 1]
+    allocate2Darray(10, 9, &(elemFemArr.Hm)); 
+    allocate2Darray(10, 9, &(elemFemArr.HW)); 
+    //
+    allocate2Darray(9, 9, &(elemFemArr.kloc));
+    allocate2Darray(9, 9, &(elemFemArr.mloc));
+    allocate2Darray(9, 9, &(elemFemArr.floc));
+    //
+    allocate2Darray(6, 9, &(elemFemArr.Hxx));
+    allocate2Darray(6, 9, &(elemFemArr.Hyy));
+    //
+    allocate1Darray(9, &(elemFemArr.Hx)); // [1 x 9]
+    allocate1Darray(9, &(elemFemArr.Hy)); 
+    allocate1Darray(9, &(elemFemArr.LW)); 
+    //
+    allocate2Darray(3, 9, &(elemFemArr.Bb));
+    allocate2Darray(81, wingMeshFem.Nelem, &(elemFemArr.Mg));
+    allocate2Darray(81, wingMeshFem.Nelem, &(elemFemArr.Kg));
+
+
+#if DEBUG_ON
     float **arrIn; 
     allocate2Darray(2, 2, &arrIn); // TODO
-    //printf("\n main START: address of arrin = %d\n", &arrIn);
+    printf("\n (arrIn==NULL) = %d\n", (arrIn==NULL));
 
     printf("arrIn: %f:",arrIn[0][0]);
 
-    //allocate2Darray(3, 9, elemFemArr.Bb);
 
-    //if(elemFemArr.Bb == NULL){
-    //    printf("Memory allocation failed. allocate2Darray()");
-    //}
+    allocate2Darray(3, 9, &(elemFemArr.Bb)); // TODO
+    printf("\n (arrIn==NULL) = %d\n", (elemFemArr.Bb==NULL));
 
-    //printf("%f:",elemFemArr.Bb[0][0]);
+    printf("elemFemArr.Bb: %f:",elemFemArr.Bb[0][0]);
 
-    
-    /*
+
+    allocate1Darray(9, &(elemFemArr.Fglob)); // TODO
+    printf("\n (elemFemArr.Fglob==NULL) = %d\n", (elemFemArr.Fglob==NULL));
+
+    printf("elemFemArr.Fglob: %f:",elemFemArr.Fglob[0]);
+#endif
+
     //for each triangle in the mesh
-    for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
+    //for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
+    for (int kk = 0;kk<1;kk++){   
+
+
         // for each gauss point
         for (int ii = 0; ii<Ng; ii++){
 
@@ -224,7 +251,7 @@ int main(int argc, char **argv){
 
 
     }
-    */
+    
     
 
     //************************************************************************************

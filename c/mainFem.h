@@ -109,7 +109,7 @@ struct triangleDKT{
 
 struct femArraysDKT{
     /* global intermediate matrices Mg, Kg, Fglob */
-    float *Fglob; //[GEN x 1] global
+    float **Fglob; //[GEN x 1] global
     float **Hm, **HW; //[10 x 9] overwrite massHmDKT()
     float **kloc, **mloc, **floc; //[9 x 9]
     float **Hxx, **Hyy; // [6 x 9] overwrite rotationMass2()
@@ -149,7 +149,16 @@ void assignRowArrayMatrixG_DKT(int rowID, float xsi, float eta, float **array);
 void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut);
 //
 void allocate2Darray(int rows, int cols, float ***arrIn);
-
+//---------------------------11/04/2023 ADDED
+void allocate1Darray(int rows, float **arrIn);
+//
+void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
+//
+void rotationMass2();
+//
+void ShapeFunDKT2();
+//
+void pseudoMassDKT();
 
 /*=========================================================================================*/
 /* Definition of the functions follows */
@@ -880,6 +889,15 @@ void assignRowArrayMatrixG_DKT(int rowID, float xsi, float eta, float **array){
     }
     //printf("\n\n");
 }
+
+
+void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr){
+
+
+    
+}
+
+
 
 
 
