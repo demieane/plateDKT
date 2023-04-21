@@ -68,12 +68,15 @@ int main(int argc, char **argv){
     system(command);
 
     printf("BeSt");
-    float BeSt[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
+    //float BeSt[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
+    float **BeSt;
+    allocate2Darray(3, 3, &BeSt);
     BendingStiffness(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
     for (int i=0;i<3;i++){
         for (int j=0;j<3;j++){
-            printf("%f\n", BeSt[i][j]);
+            printf("%f, ", BeSt[i][j]);
         }
+        printf("\n");
     }
 
     /* DKT */
@@ -252,6 +255,17 @@ int main(int argc, char **argv){
     for (int kk = 0;kk<1;kk++){   
 
         massHmDKT(kk, &wingMeshFem, &elemFemArr); // Hm, HW
+
+/*
+        printf("\nPrinting Hw [10 x 9] ...\n");
+        for (int i=0;i<10;i++){
+            for (int j=0;j<9;j++){
+                printf("%f, ", elemFemArr.HW[i][j]);
+            }
+            printf("\n");
+        }
+*/
+
         rotationMass2(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
 
 //#if DEBUG_ON
@@ -277,11 +291,62 @@ int main(int argc, char **argv){
             ShapeFunDKT2(ii, kk, &wingMeshFem, &elemFemArr);
             pseudoMassDKT(ii, kk, &wingMeshFem, &elemFemArr); // not exactly used (only LW)
 
+            //The C compiler can glue adjacent string literals into one
+            printf("\n------------------------------\n"
+                   "  kloc calculations: area(kk)=%f, gauss weight xw(ii,3)=%f\n"
+                   "------------------------------\n"
+                   ,wingMeshFem.area[ii], xw[ii][2]);
             // TODO: Use the available CBLAS & LAPACKE routines 
             
-            //matrix addition needed 
+            // matrix addition needed 
             // kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
+            float **kb;
+            allocate2Darray(9, 3, &kb);
 
+            printf("\n kb (in main)\n");
+            for (int i=0;i<9;i++){
+                for (int j=0;j<3;j++){
+                    //kb[i][j] = 1.0;
+                    printf("%f,",kb[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\n Bb'*BeSt2(:,:,kk) \n");
+            matMatMultiplication2(2, 3, 9, 3, elemFemArr.Bb, BeSt, kb);
+
+            printf("\n kb (in main)\n");
+            for (int i=0;i<9;i++){
+                for (int j=0;j<3;j++){
+                    //kb[i][j] = 1.0;
+                    printf("%f,",kb[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\n HW (in main)\n");
+            for (int i=0;i<10;i++){
+                for (int j=0;j<9;j++){
+                    printf("%f,",elemFemArr.HW[i][j]);
+                }
+                printf("\n");
+            }
+
+            float **test;
+            allocate2Darray(9, 9, &test);
+            printf("\n kb*Bb \n");
+            matMatMultiplication2(1, 9, 3, 9, kb, elemFemArr.Bb, test);
+
+            printf("\n test (in main)\n");
+            for (int i=0;i<9;i++){
+                for (int j=0;j<9;j++){
+                    printf("%f,",test[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("debugging...");
+            exit(3);
             // kb_temp = Bb'*BeSt2(:,:,kk)
             //matMatMultiplication2(9, 3, 3, float **arrA, float **arrB, float **arrOut)
 

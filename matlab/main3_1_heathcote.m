@@ -367,6 +367,9 @@ for kk=1:1%Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
        % we give one more dimension 
        % to the BeSt [3x3] original matrix
        kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
+       
+       kbc = (Bb'*BeSt2(:,:,kk))*BeSt2(:,:,kk)
+       size(kbc)
 %        kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt*Bb);
 %        mloc=mloc+m*h*Area(kk)*xw(ii,3)*(Nm'*Nm);
 %        mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*(Nm'*Nm);

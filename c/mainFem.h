@@ -132,7 +132,7 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDK
 
 void TriGaussPoints(int Ng, float xw[Ng][3]);
 
-void BendingStiffness(float E, float v, float tx, float BeSt[3][3]);
+void BendingStiffness(float E, float v, float tx, float **BeSt);
 
 //--------------------------- 05/04/2023 ADDED
 void TrigElCoefsDKT(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem);
@@ -487,7 +487,7 @@ void TriGaussPoints(int Ng, float xw[Ng][3]){
     
 
 
-void BendingStiffness(float E, float v, float tx, float BeSt[3][3]){
+void BendingStiffness(float E, float v, float tx, float **BeSt){
   
     float la = (E*pow(tx,3.0))/(12*(1-pow(v,2))); // TODO work with matrices [1,Nelem]
     //printf("---> %f, %f, %f, %f\n\n",E,E*pow(tx,3),la, (1.0-v)*la/2.0);
@@ -963,11 +963,11 @@ void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *ele
     /*
     with op( A ) an m by k matrix, op( B )  a  k by n matrix
     
-    HW=GGin*Hm;  % [10 x10] x[10 x 9] 
+    HW=GGin*Hm;  % [10 x 10] x[10 x 9] 
     */
-    int M = 10, P = 10, N = 9;
-    int optionCalc = 1;
-    matMatMultiplication2(optionCalc, M,P,N, wingMeshFem->GGin, elemFemArr->Hm, elemFemArr->HW);
+    int M = 10, N = 10, K = 9;
+    int optionCalc = 1; //without transpose
+    matMatMultiplication2(optionCalc, M, N, K, wingMeshFem->GGin, elemFemArr->Hm, elemFemArr->HW);
 
 #if DEBUG_ON
     printf("\n EXITING massHmDKT...");
