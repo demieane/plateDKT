@@ -9,6 +9,8 @@ Search file for TODO
 Search file for COMMENT
 */
 
+/* TODO: single or double precision? I have the project in C <float> & <double> */
+
 /*=========================================================================================*/
 /*  The main program follows. */
 /*=========================================================================================*/
@@ -480,6 +482,10 @@ int main(int argc, char **argv){
             }
             printf("\n");
         }
+
+        //Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
+
+
    
     }
 
