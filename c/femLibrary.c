@@ -191,6 +191,25 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, floa
     printf("------------------------------------///exiting...\n");
 }
 
+void matSum2(float alpha, float beta, int rows, int cols, float **arrA, float **arrB, float **arrOut){
+
+    for (int i=0;i<rows;i++){
+        for (int j=0;j<cols;j++){
+            arrOut[i][j]= arrOut[i][j] + alpha*arrA[i][j]  + beta*arrB[i][j];
+        }
+    }
+
+/*
+    for (int i=0;i<rows;i++){
+        for (int j=0;j<cols;j++){
+            printf("%f, ",arrOut[i][j]);
+        }
+        printf("\n");
+    }
+*/
+
+}
+
 // Allocate 2-D array based on double pointer type
 void allocate2Darray(int rows, int cols, float ***arrIn){
 

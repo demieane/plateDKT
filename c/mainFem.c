@@ -286,8 +286,8 @@ int main(int argc, char **argv){
         }
 #endif
         // for each gauss point
-        for (int ii = 0; ii<1; ii++){
-        //for (int ii = 0; ii<Ng; ii++){
+        //for (int ii = 0; ii<1; ii++){
+        for (int ii = 0; ii<Ng; ii++){
             ShapeFunDKT2(ii, kk, &wingMeshFem, &elemFemArr);
             pseudoMassDKT(ii, kk, &wingMeshFem, &elemFemArr); // not exactly used (only LW)
 
@@ -338,9 +338,18 @@ int main(int argc, char **argv){
                 printf("\n");
             }
 
+            matSum2(1.0, 0.0, 9, 9, kb1, kb1, elemFemArr.kloc); // kloc = kloc + kb1
 
-            printf("debugging...");
-            exit(3);
+            printf("\n kloc (in main)\n");
+            for (int i=0;i<9;i++){
+                for (int j=0;j<9;j++){
+                    printf("%f,",elemFemArr.kloc[i][j]);
+                }
+                printf("\n");
+            }
+
+            //printf("debugging...");
+            //exit(3);
             // kb_temp = Bb'*BeSt2(:,:,kk)
             //matMatMultiplication2(9, 3, 3, float **arrA, float **arrB, float **arrOut)
 

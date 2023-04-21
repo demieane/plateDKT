@@ -167,6 +167,9 @@ void rotationMass2(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT 
 void ShapeFunDKT2(int ii, int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
 //
 void pseudoMassDKT(int ii, int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
+//---------------------------21/04/2023 ADDED
+void matSum2(float alpha, float beta, int rows, int cols, float **arrA, float **arrB, float **arrOut);
+//
 
 
 /*=========================================================================================*/
