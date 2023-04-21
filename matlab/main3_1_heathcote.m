@@ -415,7 +415,7 @@ Jg=LM(rr(:),:);
 Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
 % % spy(Kglob)
 Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
-% 
+
 % clear Kglob
 % cnt = 0;
 % for ii = 1:size(Ig,1)
