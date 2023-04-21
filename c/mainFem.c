@@ -371,10 +371,12 @@ int main(int argc, char **argv){
                 // txxBEM(kk)^2/12*(Hx'*Hx)+
                 // txxBEM(kk)^2/12*(Hy'*Hy)
             
-            float **term1, **term2, **term3;
+            float **term1, **term2, **term3, **term4, **term5;
             allocate2Darray(9,9,&term1);
             allocate2Darray(9,9,&term2);
             allocate2Darray(10,10,&term3);
+            allocate2Darray(9,10,&term4);
+            allocate2Darray(9,9,&term5);
 
             printf("h = %f,\n",inDataFem.h);    
             float var0 = pow(inDataFem.h,2)/12.0;
@@ -385,6 +387,10 @@ int main(int argc, char **argv){
             matMatMultiplication2(2, 1, 9, 9, var0, 0.0, elemFemArr.Hy, elemFemArr.Hy, term2); //Hy'*Hy
             //
             matMatMultiplication2(2, 1, 10, 10, 1.0, 0.0, elemFemArr.LW, elemFemArr.LW, term3); //LW'*LW
+            //
+            matMatMultiplication2(2, 10, 9, 10, 1.0, 0.0, elemFemArr.HW, term3, term4); //HW'*(LW'*LW) -> [10 x 9] [10 x 10]
+            //
+            matMatMultiplication2(1, 9, 10, 9, 1.0, 0.0, term4, elemFemArr.HW, term5); //(HW'*(LW'*LW)*HW) -> [9 x 10] [10 x 9]
 
             printf("\n elemFemArr.Hy (in main)\n");
             for (int i=0;i<1;i++){
@@ -418,7 +424,38 @@ int main(int argc, char **argv){
                 printf("\n");
             }
 
-            
+            printf("\n term4 (in main)\n");
+            for (int i=0;i<9;i++){
+                for (int j=0;j<10;j++){
+                    printf("%f,",term4[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\n term5 (in main)\n");
+            for (int i=0;i<9;i++){
+                for (int j=0;j<9;j++){
+                    printf("%f,",term5[i][j]);
+                }
+                printf("\n");
+            }
+
+            //  mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*((HW'*(LW'*LW)*HW)+txxBEM(kk)^2/12*(Hx'*Hx)+txxBEM(kk)^2/12*(Hy'*Hy));
+            float **sum1, **sum2;
+            allocate2Darray(9,9,&sum1);
+            allocate2Darray(9,9,&sum2);
+            float varmloc = inDataFem.mass*inDataFem.h*wingMeshFem.area[kk]*xw[ii][2];
+            matSum2(varmloc, varmloc, 9, 9, term1, term2, sum1); // C = C + a * A + b * B
+            matSum2(1.0, varmloc, 9, 9, sum1, term5, sum2);
+            matSum2(1.0, 0.0, 9, 9, sum2, sum2, elemFemArr.mloc);
+
+            printf("\n mloc (in main)\n");
+            for (int i=0;i<9;i++){
+                for (int j=0;j<9;j++){
+                    printf("%f,",elemFemArr.mloc[i][j]);
+                }
+                printf("\n");
+            }
             // mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*(mlocTEMP);
 
         }
