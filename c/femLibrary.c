@@ -85,19 +85,19 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, floa
         rowsB = colsA;
         rowsC = rowsA;
         colsC = colsB;
-        printf("option (1)");
+        //printf("option (1)");
     }
     if (optionCalc == 2){
         rowsB = rowsA;
         rowsC = colsA; // transA
         colsC = colsB;
-        printf("option (2)");
+        //printf("option (2)");
     }
-    printf("%d, %d, %d, %d, %d, %d,", rowsA, colsA, rowsB, colsB, rowsC, colsC);
+    //printf("%d, %d, %d, %d, %d, %d,", rowsA, colsA, rowsB, colsB, rowsC, colsC);
 
-    printf("\n------------------------------------");
-    printf("\n  MatMat Mult: [M x P] [P x N]      ");
-    printf("\n------------------------------------\n");
+    //printf("\n------------------------------------");
+    //printf("\n  MatMat Mult: [M x P] [P x N]      ");
+    //printf("\n------------------------------------\n");
     // assuming that the given arrA, arrB are 2D arrays. 
     // transform it to 1D- array for lapack functions
     float *AA;
@@ -143,7 +143,7 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, floa
         int LDB = colsB;
         int LDC = colsC;
 
-        printf("%d, %d, %d,", LDA, LDB, LDC);
+        //printf("%d, %d, %d,", LDA, LDB, LDC);
 
         int M,N,K;
         M = rowsA; //rows of op(A)
@@ -173,22 +173,22 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, floa
         //cblas_sgemm(CblasRowMajor,CblasNoTrans,CblasNoTrans, 10, 9, 10, alpha,
         //        AA, 10, BB, 9, beta, CC, 9);
     }
-    
-    printf("Result in C.. OK!\n");
+
+   
+    //printf("Result in C.. OK!\n");
     for (int i = 0; i < rowsC; i++) {
         for (int j = 0; j < colsC; j++){
             arrOut[i][j] = CC[i * colsC+ j];
-            printf("%f, ",arrOut[i][j]);
+            //printf("%f, ",arrOut[i][j]);
         }
-        printf("\n");
+        //printf("\n");
     }
+
 
     free(AA);
     free(BB);
     free(CC);
-    printf("------------------------------------\n");
-    printf("         Inverse 2D OK..          \n");
-    printf("------------------------------------///exiting...\n");
+    printf(" EXITING matMatMultiplication2...\n");
 }
 
 void matSum2(float alpha, float beta, int rows, int cols, float **arrA, float **arrB, float **arrOut){
@@ -210,6 +210,7 @@ void matSum2(float alpha, float beta, int rows, int cols, float **arrA, float **
 
 }
 
+
 // Allocate 2-D array based on double pointer type
 void allocate2Darray(int rows, int cols, float ***arrIn){
 
@@ -228,7 +229,7 @@ void allocate2Darray(int rows, int cols, float ***arrIn){
         arrTemp[i] = (float*)malloc(cols * sizeof(float));
     }
 
-    printf("\nInside allocate2Darray()..\n");
+    //printf("\nInside allocate2Darray()..\n");
     // Note that arr[i][j] is same as *(*(arr+i)+j)
     for (i = 0; i < rows; i++){
         for (j = 0; j < cols; j++){
@@ -255,7 +256,7 @@ void allocate1Darray(int rows, float **arrIn){
         return;
     }
 
-    printf("\nInside allocate1Darray()..\n");
+    //printf("\nInside allocate1Darray()..\n");
     // Note that arr[i][j] is same as *(*(arr+i)+j)
     for (i = 0; i < rows; i++){
         arrTemp[i] = 0.0;

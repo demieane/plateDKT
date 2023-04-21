@@ -111,16 +111,18 @@ struct femArraysDKT{
     /* global intermediate matrices Mg, Kg, Fglob */
     float **Fglob; //[GEN x 1] global
     float **Hm, **HW; //[10 x 9] overwrite massHmDKT()
-    float **kloc, **mloc, **floc; //[9 x 9]
+    float **kloc, **mloc;//[9 x 9]
+    float **floc; // [9 x 1]
+    float **floc1; // [10 x 1]
     float **Hxx, **Hyy; // [6 x 9] overwrite rotationMass2()
-    float *Hx, *Hy; // [1 x 9] from ShapeFunDKT2()
+    float **Hx, **Hy; // [1 x 9] from ShapeFunDKT2()
     /*
     NEW
     */
     float *Hx_xsi, *Hx_eta, *Hy_xsi, *Hy_eta; // [1 x 9] from ShapeFunDKT2()
 
     float **Bb; // [3 x 9] from ShapeFunDKT2()
-    float *LW; // [1 x 10] from pseudoMassDKT()
+    float **LW; // [1 x 10] from pseudoMassDKT()
     float *L; // [1 x 6] from pseudoMassDKT()
     float **Mg, **Kg; // [81 x Nelem] pre-assembly matrices
 };
@@ -170,7 +172,8 @@ void pseudoMassDKT(int ii, int kk, struct triangleDKT *wingMeshFem, struct femAr
 //---------------------------21/04/2023 ADDED
 void matSum2(float alpha, float beta, int rows, int cols, float **arrA, float **arrB, float **arrOut);
 //
-
+void matSum1();
+//
 
 /*=========================================================================================*/
 /* Definition of the functions follows */
@@ -913,13 +916,13 @@ void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *ele
     elemFemArr->Hm[3][3] = (1.0/3.0);
     elemFemArr->Hm[3][6] = (1.0/3.0);
 
-    printf("\nPrinting Hm...\n");
-    for (int i=0;i<10;i++){
-        for (int j=0;j<9;j++){
-            printf("%f, ", elemFemArr->Hm[i][j]);
-        }
-        printf("\n");
-    }
+    //printf("\nPrinting Hm...\n");
+    //for (int i=0;i<10;i++){
+    //    for (int j=0;j<9;j++){
+    //        printf("%f, ", elemFemArr->Hm[i][j]);
+    //    }
+    //    printf("\n");
+    //}
 
     float Hm_5[] = {0.0, 0.0, 0.0,
      (20.0/27.0), 4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), -4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk]),
@@ -954,13 +957,13 @@ void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *ele
         elemFemArr->Hm[9][j]=Hm_10[j];
     }
 
-    printf("\nPrinting Hm...\n");
-    for (int i=0;i<10;i++){
-        for (int j=0;j<9;j++){
-            printf("%f, ", elemFemArr->Hm[i][j]);
-        }
-        printf("\n");
-    }
+    //printf("\nPrinting Hm...\n");
+    //for (int i=0;i<10;i++){
+    //    for (int j=0;j<9;j++){
+    //        printf("%f, ", elemFemArr->Hm[i][j]);
+    //    }
+    //    printf("\n");
+    //}
 
     int myVariable = -5;
     /*
@@ -1086,25 +1089,25 @@ float l12=wingMeshFem->l12[kk];
 float l23=wingMeshFem->l23[kk];
 
 //size Hx [1 x 9]
-elemFemArr->Hx[0]=S5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4])-S6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5]);
-elemFemArr->Hx[1]=-(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5)-(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
-elemFemArr->Hx[2]=(wingMeshFem->SF[ii][0])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->SF[ii][4])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hx[0][0]=S5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4])-S6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hx[0][1]=-(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5)-(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hx[0][2]=(wingMeshFem->SF[ii][0])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->SF[ii][4])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->SF[ii][5]);
 //
-elemFemArr->Hx[3]=S6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5])-S4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3]);
-elemFemArr->Hx[4]=-(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
-elemFemArr->Hx[5]=(wingMeshFem->SF[ii][1])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hx[0][3]=S6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5])-S4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3]);
+elemFemArr->Hx[0][4]=-(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hx[0][5]=(wingMeshFem->SF[ii][1])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->SF[ii][5]);
 //
-elemFemArr->Hx[6]=S4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3])-S5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4]);
-elemFemArr->Hx[7]=-(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5);
-elemFemArr->Hx[8]=(wingMeshFem->SF[ii][2])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->SF[ii][4]);
+elemFemArr->Hx[0][6]=S4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3])-S5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4]);
+elemFemArr->Hx[0][7]=-(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5);
+elemFemArr->Hx[0][8]=(wingMeshFem->SF[ii][2])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->SF[ii][4]);
 
-#if DEBUG_ON
+//#if DEBUG_ON
 printf("ShapeFunDKT2 ...\n");
 printf("\nelemFemArr->Hx...\n");
 for (int i=0;i<9;i++){
-    printf("%f, ",elemFemArr->Hx[i]);
+    printf("%f, ",elemFemArr->Hx[0][i]);
 }
-#endif
+//#endif
 
 //size Hx_xsi [1 x 9]
 elemFemArr->Hx_xsi[0]=S5*3.0/(2.0*l31)*(wingMeshFem->DxsiSF[ii][4])-S6*3.0/(2.0*l12)*(wingMeshFem->DxsiSF[ii][5]);
@@ -1145,24 +1148,25 @@ for (int i=0;i<9;i++){
 }
 #endif
 
-elemFemArr->Hy[0]=-C5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4])+C6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5]);
-elemFemArr->Hy[1]=-(wingMeshFem->SF[ii][0])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->SF[ii][4])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->SF[ii][5]);
-elemFemArr->Hy[2]=(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5)+(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hy[0][0]=-C5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4])+C6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hy[0][1]=-(wingMeshFem->SF[ii][0])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->SF[ii][4])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hy[0][2]=(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5)+(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
 //
-elemFemArr->Hy[3]=-C6*3/(2*l12)*(wingMeshFem->SF[ii][5])+C4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3]);
-elemFemArr->Hy[4]=-(wingMeshFem->SF[ii][1])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->SF[ii][5]);
-elemFemArr->Hy[5]=(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
+elemFemArr->Hy[0][3]=-C6*3/(2*l12)*(wingMeshFem->SF[ii][5])+C4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3]);
+elemFemArr->Hy[0][4]=-(wingMeshFem->SF[ii][1])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hy[0][5]=(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
 //
-elemFemArr->Hy[6]=-C4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3])+C5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][5]);
-elemFemArr->Hy[7]=-(wingMeshFem->SF[ii][2])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->SF[ii][4]);
-elemFemArr->Hy[8]=(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5);
+//-C4*3/(2*l23(k))*SF(ii,4)+C5*3/(2*l31(k))*SF(ii,5);
+elemFemArr->Hy[0][6]=-C4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3])+C5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4]);
+elemFemArr->Hy[0][7]=-(wingMeshFem->SF[ii][2])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->SF[ii][4]);
+elemFemArr->Hy[0][8]=(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5);
 
-#if DEBUG_ON
+//#if DEBUG_ON
 printf("\n\nelemFemArr->Hy...\n");
 for (int i=0;i<9;i++){
-    printf("%f, ",elemFemArr->Hy[i]);
+    printf("%f, ",elemFemArr->Hy[0][i]);
 }
-#endif
+//#endif
 
 elemFemArr->Hy_xsi[0]=-C5*3.0/(2.0*l31)*(wingMeshFem->DxsiSF[ii][4])+C6*3.0/(2.0*l12)*(wingMeshFem->DxsiSF[ii][5]);
 elemFemArr->Hy_xsi[1]=-(wingMeshFem->DxsiSF[ii][0])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->DxsiSF[ii][4])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->DxsiSF[ii][5]);
@@ -1235,12 +1239,12 @@ float LWtemp[]={1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2), pow(xsi,2)*eta, 
 float Ltemp[]={1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2)}; // [1 x 6]
 
 for (int i = 0; i<10; i++){
-    elemFemArr->LW[i] = LWtemp[i];
+    elemFemArr->LW[0][i] = LWtemp[i];
 }
 
 printf("\n\nelemFemArr->LW...\n");
 for (int i=0;i<10;i++){
-    printf("%f, ",elemFemArr->LW[i]);
+    printf("%f, ",elemFemArr->LW[0][i]);
 }
 
 }

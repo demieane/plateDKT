@@ -119,7 +119,7 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=3;%2; %loading case
+lll=2;%2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
 P_load = 1; %[Pa] %pointing towards the Z-axis
@@ -368,8 +368,8 @@ for kk=1:1%Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
        % to the BeSt [3x3] original matrix
        kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
        
-       kbc = (Bb'*BeSt2(:,:,kk))*BeSt2(:,:,kk)
-       size(kbc)
+%        kbc = (Bb'*BeSt2(:,:,kk))*BeSt2(:,:,kk)
+%        size(kbc)
 %        kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt*Bb);
 %        mloc=mloc+m*h*Area(kk)*xw(ii,3)*(Nm'*Nm);
 %        mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*(Nm'*Nm);

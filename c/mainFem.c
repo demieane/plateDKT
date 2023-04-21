@@ -208,12 +208,16 @@ int main(int argc, char **argv){
     //
     allocate2Darray(9, 9, &(elemFemArr.kloc));
     allocate2Darray(9, 9, &(elemFemArr.mloc));
-    allocate2Darray(10, 1, &(elemFemArr.floc));
+    //==========================================
+    allocate2Darray(9, 1, &(elemFemArr.floc)); // TODO : floc, floc1 uniform/distributed load
+    allocate2Darray(10, 1, &(elemFemArr.floc1)); // point load
+    //==========================================
     //
     allocate2Darray(6, 9, &(elemFemArr.Hxx));
     allocate2Darray(6, 9, &(elemFemArr.Hyy));
     //
-    allocate1Darray(9, &(elemFemArr.Hx)); // [1 x 9]
+    allocate2Darray(1, 9, &(elemFemArr.Hx)); // [1 x 9]
+    allocate2Darray(1, 9, &(elemFemArr.Hy)); // [1 x 9]
 
     /* NEW */
     allocate1Darray(9, &(elemFemArr.Hx_xsi)); // [1 x 9]
@@ -221,8 +225,7 @@ int main(int argc, char **argv){
     allocate1Darray(9, &(elemFemArr.Hy_xsi)); // [1 x 9]
     allocate1Darray(9, &(elemFemArr.Hy_eta)); // [1 x 9]
 
-    allocate1Darray(9, &(elemFemArr.Hy)); 
-    allocate1Darray(10, &(elemFemArr.LW)); 
+    allocate2Darray(1, 10, &(elemFemArr.LW)); //[1 x 10]
     allocate1Darray(6, &(elemFemArr.L)); 
     //
     allocate2Darray(3, 9, &(elemFemArr.Bb));
@@ -285,17 +288,21 @@ int main(int argc, char **argv){
             printf("\n");
         }
 #endif
+        //------------------------------------------------------------->>
         // for each gauss point
         //for (int ii = 0; ii<1; ii++){
         for (int ii = 0; ii<Ng; ii++){
+
+            printf(" ENTERING ShapeFunDKT2\n");
             ShapeFunDKT2(ii, kk, &wingMeshFem, &elemFemArr);
+            printf(" EXITING ShapeFunDKT2\n");
             pseudoMassDKT(ii, kk, &wingMeshFem, &elemFemArr); // not exactly used (only LW)
 
             //The C compiler can glue adjacent string literals into one
             printf("\n------------------------------\n"
                    "  kloc calculations: area(kk)=%f, gauss weight xw(ii,3)=%f\n"
                    "------------------------------\n"
-                   ,wingMeshFem.area[ii], xw[ii][2]);
+                   ,wingMeshFem.area[kk], xw[ii][2]);
             // TODO: Use the available CBLAS & LAPACKE routines 
             
             // matrix addition needed 
@@ -303,6 +310,7 @@ int main(int argc, char **argv){
             float **kb;
             allocate2Darray(9, 3, &kb);
 
+#if DEBUG_ON
             printf("\n kb (in main)\n");
             for (int i=0;i<9;i++){
                 for (int j=0;j<3;j++){
@@ -313,8 +321,10 @@ int main(int argc, char **argv){
             }
 
             printf("\n Bb'*BeSt2(:,:,kk) \n");
+#endif
             matMatMultiplication2(2, 3, 9, 3, 1.0, 0.0, elemFemArr.Bb, BeSt, kb);
 
+#if DEBUG_ON
             printf("\n kb (in main)\n");
             for (int i=0;i<9;i++){
                 for (int j=0;j<3;j++){
@@ -325,11 +335,13 @@ int main(int argc, char **argv){
             }
 
             printf("\n kb*Bb \n");
+#endif
             float **kb1;
             allocate2Darray(9,9,&kb1);
-            float var1 = wingMeshFem.area[ii] * xw[ii][2];
+            float var1 = wingMeshFem.area[kk] * xw[ii][2];
             matMatMultiplication2(1, 9, 3, 9, var1, 0.0, kb, elemFemArr.Bb, kb1);
 
+#if DEBUG_ON
             printf("\n test (in main)\n");
             for (int i=0;i<9;i++){
                 for (int j=0;j<9;j++){
@@ -337,9 +349,10 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
-
+#endif
             matSum2(1.0, 0.0, 9, 9, kb1, kb1, elemFemArr.kloc); // kloc = kloc + kb1
 
+#if DEBUG_ON
             printf("\n kloc (in main)\n");
             for (int i=0;i<9;i++){
                 for (int j=0;j<9;j++){
@@ -347,15 +360,90 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
+#endif
+            
+            // floc1=floc1+Area(kk)*xw(ii,3)*(LW');
 
-            //printf("debugging...");
-            //exit(3);
-            // kb_temp = Bb'*BeSt2(:,:,kk)
-            //matMatMultiplication2(9, 3, 3, float **arrA, float **arrB, float **arrOut)
+            printf("\n------------------------------\n"
+                   "  mloc calculations\n"
+                   "------------------------------\n");
+                // mlocTEMP = (HW'*(LW'*LW)*HW)+
+                // txxBEM(kk)^2/12*(Hx'*Hx)+
+                // txxBEM(kk)^2/12*(Hy'*Hy)
+            
+            float **term1, **term2, **term3;
+            allocate2Darray(9,9,&term1);
+            allocate2Darray(9,9,&term2);
+            allocate2Darray(10,10,&term3);
+
+            printf("h = %f,\n",inDataFem.h);    
+            float var0 = pow(inDataFem.h,2)/12.0;
+            printf("txx^2/12*1000 = %f\n",var0*1000);
+            
+            matMatMultiplication2(2, 1, 9, 9, var0, 0.0, elemFemArr.Hx, elemFemArr.Hx, term1); //Hx'*Hx
+            //
+            matMatMultiplication2(2, 1, 9, 9, var0, 0.0, elemFemArr.Hy, elemFemArr.Hy, term2); //Hy'*Hy
+            //
+            matMatMultiplication2(2, 1, 10, 10, 1.0, 0.0, elemFemArr.LW, elemFemArr.LW, term3); //LW'*LW
+
+            printf("\n elemFemArr.Hy (in main)\n");
+            for (int i=0;i<1;i++){
+                for (int j=0;j<9;j++){
+                    printf("%f,",elemFemArr.Hy[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\n term1 (in main)\n");
+            for (int i=0;i<9;i++){
+                for (int j=0;j<9;j++){
+                    printf("%f,",term1[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\n term2 (in main)\n");
+            for (int i=0;i<9;i++){
+                for (int j=0;j<9;j++){
+                    printf("%f,",term2[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\n term3 (in main)\n");
+            for (int i=0;i<10;i++){
+                for (int j=0;j<10;j++){
+                    printf("%f,",term3[i][j]);
+                }
+                printf("\n");
+            }
+
+            
+            // mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*(mlocTEMP);
 
         }
+        //------------------------------------------------------------->> for each gauss point
 
+        printf("\n------------------------------\n"
+                "  floc calculations\n"
+                "------------------------------\n");
+        // lumped mass approach for the uniform load
+        float lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
+        if (inDataFem.LL == 2){
+            for (int i=0;i<9;i++){
+                for (int j=0;j<1;j++){
+                    elemFemArr.floc[i][j] = elemFemArr.floc[i][j] + wingMeshFem.area[kk]*inDataFem.P_load/3.0*lumpedMass[i];
+                }
+            }
+        }
 
+        for (int i=0;i<9;i++){
+            for (int j=0;j<1;j++){
+                printf("%f,",elemFemArr.floc[i][j]); 
+            }
+            printf("\n");
+        }
+   
     }
 
     
