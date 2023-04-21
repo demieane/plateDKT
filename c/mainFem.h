@@ -160,7 +160,7 @@ void allocate1Darray(int rows, float **arrIn);
 //
 void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
 //
-void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, float **arrA, float **arrB, float **arrOut);
+void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, float alpha, float beta, float **arrA, float **arrB, float **arrOut);
 //
 void rotationMass2(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);
 //
@@ -967,7 +967,8 @@ void massHmDKT(int kk, struct triangleDKT *wingMeshFem, struct femArraysDKT *ele
     */
     int M = 10, N = 10, K = 9;
     int optionCalc = 1; //without transpose
-    matMatMultiplication2(optionCalc, M, N, K, wingMeshFem->GGin, elemFemArr->Hm, elemFemArr->HW);
+    float alpha = 1.0, beta = 0.0;
+    matMatMultiplication2(optionCalc, M, N, K, alpha, beta, wingMeshFem->GGin, elemFemArr->Hm, elemFemArr->HW);
 
 #if DEBUG_ON
     printf("\n EXITING massHmDKT...");

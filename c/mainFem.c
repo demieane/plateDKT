@@ -268,7 +268,7 @@ int main(int argc, char **argv){
 
         rotationMass2(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
 
-//#if DEBUG_ON
+#if DEBUG_ON
         printf("\nPrinting HW...(in main)\n");
         for (int i=0;i<10;i++){
             for (int j=0;j<9;j++){
@@ -284,7 +284,7 @@ int main(int argc, char **argv){
             }
             printf("\n");
         }
-//#endif
+#endif
         // for each gauss point
         for (int ii = 0; ii<1; ii++){
         //for (int ii = 0; ii<Ng; ii++){
@@ -313,7 +313,7 @@ int main(int argc, char **argv){
             }
 
             printf("\n Bb'*BeSt2(:,:,kk) \n");
-            matMatMultiplication2(2, 3, 9, 3, elemFemArr.Bb, BeSt, kb);
+            matMatMultiplication2(2, 3, 9, 3, 1.0, 0.0, elemFemArr.Bb, BeSt, kb);
 
             printf("\n kb (in main)\n");
             for (int i=0;i<9;i++){
@@ -324,26 +324,20 @@ int main(int argc, char **argv){
                 printf("\n");
             }
 
-            printf("\n HW (in main)\n");
-            for (int i=0;i<10;i++){
-                for (int j=0;j<9;j++){
-                    printf("%f,",elemFemArr.HW[i][j]);
-                }
-                printf("\n");
-            }
-
-            float **test;
-            allocate2Darray(9, 9, &test);
             printf("\n kb*Bb \n");
-            matMatMultiplication2(1, 9, 3, 9, kb, elemFemArr.Bb, test);
+            float **kb1;
+            allocate2Darray(9,9,&kb1);
+            float var1 = wingMeshFem.area[ii] * xw[ii][2];
+            matMatMultiplication2(1, 9, 3, 9, var1, 0.0, kb, elemFemArr.Bb, kb1);
 
             printf("\n test (in main)\n");
             for (int i=0;i<9;i++){
                 for (int j=0;j<9;j++){
-                    printf("%f,",test[i][j]);
+                    printf("%f,",kb1[i][j]);
                 }
                 printf("\n");
             }
+
 
             printf("debugging...");
             exit(3);

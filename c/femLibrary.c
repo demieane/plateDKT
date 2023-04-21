@@ -66,7 +66,7 @@ void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut){
     printf("------------------------------------\n");
 }
 
-void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, float **arrA, float **arrB, float **arrOut){
+void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, float alpha, float beta, float **arrA, float **arrB, float **arrOut){
     //   SGEMM - perform one of the matrix-matrix operations   
     //   C := alpha*op( A )*op( B ) + beta*C,
     //   M number of rows (A)
@@ -79,7 +79,7 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, floa
     // optionCalc == 1: no transpose
     // optionCalc == 2: A transpose
 
-    float alpha = 1.0, beta = 0.0;
+    //float alpha = 1.0, beta = 0.0;
     int rowsB, rowsC, colsC;
     if (optionCalc == 1){
         rowsB = colsA;
