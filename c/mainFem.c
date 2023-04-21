@@ -484,8 +484,39 @@ int main(int argc, char **argv){
         }
 
         //Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
+        //Kg(:,kk)=[kloc(:,1);kloc(:,2);kloc(:,3);kloc(:,4);kloc(:,5);kloc(:,6);kloc(:,7);kloc(:,8);kloc(:,9)];
+        int cntMg = 0;
+        for (int i=0;i<9;i++){
+            for (int j=0;j<9;j++){
+                elemFemArr.Mg[cntMg][kk] = elemFemArr.mloc[j][i];
+                elemFemArr.Kg[cntMg][kk] = elemFemArr.kloc[j][i];
+                cntMg++;
+                // i++ will increment the value of i, but return the original value that i held before being incremented.
+            }
+        }
 
+#if DEBUG_ON
+        printf("\nMg(:,k)\n");
+        for (int j=0;j<81;j++){
+            printf("%f,\n",elemFemArr.Mg[j][kk]); 
+        }
 
+        printf("\nKg(:,k)\n");
+        for (int j=0;j<81;j++){
+            printf("%f,\n",elemFemArr.Kg[j][kk]); 
+        }
+#endif
+
+        for (int q=0;q<9;q++){
+            int cntFglob = wingMeshFem.LM[q][kk]-1;
+            elemFemArr.Fglob[cntFglob][0] = elemFemArr.Fglob[cntFglob][0] + elemFemArr.floc[q][0];
+            //Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
+        }
+
+        printf("\nFglob...\n");
+        for (int j=0;j<20;j++){
+            printf("j=%d, %f,\n",j, elemFemArr.Fglob[j][0]); 
+        }
    
     }
 
