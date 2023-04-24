@@ -399,7 +399,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     %***********************************
 end
 
-error('oo')
+% error('oo')
 %% Global assembly (uses the LM)
 % COMMENT: The boundary conditions are enforced as extra equations
 % in the sense of constraints in the present version
@@ -412,22 +412,32 @@ iii=repmat(iii',1,9);
 rr=iii';
 Ig=LM(iii(:),:);  %LM ARRAY (Dofs per Element)X(Elements)   -   (Nnodes*Ndof)X(Nel)
 Jg=LM(rr(:),:);
-Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
+
+%  S(i(k),j(k)) = v(k)
+% Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
+Kglob=sparse(Ig(:),Jg(:),10,GEN,GEN);
 % % spy(Kglob)
 Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
 
-% clear Kglob
+Kglobfull=full(Kglob);
+
+
+% error('er2')
 % cnt = 0;
-% for ii = 1:size(Ig,1)
-%     for jj = 1:size(Ig,2)
-% %         cnt = cnt + 1;
-%             Kglob(Ig(ii,jj),Jg(ii,jj)) = Kg(ii,jj);
-%             Mglob(Ig(ii,jj),Jg(ii,jj)) = Mg(ii,jj);
-%     end
-% end
+for ii = 1:size(Ig,1)
+    for jj = 1:size(Ig,2)
+%         cnt = cnt + 1;
+%         Kglob2(Ig(ii,jj),Jg(ii,jj)) = Kg(ii,jj);
+        Kglob2(Jg(ii,jj),Ig(ii,jj)) = 10;%Kg(ii,jj);
+        Mglob2(Ig(ii,jj),Jg(ii,jj)) = Mg(ii,jj);
+    end
+end
 % cnt
 
-% error('er')
+Kglobfull(1:10,1:10)
+Kglob2(1:10,1:10)
+error('er')
+
 BBnodes_old=BBnodes; %DIMITRA
 BBnodes=Bdofs;%DIMITRA
 
@@ -452,45 +462,45 @@ Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];
 % 
 % error('yy')
 
-% % % FORCING AND SOLUTION
-% % if lll==1
-% %     Fglob=zeros(length(Kglob),1);
-% %     Fglob(ID(1,PNODE))=P_load;
-% %     U=Kglob\Fglob; %SOLVE SPARSE SYSTEM OF EQUATIONS
-% % %hughe [ch.9] newmark - 2nd order
-% % else
-% %     Fglob1=[Fglob; zeros(length(BBnodes),1)];
-% %     U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
-% % end
-% % 
-% % BBnodes=BBnodes_old;%DIMITRA
-% % 
-% % %==========================================================================
-% % %                             POST-PROCESSOR
-% % %==========================================================================
-% % % u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
-% % % %
-% % % w=u(1:3:end);   % vertical displacement
-% % % bx=u(2:3:end);  % rotation x
-% % % by=u(3:3:end);  % rotation y
-% % % 
-% % % figure;
-% % % subplot(1,3,[1 2]);hold on;grid on;
-% % % plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
-% % % hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
-% % % colorbar;shading interp;view([25 25]);%axis equal;
-% % % zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
-% % % xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
-% % % %     title('w displacement','FontWeight','normal');
-% % % subplot(1,3,3);hold on;grid on;
-% % % pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
-% % % colorbar;shading interp;
-% % % xlabel('x-axis');ylabel('y-axis');
-% % % title('(contour)','FontWeight','normal');
-% % % 
-% % % max(abs(w))/inData.a3
-% % % 
-% % % error('hh')
+%FORCING AND SOLUTION
+if lll==1
+    Fglob=zeros(length(Kglob),1);
+    Fglob(ID(1,PNODE))=P_load;
+    U=Kglob\Fglob; %SOLVE SPARSE SYSTEM OF EQUATIONS
+%hughe [ch.9] newmark - 2nd order
+else
+    Fglob1=[Fglob; zeros(length(BBnodes),1)];
+    U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
+end
+
+BBnodes=BBnodes_old;%DIMITRA
+
+%==========================================================================
+%                            POST-PROCESSOR
+%==========================================================================
+u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+%
+w=u(1:3:end);   % vertical displacement
+bx=u(2:3:end);  % rotation x
+by=u(3:3:end);  % rotation y
+
+figure;
+subplot(1,3,[1 2]);hold on;grid on;
+plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
+hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
+colorbar;shading interp;view([25 25]);%axis equal;
+zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
+xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
+%     title('w displacement','FontWeight','normal');
+subplot(1,3,3);hold on;grid on;
+pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
+colorbar;shading interp;
+xlabel('x-axis');ylabel('y-axis');
+title('(contour)','FontWeight','normal');
+
+max(abs(w))/inData.a3
+
+error('hh')
 
 %% TIME-MARCHING
 T=2*pi/inData.omega3;%sec
