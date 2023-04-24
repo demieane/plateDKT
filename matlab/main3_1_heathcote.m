@@ -338,7 +338,7 @@ end
 % error('pp')
 Fglob=zeros(GEN,1);
 
-for kk=1:1%Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
+for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
   
 % %% Mass matrix
     [ Hm,HW] = massHmDKT(kk,l23,l31,l12,C4,C5,C6,S4,S5,S6,GGin);

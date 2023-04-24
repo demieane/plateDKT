@@ -256,22 +256,11 @@ int main(int argc, char **argv){
 #endif
 
     //for each triangle in the mesh
-    //for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
-    for (int kk = 0;kk<1;kk++){   
+    for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
+    //for (int kk = 0;kk<2;kk++){   
     //for (int kk = 0;kk<1;kk++){   
 
         massHmDKT(kk, &wingMeshFem, &elemFemArr); // Hm, HW
-
-/*
-        printf("\nPrinting Hw [10 x 9] ...\n");
-        for (int i=0;i<10;i++){
-            for (int j=0;j<9;j++){
-                printf("%f, ", elemFemArr.HW[i][j]);
-            }
-            printf("\n");
-        }
-*/
-
         rotationMass2(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
 
 #if DEBUG_ON
@@ -312,50 +301,18 @@ int main(int argc, char **argv){
             // kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
             float **kb;
             allocate2Darray(9, 3, &kb);
-
-#if DEBUG_ON
-            printf("\n kb (in main)\n");
-            for (int i=0;i<9;i++){
-                for (int j=0;j<3;j++){
-                    //kb[i][j] = 1.0;
-                    printf("%f,",kb[i][j]);
-                }
-                printf("\n");
-            }
-
-            printf("\n Bb'*BeSt2(:,:,kk) \n");
-#endif
             matMatMultiplication2(2, 3, 9, 3, 1.0, 0.0, elemFemArr.Bb, BeSt, kb);
 
-#if DEBUG_ON
-            printf("\n kb (in main)\n");
-            for (int i=0;i<9;i++){
-                for (int j=0;j<3;j++){
-                    //kb[i][j] = 1.0;
-                    printf("%f,",kb[i][j]);
-                }
-                printf("\n");
-            }
-
-            printf("\n kb*Bb \n");
-#endif
             float **kb1;
             allocate2Darray(9,9,&kb1);
             float var1 = wingMeshFem.area[kk] * xw[ii][2];
             matMatMultiplication2(1, 9, 3, 9, var1, 0.0, kb, elemFemArr.Bb, kb1);
 
-#if DEBUG_ON
-            printf("\n test (in main)\n");
-            for (int i=0;i<9;i++){
-                for (int j=0;j<9;j++){
-                    printf("%f,",kb1[i][j]);
-                }
-                printf("\n");
-            }
-#endif
             matSum2(1.0, 0.0, 9, 9, kb1, kb1, elemFemArr.kloc); // kloc = kloc + kb1
 
-#if DEBUG_ON
+            free(kb1);
+            free(kb);
+
             printf("\n kloc (in main)\n");
             for (int i=0;i<9;i++){
                 for (int j=0;j<9;j++){
@@ -363,7 +320,6 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
-#endif
             
             // floc1=floc1+Area(kk)*xw(ii,3)*(LW');
 
@@ -395,54 +351,6 @@ int main(int argc, char **argv){
             //
             matMatMultiplication2(1, 9, 10, 9, 1.0, 0.0, term4, elemFemArr.HW, term5); //(HW'*(LW'*LW)*HW) -> [9 x 10] [10 x 9]
 
-            printf("\n elemFemArr.Hy (in main)\n");
-            for (int i=0;i<1;i++){
-                for (int j=0;j<9;j++){
-                    printf("%f,",elemFemArr.Hy[i][j]);
-                }
-                printf("\n");
-            }
-
-            printf("\n term1 (in main)\n");
-            for (int i=0;i<9;i++){
-                for (int j=0;j<9;j++){
-                    printf("%f,",term1[i][j]);
-                }
-                printf("\n");
-            }
-
-            printf("\n term2 (in main)\n");
-            for (int i=0;i<9;i++){
-                for (int j=0;j<9;j++){
-                    printf("%f,",term2[i][j]);
-                }
-                printf("\n");
-            }
-
-            printf("\n term3 (in main)\n");
-            for (int i=0;i<10;i++){
-                for (int j=0;j<10;j++){
-                    printf("%f,",term3[i][j]);
-                }
-                printf("\n");
-            }
-
-            printf("\n term4 (in main)\n");
-            for (int i=0;i<9;i++){
-                for (int j=0;j<10;j++){
-                    printf("%f,",term4[i][j]);
-                }
-                printf("\n");
-            }
-
-            printf("\n term5 (in main)\n");
-            for (int i=0;i<9;i++){
-                for (int j=0;j<9;j++){
-                    printf("%f,",term5[i][j]);
-                }
-                printf("\n");
-            }
-
             //  mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*((HW'*(LW'*LW)*HW)+txxBEM(kk)^2/12*(Hx'*Hx)+txxBEM(kk)^2/12*(Hy'*Hy));
             float **sum1, **sum2;
             allocate2Darray(9,9,&sum1);
@@ -451,6 +359,14 @@ int main(int argc, char **argv){
             matSum2(varmloc, varmloc, 9, 9, term1, term2, sum1); // C = C + a * A + b * B
             matSum2(1.0, varmloc, 9, 9, sum1, term5, sum2);
             matSum2(1.0, 0.0, 9, 9, sum2, sum2, elemFemArr.mloc);
+
+            free(term1);
+            free(term2);
+            free(term3);
+            free(term4);
+            free(term5);
+            free(sum1);
+            free(sum2);
 
             printf("\n mloc (in main)\n");
             for (int i=0;i<9;i++){
@@ -463,6 +379,7 @@ int main(int argc, char **argv){
 
         }
         //------------------------------------------------------------->> for each gauss point
+
 
         printf("\n------------------------------\n"
                 "  floc calculations\n"
@@ -517,6 +434,14 @@ int main(int argc, char **argv){
         printf("\nFglob...\n");
         for (int j=0;j<20;j++){
             printf("j=%d, %f,\n",j, elemFemArr.Fglob[j][0]); 
+        }
+
+        for (int i = 0;i<9;i++){
+            elemFemArr.floc[i][0] = 0;
+            for (int j = 0;j<9;j++){
+                elemFemArr.mloc[i][j] = 0;
+                elemFemArr.kloc[i][j] = 0;
+            }
         }
    
     }
