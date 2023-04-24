@@ -285,18 +285,19 @@ int main(int argc, char **argv){
         //for (int ii = 0; ii<1; ii++){
         for (int ii = 0; ii<Ng; ii++){
 
-            printf(" ENTERING ShapeFunDKT2\n");
+            //printf(" ENTERING ShapeFunDKT2\n");
             ShapeFunDKT2(ii, kk, &wingMeshFem, &elemFemArr);
-            printf(" EXITING ShapeFunDKT2\n");
+            //printf(" EXITING ShapeFunDKT2\n");
             pseudoMassDKT(ii, kk, &wingMeshFem, &elemFemArr); // not exactly used (only LW)
 
+#if DEBUG_ON
             //The C compiler can glue adjacent string literals into one
             printf("\n------------------------------\n"
                    "  kloc calculations: area(kk)=%f, gauss weight xw(ii,3)=%f\n"
                    "------------------------------\n"
                    ,wingMeshFem.area[kk], xw[ii][2]);
             // TODO: Use the available CBLAS & LAPACKE routines 
-            
+#endif            
             // matrix addition needed 
             // kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
             float **kb;
@@ -313,6 +314,7 @@ int main(int argc, char **argv){
             free(kb1);
             free(kb);
 
+#if DEBUG_ON
             printf("\n kloc (in main)\n");
             for (int i=0;i<9;i++){
                 for (int j=0;j<9;j++){
@@ -320,12 +322,13 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
-            
+#endif             
             // floc1=floc1+Area(kk)*xw(ii,3)*(LW');
-
+#if DEBUG_ON
             printf("\n------------------------------\n"
                    "  mloc calculations\n"
                    "------------------------------\n");
+#endif 
                 // mlocTEMP = (HW'*(LW'*LW)*HW)+
                 // txxBEM(kk)^2/12*(Hx'*Hx)+
                 // txxBEM(kk)^2/12*(Hy'*Hy)
@@ -337,9 +340,9 @@ int main(int argc, char **argv){
             allocate2Darray(9,10,&term4);
             allocate2Darray(9,9,&term5);
 
-            printf("h = %f,\n",inDataFem.h);    
+            //printf("h = %f,\n",inDataFem.h);    
             float var0 = pow(inDataFem.h,2)/12.0;
-            printf("txx^2/12*1000 = %f\n",var0*1000);
+            //printf("txx^2/12*1000 = %f\n",var0*1000);
             
             matMatMultiplication2(2, 1, 9, 9, var0, 0.0, elemFemArr.Hx, elemFemArr.Hx, term1); //Hx'*Hx
             //
@@ -367,7 +370,7 @@ int main(int argc, char **argv){
             free(term5);
             free(sum1);
             free(sum2);
-
+#if DEBUG_ON
             printf("\n mloc (in main)\n");
             for (int i=0;i<9;i++){
                 for (int j=0;j<9;j++){
@@ -375,15 +378,17 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
+#endif            
             // mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*(mlocTEMP);
 
         }
         //------------------------------------------------------------->> for each gauss point
 
-
+#if DEBUG_ON
         printf("\n------------------------------\n"
                 "  floc calculations\n"
                 "------------------------------\n");
+#endif
         // lumped mass approach for the uniform load
         float lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
         if (inDataFem.LL == 2){
@@ -393,14 +398,14 @@ int main(int argc, char **argv){
                 }
             }
         }
-
+#if DEBUG_ON
         for (int i=0;i<9;i++){
             for (int j=0;j<1;j++){
                 printf("%f,",elemFemArr.floc[i][j]); 
             }
             printf("\n");
         }
-
+#endif
         //Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
         //Kg(:,kk)=[kloc(:,1);kloc(:,2);kloc(:,3);kloc(:,4);kloc(:,5);kloc(:,6);kloc(:,7);kloc(:,8);kloc(:,9)];
         int cntMg = 0;
@@ -431,11 +436,12 @@ int main(int argc, char **argv){
             //Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
         }
 
-        printf("\nFglob...\n");
-        for (int j=0;j<20;j++){
-            printf("j=%d, %f,\n",j, elemFemArr.Fglob[j][0]); 
-        }
+        //printf("\nFglob...\n");
+        //for (int j=0;j<20;j++){
+        //    printf("j=%d, %f,\n",j, elemFemArr.Fglob[j][0]); 
+        //}
 
+        // re-initialize mloc, kloc, floc
         for (int i = 0;i<9;i++){
             elemFemArr.floc[i][0] = 0;
             for (int j = 0;j<9;j++){
@@ -445,8 +451,19 @@ int main(int argc, char **argv){
         }
    
     }
+    printf("\nCalculated Mg(:,kk), Kg(:,kk), Fglob(kk)");
 
-    
+#if DEBUG_ON 
+    printf("\nMg(:,k)\n");
+    for (int j=0;j<81;j++){
+        printf("%f,\n",elemFemArr.Mg[j][0]); 
+    }
+
+    printf("\nKg(:,k)\n");
+    for (int j=0;j<81;j++){
+        printf("%f,\n",elemFemArr.Kg[j][0]); 
+    }
+#endif
 
     //************************************************************************************
     //  DKT PLATE SOLVER: GLOBAL MATRIX ASSEMBLY (Mglob, Kglob, Fglob)

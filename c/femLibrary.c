@@ -138,7 +138,9 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, floa
     }
 
     if (optionCalc == 1){
+        #if DEBUG_ON   
         printf("\n MAT MUL option (1)\n\n");
+        #endif
         int LDA = colsA; // increment in the array (due to row major order)
         int LDB = colsB;
         int LDC = colsC;
@@ -155,7 +157,9 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, floa
         //        AA, 10, BB, 9, beta, CC, 9);
     }
     if (optionCalc == 2){
+        #if DEBUG_ON   
         printf("\n MAT MUL option (2) \n\n");
+        #endif
         int LDA = colsA; // increment in the array (due to row major order)
         int LDB = colsB;
         int LDC = colsC;
@@ -188,7 +192,9 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, floa
     free(AA);
     free(BB);
     free(CC);
+#if DEBUG_ON   
     printf(" EXITING matMatMultiplication2...\n");
+#endif
 }
 
 void matSum2(float alpha, float beta, int rows, int cols, float **arrA, float **arrB, float **arrOut){
