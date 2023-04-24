@@ -414,22 +414,23 @@ Ig=LM(iii(:),:);  %LM ARRAY (Dofs per Element)X(Elements)   -   (Nnodes*Ndof)X(N
 Jg=LM(rr(:),:);
 
 %  S(i(k),j(k)) = v(k)
-% Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
-Kglob=sparse(Ig(:),Jg(:),10,GEN,GEN);
+Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
 % % spy(Kglob)
 Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
 
 Kglobfull=full(Kglob);
 
-
 % error('er2')
 % cnt = 0;
+% USE LM for the assembly instead!
+% Use the sparse function to accumulate the values that have identical
+% subscripts. (TO DO: that is the key)
 for ii = 1:size(Ig,1)
     for jj = 1:size(Ig,2)
 %         cnt = cnt + 1;
-%         Kglob2(Ig(ii,jj),Jg(ii,jj)) = Kg(ii,jj);
-        Kglob2(Jg(ii,jj),Ig(ii,jj)) = 10;%Kg(ii,jj);
-        Mglob2(Ig(ii,jj),Jg(ii,jj)) = Mg(ii,jj);
+        Kglob2(Ig(ii,jj),Jg(ii,jj)) = Kg(ii,jj);
+%         Kglob2(Jg(ii,jj),Ig(ii,jj)) = 0.*Kg(ii,jj)+10;%Kg(ii,jj);
+%         Mglob2(Ig(ii,jj),Jg(ii,jj)) = Mg(ii,jj);
     end
 end
 % cnt
