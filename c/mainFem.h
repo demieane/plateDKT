@@ -173,7 +173,8 @@ void pseudoMassDKT(int ii, int kk, struct triangleDKT *wingMeshFem, struct femAr
 void matSum2(float alpha, float beta, int rows, int cols, float **arrA, float **arrB, float **arrOut);
 //
 void matSum1();
-//
+//---------------------------26/04/2023 ADDED
+void linearSystemSolve(int rowsA, int colsA, float **arrA, float **arrB, float **Usol);
 
 /*=========================================================================================*/
 /* Definition of the functions follows */

@@ -271,3 +271,51 @@ void allocate1Darray(int rows, float **arrIn){
 
     *arrIn = arrTemp; // this will do?
 }
+
+void linearSystemSolve(int rowsA, int colsA, float **arrA, float **arrB, float **Usol){
+
+    // assuming that the given arrA, arrB are 2D arrays. 
+    // transform it to 1D- array for lapack functions
+    float *AA;
+    AA = (float*)malloc((rowsA*colsA) *sizeof(float));
+
+    for (int i = 0; i < rowsA; i++) {
+        for (int j = 0; j < colsA; j++){
+            AA[i * colsA + j] = arrA[i][j];
+            //printf("Local: %f, In: %f ", AA[i * colsA + j],arrA[i][j]);
+        } 
+        //printf("\n");
+    }
+    //printf("\n\n");
+    printf("Allocated A.. OK!\n");
+
+    float *BB;
+    BB = (float*)malloc((rowsA*1) *sizeof(float));
+    for (int i = 0; i < rowsA; i++) {
+        BB[i] = arrB[i][0];
+    }
+    printf("Allocated B.. OK!\n");
+
+    int nrhs = 1; //number of rhs vectors B 
+    int LDA = colsA;
+    int LDB = rowsA;
+    int lwork = 0;
+    float *work;// uninitialized BUG 
+    int info;
+
+    int *IPIV = (int*)malloc((rowsA) *sizeof(int));
+
+    // https://www.intel.com/content/www/us/en/docs/onemkl/code-samples-lapack/2022-1/sgesv-example-c.html
+    sgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
+
+    if (info >= 0){
+        printf("Solution successfull");
+    } 
+
+    for (int i = 0; i < rowsA; i++) {
+        Usol[i][0]=BB[i];
+    }
+    printf("Transfered solution from B to Usol.. OK!\n");
+
+
+}

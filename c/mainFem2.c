@@ -659,7 +659,17 @@ int main(int argc, char **argv){
 */
         printf("\nUNIFORM LOAD: P=%f [Pa]\n",inDataFem.P_load);
 
-        sgels_();
+        float **Usol;
+        allocate2Darray(sizeKMglob_aug,1,&Usol);
+        // solve linear system of eqs. using LAPACK sgels_ function
+        linearSystemSolve(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
+
+        printf("\n Usol...\n");
+        for (int i=0;i<20;i++){
+            printf("%f, ", Usol[i][0]);
+        }
+
+        //sgels_();
 
     }
 
