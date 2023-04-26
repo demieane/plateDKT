@@ -467,7 +467,7 @@ Kglob_dense2(1:27,GEN+1:end)
 error('er')
 % [XX,lamM,flag]=eigs(Kglob,Mglob,15,'sm');
 % cc=sort(diag(lamM));
-% 
+%   
 % freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
 % 
 % error('yy')

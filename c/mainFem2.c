@@ -646,6 +646,24 @@ int main(int argc, char **argv){
     //************************************************************************************
     printf("\nStarting linear system solution (Kglob_aug, Mglob_aug are dense matrices!)\n");
 
+    if (inDataFem.LL == 2){
+        float **Fglob_aug;
+        allocate2Darray(sizeKMglob_aug,1,&Fglob_aug);
+        for (int i=0;i<wingMeshFem.GEN;i++){
+            Fglob_aug[i][0]=elemFemArr.Fglob[i][0];
+        }
+/*
+        for (int i=0;i<sizeKMglob_aug;i++){
+            printf("%f, ", Fglob_aug[i][0]);
+        }
+*/
+        printf("\nUNIFORM LOAD: P=%f [Pa]\n",inDataFem.P_load);
+
+        sgels_();
+
+    }
+
+
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
     //************************************************************************************
