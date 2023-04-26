@@ -401,11 +401,11 @@ end
 
 % error('oo')
 %% Global assembly (uses the LM)
-% COMMENT: The boundary conditions are enforced as extra equations
-% in the sense of constraints in the present version
+% The sparse function accumulate the values that have identical
+% subscripts. 
+% S(i(k),j(k)) = v(k)
 
-% HOW TO WRITE THE SAME WITHOUT THE SPARSE MATRIX!!!
-
+disp('===================ASSEMBLY==============================')
 iii=1:9; %Elnodes Number of element nodes
 iii=repmat(iii',1,9);
 
@@ -413,32 +413,38 @@ rr=iii';
 Ig=LM(iii(:),:);  %LM ARRAY (Dofs per Element)X(Elements)   -   (Nnodes*Ndof)X(Nel)
 Jg=LM(rr(:),:);
 
-%  S(i(k),j(k)) = v(k)
+
 Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
 % % spy(Kglob)
 Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
-
+    
 Kglobfull=full(Kglob);
+Mglobfull=full(Mglob);
 
-% error('er2')
-% cnt = 0;
-% USE LM for the assembly instead!
-% Use the sparse function to accumulate the values that have identical
-% subscripts. (TO DO: that is the key)
+clear Kglob_dense Mglob_dense
+Kglob_dense = zeros(GEN,GEN);
+Mglob_dense = zeros(GEN,GEN);
 for ii = 1:size(Ig,1)
     for jj = 1:size(Ig,2)
 %         cnt = cnt + 1;
-        Kglob2(Ig(ii,jj),Jg(ii,jj)) = Kg(ii,jj);
-%         Kglob2(Jg(ii,jj),Ig(ii,jj)) = 0.*Kg(ii,jj)+10;%Kg(ii,jj);
-%         Mglob2(Ig(ii,jj),Jg(ii,jj)) = Mg(ii,jj);
+        Kglob_dense(Ig(ii,jj),Jg(ii,jj)) = Kglob_dense(Ig(ii,jj),Jg(ii,jj)) + Kg(ii,jj);
+        Mglob_dense(Ig(ii,jj),Jg(ii,jj)) = Mglob_dense(Ig(ii,jj),Jg(ii,jj)) + Mg(ii,jj);
     end
 end
 % cnt
-
+disp('===================Kglobfull=============================')
 Kglobfull(1:10,1:10)
-Kglob2(1:10,1:10)
-error('er')
+disp('===================Kglob_dense===========================')
+Kglob_dense(1:10,1:10)
+%
+disp('===================Mglobfull=============================')
+Mglobfull(1:10,1:10)
+disp('===================Mglob_dense===========================')
+Mglob_dense(1:10,1:10)
 
+error('er')
+% COMMENT: The boundary conditions are enforced as extra equations
+% in the sense of constraints in the present version
 BBnodes_old=BBnodes; %DIMITRA
 BBnodes=Bdofs;%DIMITRA
 
@@ -448,14 +454,14 @@ Dofs=length(pp)*3;
 
 % Totbound=reshape(BBound',1,4*size(BBound,2));
 %***************************ADDITION***************************************
-for j=1:length(BBnodes)
+for j=1:2%length(BBnodes)
     kkk(j,:)=[zeros(1,Bdofs(j)-1) 1 zeros(1,Dofs-Bdofs(j))];
 end
 %**************************************************************************
 Kglob=[Kglob kkk'; kkk zeros(length(BBnodes))];
 Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];
 
-
+error('er')
 % [XX,lamM,flag]=eigs(Kglob,Mglob,15,'sm');
 % cc=sort(diag(lamM));
 % 

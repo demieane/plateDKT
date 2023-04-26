@@ -468,15 +468,139 @@ int main(int argc, char **argv){
     //************************************************************************************
     //  DKT PLATE SOLVER: GLOBAL MATRIX ASSEMBLY (Mglob, Kglob, Fglob)
     //************************************************************************************
+    float **iii, **rr, **iii_col, **rr_col;
+    allocate2Darray(9,9,&iii);
+    allocate2Darray(9,9,&rr);
+    allocate2Darray(81,1,&iii_col);
+    allocate2Darray(81,1,&rr_col);
 
-    
+    for (int i=0;i<9;i++){
+        for (int j=0;j<9;j++){
+            iii[i][j] = i;//from 0-8 (instead of 1-9 in matlab)
+            rr[i][j] = j;
+        }
+    }
+    int cnt = 0;
+    for (int i=0;i<9;i++){
+        for (int j=0;j<9;j++){
+            iii_col[cnt][0]=iii[j][i];
+            rr_col[cnt][0]=rr[j][i];
+            cnt++;
+        }
+    }
 
+    float **Ig, **Jg;
+    allocate2Darray(81,wingMeshFem.Nelem,&Ig);//LM(iii(:),:);
+    allocate2Darray(81,wingMeshFem.Nelem,&Jg);//LM(rr(:),:);
+
+    int indexIg, indexJg;
+    for (int i=0;i<81;i++){
+        for (int j=0;j<wingMeshFem.Nelem;j++){
+            indexIg = iii_col[i][0];
+            indexJg = rr_col[i][0];
+            Ig[i][j] = wingMeshFem.LM[indexIg][j]-1;
+            Jg[i][j] = wingMeshFem.LM[indexJg][j]-1;
+        }
+    }   
+/*
+    //printf("Ig = \n");
+    printf("Jg = \n");
+    for (int i=0;i<10;i++){
+        for (int j=0;j<10;j++){
+            //printf("%f, ",Ig[i][j]);
+            printf("%f, ",Jg[i][j]);
+        }
+        printf("\n");
+    }
+*/
+    float **Kglob, **Mglob;
+    allocate2Darray(wingMeshFem.GEN,wingMeshFem.GEN,&Kglob);
+    allocate2Darray(wingMeshFem.GEN,wingMeshFem.GEN,&Mglob);
+
+    int indexKi, indexKj;
+    for (int i=0;i<81;i++){
+        for (int j=0;j<wingMeshFem.Nelem;j++){
+            indexKi = Ig[i][j];
+            indexKj = Jg[i][j];
+            Kglob[indexKi][indexKj] = Kglob[indexKi][indexKj] + elemFemArr.Kg[i][j];
+            Mglob[indexKi][indexKj] = Mglob[indexKi][indexKj] + elemFemArr.Mg[i][j];
+        }
+    }
+
+/*
+    //printf("Kglob = \n");
+    printf("Mglob = \n");
+    for (int i=0;i<10;i++){
+        for (int j=0;j<10;j++){
+            //printf("%f, ",Kglob[i][j]);
+            printf("%f, ",Mglob[i][j]);
+        }
+        printf("\n");
+    }
+*/
+/*
+    printf("iii = \n");
+    for (int i=0;i<9;i++){
+        for (int j=0;j<9;j++){
+            printf("%f, ",iii[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("rr = \n");
+    for (int i=0;i<9;i++){
+        for (int j=0;j<9;j++){
+            printf("%f, ",rr[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("iii_cols = \n");
+    for (int i=0;i<81;i++){
+        printf("%f, ",iii_col[i][0]);
+    }
+
+    printf("\n rr_cols = \n");
+    for (int i=0;i<81;i++){
+        printf("%f, ",rr_col[i][0]);
+    }
+
+*/
+    free(iii);
+    free(rr);
+
+    printf("\n\n Kglob, Mglob OK...");
 
     //************************************************************************************
     //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
     //************************************************************************************
 
+    for (int i=0; i<inDataFem.sizeBdofs;i++){
+        printf("%d, ", inDataFem.Bdofs[i]);
+    }
 
+    float **kkk, **mmm;
+    allocate2Darray(inDataFem.sizeBdofs,wingMeshFem.GEN,&kkk);
+    allocate2Darray(inDataFem.sizeBdofs,wingMeshFem.GEN,&mmm);
+
+    int index_kkk;
+    for (int j=0;j<inDataFem.sizeBdofs;j++){
+        index_kkk = inDataFem.Bdofs[j]-1;
+        kkk[j][index_kkk] = 1.0;
+        //kkk(j,:)=[zeros(1,Bdofs(j)-1) 1 zeros(1,Dofs-Bdofs(j))]; %matlab code sample
+    }
+
+    printf("kkk = \n");
+    for (int i=0;i<2;i++){
+        for (int j=0;j<10;j++){
+            printf("%f, ",kkk[i][j]);
+        }
+        printf("\n");
+    }
+
+    //Kglob=[Kglob kkk'; kkk zeros(length(BBnodes))];  %matlab code sample
+    //Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];  %matlab code sample
+    
     //************************************************************************************
     //  DKT PLATE SOLVER: SOLUTION OPTIONS (1. EIGEN, 2. STATIC, 3. DYNAMIC)
     //************************************************************************************
