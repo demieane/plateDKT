@@ -299,8 +299,6 @@ void linearSystemSolve(int rowsA, int colsA, float **arrA, float **arrB, float *
     int nrhs = 1; //number of rhs vectors B 
     int LDA = colsA;
     int LDB = rowsA;
-    int lwork = 0;
-    float *work;// uninitialized BUG 
     int info;
 
     int *IPIV = (int*)malloc((rowsA) *sizeof(int));

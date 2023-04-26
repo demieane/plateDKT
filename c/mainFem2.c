@@ -671,8 +671,8 @@ int main(int argc, char **argv){
 
         //sgels_();
 
+        free(Fglob_aug);
     }
-
 
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
@@ -695,6 +695,7 @@ int main(int argc, char **argv){
     free(Mglob);
     free(Kglob_aug);
     free(Mglob_aug);
+
 
     tend = clock();
 
