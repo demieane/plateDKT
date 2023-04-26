@@ -442,7 +442,7 @@ Mglobfull(1:10,1:10)
 disp('===================Mglob_dense===========================')
 Mglob_dense(1:10,1:10)
 
-error('er')
+% error('er')
 % COMMENT: The boundary conditions are enforced as extra equations
 % in the sense of constraints in the present version
 BBnodes_old=BBnodes; %DIMITRA
@@ -454,13 +454,16 @@ Dofs=length(pp)*3;
 
 % Totbound=reshape(BBound',1,4*size(BBound,2));
 %***************************ADDITION***************************************
-for j=1:2%length(BBnodes)
+for j=1:length(BBnodes)
     kkk(j,:)=[zeros(1,Bdofs(j)-1) 1 zeros(1,Dofs-Bdofs(j))];
 end
 %**************************************************************************
 Kglob=[Kglob kkk'; kkk zeros(length(BBnodes))];
 Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];
 
+Kglob_dense2=[Kglob_dense kkk'; kkk zeros(length(BBnodes))];
+Kglob_dense2(GEN+1:end,1:27)
+Kglob_dense2(1:27,GEN+1:end)
 error('er')
 % [XX,lamM,flag]=eigs(Kglob,Mglob,15,'sm');
 % cc=sort(diag(lamM));

@@ -454,7 +454,7 @@ Dofs=length(pp)*3;
 
 % Totbound=reshape(BBound',1,4*size(BBound,2));
 %***************************ADDITION***************************************
-for j=1:1%length(BBnodes)
+for j=1:length(BBnodes)
     kkk(j,:)=[zeros(1,Bdofs(j)-1) 1 zeros(1,Dofs-Bdofs(j))];
 end
 %**************************************************************************

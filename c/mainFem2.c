@@ -574,11 +574,11 @@ int main(int argc, char **argv){
     //************************************************************************************
     //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
     //************************************************************************************
-
+/*
     for (int i=0; i<inDataFem.sizeBdofs;i++){
         printf("%d, ", inDataFem.Bdofs[i]);
     }
-
+*/
     float **kkk, **mmm;
     allocate2Darray(inDataFem.sizeBdofs,wingMeshFem.GEN,&kkk);
     allocate2Darray(inDataFem.sizeBdofs,wingMeshFem.GEN,&mmm);
@@ -590,6 +590,7 @@ int main(int argc, char **argv){
         //kkk(j,:)=[zeros(1,Bdofs(j)-1) 1 zeros(1,Dofs-Bdofs(j))]; %matlab code sample
     }
 
+/*
     printf("kkk = \n");
     for (int i=0;i<2;i++){
         for (int j=0;j<10;j++){
@@ -597,13 +598,53 @@ int main(int argc, char **argv){
         }
         printf("\n");
     }
-
+*/
     //Kglob=[Kglob kkk'; kkk zeros(length(BBnodes))];  %matlab code sample
     //Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];  %matlab code sample
-    
+
+    float **Kglob_aug, **Mglob_aug; // augmented
+    int sizeKMglob_aug = wingMeshFem.GEN+27;
+    allocate2Darray(sizeKMglob_aug,sizeKMglob_aug,&Kglob_aug);
+    allocate2Darray(sizeKMglob_aug,sizeKMglob_aug,&Mglob_aug);
+
+    for (int i=0;i<wingMeshFem.GEN;i++){
+        for (int j=0;j<wingMeshFem.GEN;j++){
+            Kglob_aug[i][j] = Kglob[i][j];
+            Mglob_aug[i][j] = Mglob[i][j]; //OK
+        }
+    }
+
+    int indexKaug;
+    for (int i=0;i<inDataFem.sizeBdofs;i++){
+        for (int j=0;j<wingMeshFem.GEN;j++){
+            indexKaug = wingMeshFem.GEN + i;
+            Kglob_aug[indexKaug][j] = kkk[i][j];
+            Kglob_aug[j][indexKaug] = kkk[i][j];
+        }
+    }
+
+/*
+    printf("Kglob sample (kkk)\n");
+    for (int i=wingMeshFem.GEN;i<sizeKMglob_aug;i++){
+        for (int j=0;j<27;j++){
+            printf("%f, ",Kglob_aug[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("Kglob sample (kkk')\n");
+    for (int i=wingMeshFem.GEN;i<sizeKMglob_aug;i++){
+        for (int j=0;j<27;j++){
+            printf("%f, ",Kglob_aug[j][i]);
+        }
+        printf("\n");
+    }
+*/
+
     //************************************************************************************
     //  DKT PLATE SOLVER: SOLUTION OPTIONS (1. EIGEN, 2. STATIC, 3. DYNAMIC)
     //************************************************************************************
+    printf("\nStarting linear system solution (Kglob_aug, Mglob_aug are dense matrices!)\n");
 
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
@@ -622,6 +663,10 @@ int main(int argc, char **argv){
     //free(inDataFem.ee);
     //free(wingMeshFem.ID);
     //free(wingMeshFem.IEN);
+    free(Kglob);
+    free(Mglob);
+    free(Kglob_aug);
+    free(Mglob_aug);
 
     tend = clock();
 
