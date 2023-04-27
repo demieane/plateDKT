@@ -138,6 +138,65 @@ fclose(file);
 system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin')
 
 
+%% read solution from binary file
+fileID = fopen('../c/OUTDATA_FEM.bin','rb')
+GEN_fromC = fread(fileID,1,'int')
+rowsUsol = fread(fileID,1,'int')
+colsUsol = fread(fileID,1,'int')
+
+for i = 1:rowsUsol
+    for j = 1:colsUsol
+        Usol(i,j)=fread(fileID,1,'single');
+    end
+end
+
+%%  VISUAL COMPARISON 
+% load solMatlab
+% u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+% %
+% w=u(1:3:end);   % vertical displacement
+% bx=u(2:3:end);  % rotation x
+% by=u(3:3:end);  % rotation y
+% 
+% figure(1);
+% hold on;grid on;
+% subplot(1,3,[1 2]);
+% plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
+% hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
+% colorbar;shading interp;view([25 25]);%axis equal;
+% zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
+% xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
+% title('matlab')
+% %     title('w displacement','FontWeight','normal');
+% subplot(1,3,3);hold on;grid on;
+% pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
+% colorbar;shading interp;
+% xlabel('x-axis');ylabel('y-axis');
+% title('(contour)','FontWeight','normal');
+
+u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+%
+w_fromC=u_fromC(1:3:end);   % vertical displacement
+bx_fromC=u_fromC(2:3:end);  % rotation x
+by_fromC=u_fromC(3:3:end);  % rotation y
+
+
+figure(2);
+hold on;grid on;
+subplot(1,3,[1 2]);
+plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
+hh=pdeplot(pp,ee,tt,'XYData',w_fromC,"ZData",w_fromC,'colormap','jet');
+colorbar;shading interp;view([25 25]);%axis equal;
+zlim([-2.5*max(max(abs(w_fromC))) 2.5*max(max(abs(w_fromC)))])
+xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
+title('sol from c')
+%     title('w displacement','FontWeight','normal');
+subplot(1,3,3);hold on;grid on;
+pdeplot(pp,ee,tt,'XYData',w_fromC,'colormap','jet','contour','on');
+colorbar;shading interp;
+xlabel('x-axis');ylabel('y-axis');
+title('(contour)','FontWeight','normal');
+
 error('er')
 %% connectivity in c
 

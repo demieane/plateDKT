@@ -646,6 +646,9 @@ int main(int argc, char **argv){
     //************************************************************************************
     printf("\nStarting linear system solution (Kglob_aug, Mglob_aug are dense matrices!)\n");
 
+    float **Usol;
+    allocate2Darray(sizeKMglob_aug,1, &Usol);
+
     if (inDataFem.LL == 2){
         float **Fglob_aug;
         allocate2Darray(sizeKMglob_aug,1,&Fglob_aug);
@@ -659,8 +662,7 @@ int main(int argc, char **argv){
 */
         printf("\nUNIFORM LOAD: P=%f [Pa]\n",inDataFem.P_load);
 
-        float **Usol;
-        allocate2Darray(sizeKMglob_aug,1,&Usol);
+        
         // solve linear system of eqs. using LAPACK sgels_ function
         linearSystemSolve(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
 
@@ -677,6 +679,7 @@ int main(int argc, char **argv){
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
     //************************************************************************************
+    CuFEMNum2DWriteDataInBinary(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
 
     //************************************************************************************
     //  DKT PLATE SOLVER: CLEAN UP AND EXIT

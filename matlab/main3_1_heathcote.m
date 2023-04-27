@@ -464,7 +464,7 @@ Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];
 Kglob_dense2=[Kglob_dense kkk'; kkk zeros(length(BBnodes))];
 Kglob_dense2(GEN+1:end,1:27)
 Kglob_dense2(1:27,GEN+1:end)
-error('er')
+% error('er')
 % [XX,lamM,flag]=eigs(Kglob,Mglob,15,'sm');
 % cc=sort(diag(lamM));
 %   

@@ -175,13 +175,15 @@ void matSum2(float alpha, float beta, int rows, int cols, float **arrA, float **
 void matSum1();
 //---------------------------26/04/2023 ADDED
 void linearSystemSolve(int rowsA, int colsA, float **arrA, float **arrB, float **Usol);
+//---------------------------27/04/2023 ADDED
+void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN);
 
 /*=========================================================================================*/
 /* Definition of the functions follows */
 /*=========================================================================================*/
 void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     FILE *file;
-	file = fopen("../c/INDATA_FEM.bin", "rb");
+	file = fopen("../c/INDATA_FEM.bin", "rb"); // r for read, b for binary
     fread(&(inDataFem->cRoot), sizeof(float) , 1, file);
     fread(&(inDataFem->span), sizeof(float) , 1, file);
     fread(&(inDataFem->U), sizeof(float) , 1, file);
@@ -293,6 +295,26 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
 #endif
     printf("EXITING CuFEMNum2DReadInData...\n\n");
 }
+
+void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN){
+
+    FILE *fileOut;
+	fileOut = fopen("../c/OUTDATA_FEM.bin", "wb"); // w for write, b for binary
+
+    fwrite(&GEN, sizeof(int), 1, fileOut);
+    fwrite(&rows, sizeof(int), 1, fileOut);
+    fwrite(&cols, sizeof(int), 1, fileOut);
+
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < cols; j++){
+            fwrite(&(Usol[i][j]), sizeof(float), 1, fileOut);
+        }
+    }
+
+    fclose(fileOut);
+    printf("\nEXITING CuFEMNum2DWriteDataInBinary...\n\n");
+}
+
 
 void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem ){
     /* Use the information on Delaunay triangulation from matlab to
@@ -1249,6 +1271,7 @@ for (int i = 0; i<10; i++){
 //}
 
 }
+
 
 
 #endif
