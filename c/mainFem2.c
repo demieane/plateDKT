@@ -266,7 +266,6 @@ int main(int argc, char **argv){
 
     //for each triangle in the mesh
     for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
-    //for (int kk = 0;kk<2;kk++){   
     //for (int kk = 0;kk<1;kk++){   
 
         massHmDKT(kk, &wingMeshFem, &elemFemArr); // Hm, HW
@@ -331,8 +330,15 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
-#endif             
-            // floc1=floc1+Area(kk)*xw(ii,3)*(LW');
+#endif         
+
+            if (inDataFem.LL == 1){
+                // floc1=floc1+Area(kk)*xw(ii,3)*(LW');
+                for (int i=0;i<10;i++){
+                    elemFemArr.floc1[i][0]= elemFemArr.floc1[i][0]+ wingMeshFem.area[kk]*xw[ii][2]*elemFemArr.LW[0][i]; 
+                }
+            }
+
 #if DEBUG_ON
             printf("\n------------------------------\n"
                    "  mloc calculations\n"
@@ -401,12 +407,16 @@ int main(int argc, char **argv){
         // lumped mass approach for the uniform load
         float lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
         if (inDataFem.LL == 2){
+            // version - 1
             for (int i=0;i<9;i++){
                 for (int j=0;j<1;j++){
                     elemFemArr.floc[i][j] = elemFemArr.floc[i][j] + wingMeshFem.area[kk]*inDataFem.P_load/3.0*lumpedMass[i];
                 }
             }
+            // version - 2 (EQUIVALENT) floc=P*HW'*floc1;
+            //matMatMultiplication2(2, 10, 9, inDataFem.P_load, 1.0, 0.0, elemFemArr.HW, elemFemArr.floc1, elemFemArr.floc); //HW'*floc1
         }
+
 #if DEBUG_ON
         for (int i=0;i<9;i++){
             for (int j=0;j<1;j++){
@@ -414,7 +424,23 @@ int main(int argc, char **argv){
             }
             printf("\n");
         }
+printf("\n");
+        for (int i=0;i<10;i++){
+            for (int j=0;j<1;j++){
+                printf("%f,",elemFemArr.floc1[i][j]); 
+            }
+            printf("\n");
+        }
+
+printf("\n");
+        for (int i=0;i<10;i++){
+            for (int j=0;j<9;j++){
+                printf("%f,",elemFemArr.HW[i][j]); 
+            }
+            printf("\n");
+        }
 #endif
+
         //Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
         //Kg(:,kk)=[kloc(:,1);kloc(:,2);kloc(:,3);kloc(:,4);kloc(:,5);kloc(:,6);kloc(:,7);kloc(:,8);kloc(:,9)];
         int cntMg = 0;
@@ -439,10 +465,12 @@ int main(int argc, char **argv){
         }
 #endif
 
-        for (int q=0;q<9;q++){
-            int cntFglob = wingMeshFem.LM[q][kk]-1;
-            elemFemArr.Fglob[cntFglob][0] = elemFemArr.Fglob[cntFglob][0] + elemFemArr.floc[q][0];
-            //Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
+        if (inDataFem.LL == 2){
+            for (int q=0;q<9;q++){
+                int cntFglob = wingMeshFem.LM[q][kk]-1;
+                elemFemArr.Fglob[cntFglob][0] = elemFemArr.Fglob[cntFglob][0] + elemFemArr.floc[q][0];
+                //Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
+            }
         }
 
         //printf("\nFglob...\n");
@@ -450,7 +478,7 @@ int main(int argc, char **argv){
         //    printf("j=%d, %f,\n",j, elemFemArr.Fglob[j][0]); 
         //}
 
-        // re-initialize mloc, kloc, floc
+        // re-initialize mloc, kloc, floc, floc1
         for (int i = 0;i<9;i++){
             elemFemArr.floc[i][0] = 0;
             for (int j = 0;j<9;j++){
@@ -458,8 +486,13 @@ int main(int argc, char **argv){
                 elemFemArr.kloc[i][j] = 0;
             }
         }
+        for (int i = 0;i<10;i++){
+            //printf("%f, ",elemFemArr.floc1[i][0] );
+            elemFemArr.floc1[i][0] = 0;
+        }
    
     }
+
     printf("\nCalculated Mg(:,kk), Kg(:,kk), Fglob(kk)");
 
 #if DEBUG_ON 
@@ -473,7 +506,7 @@ int main(int argc, char **argv){
         printf("%f,\n",elemFemArr.Kg[j][0]); 
     }
 #endif
-
+//exit(5);
     //************************************************************************************
     //  DKT PLATE SOLVER: GLOBAL MATRIX ASSEMBLY (Mglob, Kglob, Fglob)
     //************************************************************************************
@@ -672,35 +705,41 @@ int main(int argc, char **argv){
     //************************************************************************************
     printf("\nStarting linear system solution (Kglob_aug, Mglob_aug are dense matrices!)\n");
 
+    int indexPointLoad;
+    if (inDataFem.LL == 1){
+        indexPointLoad = wingMeshFem.ID[0][inDataFem.P_node-1]-1;
+        elemFemArr.Fglob[indexPointLoad][0] = inDataFem.P_load;
+
+        printf("index point load %d", indexPointLoad);
+    }
+
     float **Usol;
     allocate2Darray(sizeKMglob_aug,1, &Usol);
 
-    if (inDataFem.LL == 2){
-        float **Fglob_aug;
-        allocate2Darray(sizeKMglob_aug,1,&Fglob_aug);
-        for (int i=0;i<wingMeshFem.GEN;i++){
-            Fglob_aug[i][0]=elemFemArr.Fglob[i][0];
-        }
-/*
-        for (int i=0;i<sizeKMglob_aug;i++){
-            printf("%f, ", Fglob_aug[i][0]);
-        }
-*/
-        printf("\nUNIFORM LOAD: P=%f [Pa]\n",inDataFem.P_load);
-
-        
-        // solve linear system of eqs. using LAPACK sgels_ function
-        linearSystemSolve(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
-
-        printf("\n Usol...\n");
-        for (int i=0;i<20;i++){
-            printf("%f, ", Usol[i][0]);
-        }
-
-        //sgels_();
-
-        free(Fglob_aug);
+    float **Fglob_aug;
+    allocate2Darray(sizeKMglob_aug,1,&Fglob_aug);
+    for (int i=0;i<wingMeshFem.GEN;i++){
+        Fglob_aug[i][0]=elemFemArr.Fglob[i][0];
     }
+    
+/*
+    for (int i=0;i<sizeKMglob_aug;i++){
+        printf("%f, ", Fglob_aug[i][0]);
+    }
+*/
+    printf("\nUNIFORM LOAD: P=%f [Pa]\n",inDataFem.P_load);
+
+    // solve linear system of eqs. using LAPACK sgels_ function
+    linearSystemSolve(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
+
+    printf("\n Usol...\n");
+    for (int i=0;i<20;i++){
+        printf("%f, ", Usol[i][0]);
+    }
+
+    //sgels_();
+    free(Fglob_aug);
+    //}
 
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor

@@ -98,15 +98,7 @@ elseif CC == 2
     Bdofs=Bdofs_CL;
 end
 %
-%***************************ADDITION (FOR CONCENTRATED LOAD)***************
-if lll==1
-    tol=1;
-    I=find(abs(x-Pxy(1))<tol & abs(y-Pxy(2))<tol);
-    rr=sqrt((x(I)-Pxy(1)).^2+(y(I)-Pxy(2)).^2);
-    [II,JJ]=min(rr);
-    PNODE=I(JJ);
-end
-%**************************************************************************
+
 
 
 %% CREATE MODE.bin binary file for passing data 
@@ -147,7 +139,6 @@ fwrite(file, P_load, precision);
 if lll==1
     fwrite(file, Pxy(1), precision);
     fwrite(file, Pxy(2), precision);
-    fwrite(file, PNODE, 'int');
 end
 fclose(file);
 
@@ -168,28 +159,28 @@ for i = 1:rowsUsol
 end
 
 %%  VISUAL COMPARISON 
-% load solMatlab
-% u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
-% %
-% w=u(1:3:end);   % vertical displacement
-% bx=u(2:3:end);  % rotation x
-% by=u(3:3:end);  % rotation y
-% 
-% figure(1);
-% hold on;grid on;
-% subplot(1,3,[1 2]);
-% plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
-% hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
-% colorbar;shading interp;view([25 25]);%axis equal;
-% zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
-% xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
-% title('matlab')
-% %     title('w displacement','FontWeight','normal');
-% subplot(1,3,3);hold on;grid on;
-% pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
-% colorbar;shading interp;
-% xlabel('x-axis');ylabel('y-axis');
-% title('(contour)','FontWeight','normal');
+load solMatlab
+u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+%
+w=u(1:3:end);   % vertical displacement
+bx=u(2:3:end);  % rotation x
+by=u(3:3:end);  % rotation y
+
+figure(1);
+hold on;grid on;
+subplot(1,3,[1 2]);
+plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
+hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
+colorbar;shading interp;view([25 25]);%axis equal;
+zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
+xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
+title('matlab')
+%     title('w displacement','FontWeight','normal');
+subplot(1,3,3);hold on;grid on;
+pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
+colorbar;shading interp;
+xlabel('x-axis');ylabel('y-axis');
+title('(contour)','FontWeight','normal');
 
 u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 %

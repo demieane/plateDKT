@@ -63,6 +63,9 @@ struct InDataRecFem{
     int *Bdofs; /* global numbering of dofs affected by boundary conditions*/
 
     float P_load; // Pa: positive values point towards the positive Z-axis (reverse for ANSYS) 
+    // ONLY FOR CONCENTRATED LOAD <--BELOW
+    float P_xy[2];
+    int P_node; 
 };
 
 struct triangleDKT{
@@ -252,7 +255,13 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     //printf("BBnodes = %d, Bdofs=%d\n",inDataFem->sizeBBnodes, inDataFem->sizeBdofs );
 
     fread(&(inDataFem->P_load), sizeof(float) , 1, file);
-
+    if (inDataFem->LL == 1){
+        fread(&(inDataFem->P_xy[0]), sizeof(float) , 1, file);
+        fread(&(inDataFem->P_xy[1]), sizeof(float) , 1, file);
+        printf("\n\n Px=%f, Py=%f\n\n",inDataFem->P_xy[0],inDataFem->P_xy[1]);
+        fread(&(inDataFem->P_node), sizeof(int) , 1, file);
+        printf("\n\n P_NODE=%d \n\n",inDataFem->P_node);
+    }
     fclose(file);
 
 #if DEBUG_ON_ON

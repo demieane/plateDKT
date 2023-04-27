@@ -119,13 +119,14 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=2;%2; %loading case
+lll=1;%2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
 P_load = 1; %[Pa] %pointing towards the Z-axis
 % in ANSYS load pointing in the negative of Z-axis is positive
 if lll==1
-   Pxy=[5,5];%load position
+%    Pxy=[5,5];%load position
+   Pxy=[0.05,-0.15];%load position
 end
 %
 %% Rigidity
@@ -189,9 +190,9 @@ Bound4=find(e(5,:)==4);
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
 % Bnodes = [Bound4(1), Bound3];
-Bnodes = [Bound1, Bound2];
+% Bnodes = [Bound1, Bound2];
 % Bnodes=Bound3; %for distributed load from function ANSYS
-% Bnodes=[Bound1 Bound2 Bound3 Bound4];
+Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -219,6 +220,9 @@ if debugOn
     title('boundary condition affected element nodes','FontWeight','normal');
     xlabel('x-axis');
     ylabel('y-axis');
+    if lll == 1
+        plot(Pxy(1),Pxy(2),'bs');
+    end
 end
 % error('r')
 %==========================================================================
@@ -349,7 +353,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     mloc1=zeros(9,9);
     mloc2=zeros(9,9);
     %************************** ADDITION
-        floc1=zeros(10,1);
+    floc1=zeros(10,1);
     %***********************************
     [ Hxx,Hyy ] = rotationMass2(kk,a4,a5,a6,b4,b5,b6,c4,c5,c6,d4,d5,d6,e4,e5,e6 );
     [ Hxx1,Hyy1 ] = rotationMass(kk,l23,l31,l12,C4,C5,C6,S4,S5,S6);
@@ -361,7 +365,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
           SF, DxsiSF,DetaSF,y31,x31,y12,x12,l23,l31,l12);
 %       [Hx1, Hy1, Hx_xsi1, Hx_eta1,Hy_xsi1, Hy_eta1, Bb1 ] = ShapeFunDKT(ii,kk,a4,a5,a6,b4,b5,b6,c4,c5,c6,d4,d5,d6,e4,e5,e6,Area,SF,DxsiSF,DetaSF,y31,x31,y12,x12) ;
        
-       [ Nm, HW,LW,L,HX3,HY3] = pseudoMassDKT(ii,kk,l23,l31,l12,y12,y31,x12,x31,Area,...
+       [ Nm, HW,LW,L,HX3,~] = pseudoMassDKT(ii,kk,l23,l31,l12,y12,y31,x12,x31,Area,...
            Hm,GGin,GGin2,xg, yg,IEN,x,y,Hx,Hy,SFm,C4,C5,C6,S4,S5,S6,Hxx,Hyy,HW );
 % %        [ Nm,LW,L] = pseudoMassDKT(ii,kk,l23,l31,l12,y12,y31,x12,x31,Area,Hm,GGin,GGin2,xg, yg,IEN,x,y,Hx,Hy,SFm,C4,C5,C6,S4,S5,S6,HW)   ;
 
@@ -383,7 +387,9 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
       
     kloc=kb;
     %************************** ADDITION
+%     if lll==1
 %         floc=P*HW'*floc1;
+%         floc=P_load*HW'*floc1;
     if lll==2 % uniform load
         floc=Area(kk)*P_load/3*[1 0 0 1 0 0 1 0 0]';% lumped mass approach for the uniform load
     elseif lll==3 %distributed load via mapping func
@@ -393,11 +399,14 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
 
     Kg(:,kk)=[kloc(:,1);kloc(:,2);kloc(:,3);kloc(:,4);kloc(:,5);kloc(:,6);kloc(:,7);kloc(:,8);kloc(:,9)];
-    %************************** ADDITION
-    for q=1:9
-         Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
-    end 
-    %***********************************
+    
+    if lll == 2 || lll == 3
+        %************************** ADDITION
+        for q=1:9
+             Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
+        end 
+        %***********************************
+    end
 end
 
 % error('oo')
@@ -475,14 +484,15 @@ Kglob_dense2(1:27,GEN+1:end)
 
 %FORCING AND SOLUTION
 if lll==1
-    Fglob=zeros(length(Kglob),1);
+%     Fglob=zeros(length(Kglob),1);
     Fglob(ID(1,PNODE))=P_load;
-    U=Kglob\Fglob; %SOLVE SPARSE SYSTEM OF EQUATIONS
+end
+%     U=Kglob\Fglob; %SOLVE SPARSE SYSTEM OF EQUATIONS
 %hughe [ch.9] newmark - 2nd order
-else
+% else
     Fglob1=[Fglob; zeros(length(BBnodes),1)];
     U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
-end
+% end
 
 
 telapsed = toc(tstart)
