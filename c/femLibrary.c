@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdbool.h>
+
 #include <cblas.h> // use -lblas 
 #include <lapack.h> // use -llapack
 
@@ -320,6 +322,11 @@ void linearSystemSolve(int rowsA, int colsA, float **arrA, float **arrB, float *
 
 void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals){
 
+    /* 
+    INFO 
+    https://netlib.org/lapack/lug/node35.html
+    */
+
     // EXAMPLE FOR TEST
     /*
     N = 6;
@@ -400,8 +407,12 @@ void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals){
     int INFO = 0;
     size_t dummy1, dummy2;
 
-    sggev_(&JOBVL, &JOBVR, &N, AA, &LDA, BB, &LDB, &(ALPHAR[0]),
-        &(ALPHAI[0]), &(BETA[0]), VL, &LDVL, VR, &LDVR, WORK, &sizeWork, &INFO, dummy1, dummy2);
+    /* 
+    ?GGEV: a simple driver that computes all the generalized eigenvalues of (A, B), 
+    and optionally the left or right eigenvectors (or both);
+    */
+    sggev_(&JOBVL, &JOBVR, &N, AA, &LDA, BB, &LDB, ALPHAR,
+        ALPHAI, BETA, VL, &LDVL, VR, &LDVR, WORK, &sizeWork, &INFO, dummy1, dummy2);
 
     printf("INFO = %d, \n", INFO);
 
@@ -421,6 +432,46 @@ void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals){
     for (int i = 0;i<5;i++){
         printf("Res[i]=%f \n", res[i]);
     }
+
+    /*
+    xGGEVX: an expert driver that can additionally balance the matrix pair to improve 
+    the conditioning of the eigenvalues and eigenvectors, and compute condition numbers 
+    for the eigenvalues and/or left and right eigenvectors (or both). 
+    */
+   /* TO DO: DEBUG */
+    char JOBVSL = 'N', JOBVSR = 'N';
+    LDVR = N;
+    char sortEigs = 'N';  //un-ordered
+    LAPACK_S_SELECT3 selctG; // seg fault
+    char sense = 'N';
+    int sdimOut;
+    float *rcondeOut = (float*)malloc((2) *sizeof(float));
+    float *rcondvOut = (float*)malloc((2) *sizeof(float));
+
+    int sizeIWork = 1;
+    int *IWORK = (int*)malloc((sizeIWork) *sizeof(int));
+    int *BWORK = (int*)malloc((N) *sizeof(int));
+    size_t dummy3, dummy4;
+
+    sggesx_(&JOBVSL, &JOBVSR, &sortEigs, selctG, &sense, &N, AA, &LDA, BB, &LDB, &sdimOut,
+     ALPHAR, ALPHAI, BETA, VL, &LDVL, VR, &LDVR, rcondeOut,rcondvOut,
+     WORK, &sizeWork, IWORK, &sizeIWork, BWORK, &INFO, dummy1, dummy2, dummy3, dummy4);
+
+    printf("\n\n");
+    for (int i = 0;i<N;i++){
+        r1 = ALPHAR[i]/ BETA[i];
+        r2 = ALPHAI[i]/ BETA[i];
+        kernel = (double) pow(r1,2)+pow(r2,2);
+        res[i] = sqrt(kernel); ///BETA[i]; //real eigenvalues
+        //printf("ALPHAR[i]/BETA[i]=%f, ALPHAI[i]/BETA[i]=%f \n", ALPHAR[i]/BETA[i], ALPHAI[i]/BETA[i]);
+    }
+
+    slasrt_(&ID,&N,res,&INFO,dummy1);
+    for (int i = 0;i<5;i++){
+        printf("Resx[i]=%f \n", res[i]);
+    }
+
+
 
 
 }
