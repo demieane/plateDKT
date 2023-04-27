@@ -317,3 +317,110 @@ void linearSystemSolve(int rowsA, int colsA, float **arrA, float **arrB, float *
 
 
 }
+
+void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals){
+
+    // EXAMPLE FOR TEST
+    /*
+    N = 6;
+       
+    float A[6][6] = {{50.0, -60.0, 50.0, -27.0, 6.0, 6.0},
+                    {38.0, -28.0, 27.0, -17, 5.0, 5.0},
+                    {27.0, -17.0, 27.0, -17, 5.0, 5.0},
+                    {27.0, -28.0, 38.0, -17, 5.0 ,5.0},
+                    {27.0, -28.0, 27.0, -17, 16.0, 5.0},
+                    {27.0, -28.0, 27.0, -17, 5.0, 16.0}};
+                    
+    float B[6][6] = {{16.0, 5.0, 5.0, 5.0, -6.0, 5.0},
+                    {5.0, 16.0, 5.0, 5.0, -6.0, 5.0},
+                    {5.0, 5.0, 16.0, 5.0, -6.0, 5.0},
+                    {5.0, 5.0, 5.0, 16.0, -6.0, 5.0},
+                    {5.0, 5.0, 5.0, 5.0, -6.0, 16.0},
+                    {6.0, 6.0, 6.0, 6.0, -5.0, 6.0,}};
+    */
+
+    /* result for the above test case
+        cc =
+
+        0.5000 - 0.8660i
+        0.5000 + 0.8660i
+        0.5000 - 0.8660i
+        0.5000 + 0.8660i
+            Inf + 0.0000i
+            Inf + 0.0000i
+    */
+    // square matrix N x N 
+    float *AA;
+    AA = (float*)malloc((N*N) *sizeof(float));
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++){
+            AA[i * N + j] = arrA[i][j];
+            //AA[i * N + j] = A[i][j];
+            //printf("Local: %f, In: %f ", AA[i * N + j],arrA[i][j]);
+        } 
+        //printf("\n");
+    }
+    //printf("\n\n");
+    printf("\nAllocated A.. OK!\n");
+
+    float *BB;
+    BB = (float*)malloc((N*N) *sizeof(float));
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++){
+            BB[i * N + j] = arrB[i][j];
+            //BB[i * N + j] = B[i][j];;
+            //printf("Local: %f, In: %f ", BB[i * N + j],arrB[i][j]);
+        } 
+        //printf("\n");
+    }
+    printf("\nAllocated B.. OK!\n");
+
+    char JOBVL = 'N';
+    char JOBVR = 'N'; //the right generalized eigenvectors are computed.
+    int LDA = N;
+    int LDB = N;
+
+    float *ALPHAR, *ALPHAI, *BETA;
+    allocate1Darray(N, &ALPHAR);
+    allocate1Darray(N, &ALPHAI);
+    allocate1Darray(N, &BETA);
+
+    int LDVL = 1;
+    int LDVR = 1;
+    float *VL, *VR, *WORK; // BUG
+    int sizeVL = LDVL*N;
+    int sizeVR = LDVR*N;
+    allocate1Darray(sizeVL, &VL);
+    allocate1Darray(sizeVR, &VR);
+
+    int sizeWork = 8*N;
+    allocate1Darray(sizeWork, &WORK);
+
+    int INFO = 0;
+    size_t dummy1, dummy2;
+
+    sggev_(&JOBVL, &JOBVR, &N, AA, &LDA, BB, &LDB, &(ALPHAR[0]),
+        &(ALPHAI[0]), &(BETA[0]), VL, &LDVL, VR, &LDVR, WORK, &sizeWork, &INFO, dummy1, dummy2);
+
+    printf("INFO = %d, \n", INFO);
+
+    /* PROCESSING TO FIND THE SMALLEST EIGENVALUES */
+
+    float *res = (float*)malloc((N) *sizeof(float));
+    double kernel, r1, r2;
+    for (int i = 0;i<N;i++){
+        r1 = ALPHAR[i]/ BETA[i];
+        r2 = ALPHAI[i]/ BETA[i];
+        kernel = (double) pow(r1,2)+pow(r2,2);
+        res[i] = sqrt(kernel); ///BETA[i]; //real eigenvalues
+        //printf("ALPHAR[i]/BETA[i]=%f, ALPHAI[i]/BETA[i]=%f \n", ALPHAR[i]/BETA[i], ALPHAI[i]/BETA[i]);
+    }
+    char ID = 'I';
+    slasrt_(&ID,&N,res,&INFO,dummy1);
+    for (int i = 0;i<5;i++){
+        printf("Res[i]=%f \n", res[i]);
+    }
+
+
+}

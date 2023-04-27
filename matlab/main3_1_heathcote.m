@@ -475,12 +475,6 @@ Kglob_dense2=[Kglob_dense kkk'; kkk zeros(length(BBnodes))];
 Kglob_dense2(GEN+1:end,1:27)
 Kglob_dense2(1:27,GEN+1:end)
 % error('er')
-% [XX,lamM,flag]=eigs(Kglob,Mglob,15,'sm');
-% cc=sort(diag(lamM));
-%   
-% freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
-% 
-% error('yy')
 
 %FORCING AND SOLUTION
 if lll==1
@@ -521,7 +515,33 @@ colorbar;shading interp;
 xlabel('x-axis');ylabel('y-axis');
 title('(contour)','FontWeight','normal');
 
-max(abs(w))/inData.a3
+max(abs(w))/inData.a3;
+
+%% MODAL ANALYSIS
+
+% Kglob = [50 -60 50 -27 6 6;
+% 38 -28 27 -17 5 5;
+% 27 -17 27 -17 5 5;
+% 27 -28 38 -17 5 5;
+% 27 -28 27 -17 16 5;
+% 27 -28 27 -17 5 16];
+% cond(Kglob)
+% 
+% Mglob = [16 5 5 5 -6 5;
+% 5 16 5 5 -6 5;
+% 5 5 16 5 -6 5;
+% 5 5 5 16 -6 5;
+% 5 5 5 5 -6 16;
+% 6 6 6 6 -5 6];
+% cond(Mglob)
+
+
+[XX,lamM,flag]=eigs(Kglob,Mglob,5,'sm');
+cc=sort(diag(lamM));
+  
+freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
+
+freq'
 
 error('hh')
 

@@ -167,6 +167,35 @@ for i = 1:rowsUsol
     end
 end
 
+%% MODAL ANALYSIS 
+
+fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
+rowsUsol = fread(fileID,1,'int')
+colsUsol = fread(fileID,1,'int')
+
+for i = 1:rowsUsol
+    for j = 1:colsUsol
+        Kglob_aug(i,j)=fread(fileID,1,'single');
+    end
+end
+
+for i = 1:rowsUsol
+    for j = 1:colsUsol
+        Mglob_aug(i,j)=fread(fileID,1,'single');
+    end
+end
+
+[XX,lamM,flag]=eigs(Kglob_aug,Mglob_aug,5),'sm');
+cc=sort(diag(lamM));
+  
+freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
+
+freq'
+
+%    1.0e+03 *
+% 
+%     0.5755    0.6398    0.7611    0.9468    1.1977
+
 %%  VISUAL COMPARISON 
 % load solMatlab
 % u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)

@@ -744,7 +744,24 @@ printf("\n");
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
     //************************************************************************************
+    int optionSelect = 0;
     CuFEMNum2DWriteDataInBinary(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
+
+    #if (MODAL_ANALYSIS == 1)
+    //  TO DO : FIX - I GET INFINITE EIGENVALUES
+        printf("\n\nPerforming MODAL ANALYSIS");
+        // Generalized Nonsymmetric Eigenvalue Problems
+        
+        //http://matlab.izmiran.ru/help/techdoc/ref/eig.html
+        // Real nonsymmetric A, real general B: sggev() from LAPACK
+        float *eigVals;
+        allocate1Darray(5,&eigVals);
+        modalAnalysis_sggev(sizeKMglob_aug, Kglob_aug, Mglob_aug, eigVals);
+
+        CuFEMNum2DWriteKglobMglobBCs(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Mglob_aug);
+
+    #endif
+
 
     //************************************************************************************
     //  DKT PLATE SOLVER: CLEAN UP AND EXIT

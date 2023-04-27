@@ -13,9 +13,16 @@
 #include <lapack.h> // use -llapack
 
 /* suppress or not execution times (custom profiler) */
-#define DEBUG_ON 0 /*allow printf for DEBUG_ONging purposes*/
+#define DEBUG_ON 0 /*allow printf for debugging purposes*/
+
 #ifndef DEBUG_ON
-    #define DEBUG_ON 1
+    #define DEBUG_ON 0
+#endif
+
+#define MODAL_ANALYSIS 1 /* Find eigenfrequencies */
+
+#ifndef MODAL_ANALYSIS
+    #define MODAL_ANALYSIS 0
 #endif
 
 /*=========================================================================================*/
@@ -180,6 +187,10 @@ void matSum1();
 void linearSystemSolve(int rowsA, int colsA, float **arrA, float **arrB, float **Usol);
 //---------------------------27/04/2023 ADDED
 void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN);
+//
+void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals); //FAILS IN SINGULAR MGLOB
+//
+void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M);
 
 /*=========================================================================================*/
 /* Definition of the functions follows */
@@ -325,6 +336,31 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN){
     printf("\nEXITING CuFEMNum2DWriteDataInBinary...\n\n");
 }
 
+
+void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M){
+
+    FILE *fileOut;
+	fileOut = fopen("../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin", "wb"); // w for write, b for binary
+
+    fwrite(&rows, sizeof(int), 1, fileOut);
+    fwrite(&cols, sizeof(int), 1, fileOut);
+
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < cols; j++){
+            fwrite(&(K[i][j]), sizeof(float), 1, fileOut);
+        }
+    }
+
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < cols; j++){
+            fwrite(&(M[i][j]), sizeof(float), 1, fileOut);
+        }
+    }
+
+    fclose(fileOut);
+    printf("\nEXITING CuFEMNum2DWriteKglobMglobBCs...\n\n");
+
+}
 
 void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDKT *wingMeshFem ){
     /* Use the information on Delaunay triangulation from matlab to
