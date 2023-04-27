@@ -40,6 +40,15 @@ int main(int argc, char **argv){
     /* Boundary conditions nodes, dofs */
     CuFEMNum2DReadInData( &inDataFem );
 
+    //for (int i=0;i<inDataFem.sizeBBnodes;i++){
+    //    printf("%d, ", inDataFem.BBnodes[i]);
+    //}
+
+    printf("\n\ninDataFem.sizeBdofs = %d",inDataFem.sizeBdofs );
+    printf("\n\ninDataFem.sizeBBnodes = %d",inDataFem.sizeBBnodes );
+
+    printf("\n\n UP TO HERE\n\n");
+
     /* TODO: Create output function to check whether the BCs are correct in a figure */
 
     /*if the structure is given as a reference*/
@@ -480,6 +489,23 @@ int main(int argc, char **argv){
             rr[i][j] = j;
         }
     }
+/*
+    printf("\n\n iii = \n");
+    for (int i=0;i<9;i++){
+        for (int j=0;j<9;j++){
+            printf("%f, ",iii[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("\n rr = \n");
+    for (int i=0;i<9;i++){
+        for (int j=0;j<9;j++){
+            printf("%f, ",rr[i][j]);
+        }
+        printf("\n");
+    }
+*/
     int cnt = 0;
     for (int i=0;i<9;i++){
         for (int j=0;j<9;j++){
@@ -488,6 +514,10 @@ int main(int argc, char **argv){
             cnt++;
         }
     }
+
+    free(iii);
+    free(rr);
+    //printf("\n\n free(iii),free(rr)...\n\n");
 
     float **Ig, **Jg;
     allocate2Darray(81,wingMeshFem.Nelem,&Ig);//LM(iii(:),:);
@@ -502,6 +532,7 @@ int main(int argc, char **argv){
             Jg[i][j] = wingMeshFem.LM[indexJg][j]-1;
         }
     }   
+
 /*
     //printf("Ig = \n");
     printf("Jg = \n");
@@ -512,7 +543,8 @@ int main(int argc, char **argv){
         }
         printf("\n");
     }
-*/
+*/    
+
     float **Kglob, **Mglob;
     allocate2Darray(wingMeshFem.GEN,wingMeshFem.GEN,&Kglob);
     allocate2Darray(wingMeshFem.GEN,wingMeshFem.GEN,&Mglob);
@@ -529,7 +561,7 @@ int main(int argc, char **argv){
 
 /*
     //printf("Kglob = \n");
-    printf("Mglob = \n");
+    printf("\n\nMglob = \n");
     for (int i=0;i<10;i++){
         for (int j=0;j<10;j++){
             //printf("%f, ",Kglob[i][j]);
@@ -537,20 +569,11 @@ int main(int argc, char **argv){
         }
         printf("\n");
     }
-*/
-/*
-    printf("iii = \n");
-    for (int i=0;i<9;i++){
-        for (int j=0;j<9;j++){
-            printf("%f, ",iii[i][j]);
-        }
-        printf("\n");
-    }
 
-    printf("rr = \n");
-    for (int i=0;i<9;i++){
-        for (int j=0;j<9;j++){
-            printf("%f, ",rr[i][j]);
+    printf("\n\nKglob = \n");
+    for (int i=0;i<10;i++){
+        for (int j=0;j<10;j++){
+            printf("%f, ",Kglob[i][j]);
         }
         printf("\n");
     }
@@ -562,15 +585,11 @@ int main(int argc, char **argv){
 
     printf("\n rr_cols = \n");
     for (int i=0;i<81;i++){
-        printf("%f, ",rr_col[i][0]);
+        printf("%d, %f, ",i, rr_col[i][0]);
     }
-
+    
 */
-    free(iii);
-    free(rr);
-
     printf("\n\n Kglob, Mglob OK...");
-
     //************************************************************************************
     //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
     //************************************************************************************
@@ -579,31 +598,38 @@ int main(int argc, char **argv){
         printf("%d, ", inDataFem.Bdofs[i]);
     }
 */
+    //printf("\n\ninDataFem.sizeBdofs = %d",inDataFem.sizeBdofs );
+    //printf("\n\ninDataFem.sizeBdofs = %d",inDataFem.sizeBBnodes );
+
+    
     float **kkk, **mmm;
     allocate2Darray(inDataFem.sizeBdofs,wingMeshFem.GEN,&kkk);
     allocate2Darray(inDataFem.sizeBdofs,wingMeshFem.GEN,&mmm);
-
+    
+    //printf("\n\ninDataFem.sizeBdofs = %d",inDataFem.sizeBdofs );
+    
     int index_kkk;
     for (int j=0;j<inDataFem.sizeBdofs;j++){
         index_kkk = inDataFem.Bdofs[j]-1;
         kkk[j][index_kkk] = 1.0;
         //kkk(j,:)=[zeros(1,Bdofs(j)-1) 1 zeros(1,Dofs-Bdofs(j))]; %matlab code sample
     }
-
+    
 /*
-    printf("kkk = \n");
+    printf("\nkkk = \n");
     for (int i=0;i<2;i++){
         for (int j=0;j<10;j++){
             printf("%f, ",kkk[i][j]);
         }
         printf("\n");
     }
-*/
+*/    
+
     //Kglob=[Kglob kkk'; kkk zeros(length(BBnodes))];  %matlab code sample
     //Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];  %matlab code sample
-
+    //exit(5);
     float **Kglob_aug, **Mglob_aug; // augmented
-    int sizeKMglob_aug = wingMeshFem.GEN+27;
+    int sizeKMglob_aug = wingMeshFem.GEN+inDataFem.sizeBdofs;
     allocate2Darray(sizeKMglob_aug,sizeKMglob_aug,&Kglob_aug);
     allocate2Darray(sizeKMglob_aug,sizeKMglob_aug,&Mglob_aug);
 
@@ -698,6 +724,7 @@ int main(int argc, char **argv){
     free(Mglob);
     free(Kglob_aug);
     free(Mglob_aug);
+    free(Usol);
 
 
     tend = clock();

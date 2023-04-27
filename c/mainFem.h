@@ -236,12 +236,13 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     }
     //---------------------------------------------------------------------------->>
     fread(&(inDataFem->sizeBBnodes), sizeof(int) , 1, file);
+    printf("sizeBBnodes = %d\n",inDataFem->sizeBBnodes );
     inDataFem->BBnodes = (int*)malloc(inDataFem->sizeBBnodes *sizeof(int));
     for (int i=0;i<inDataFem->sizeBBnodes;i++){
         fread(&(inDataFem->BBnodes[i]), sizeof(int), 1, file);
-        //printf("i=%d,BBnodes[i]=%d\n", i,inDataFem->BBnodes[i]);
+        printf("i=%d,BBnodes[i]=%d\n", i,inDataFem->BBnodes[i]);
     }
-    //
+    
     fread(&(inDataFem->sizeBdofs), sizeof(int) , 1, file);
     inDataFem->Bdofs = (int*)malloc(inDataFem->sizeBdofs *sizeof(int));
     for (int i=0;i<inDataFem->sizeBdofs;i++){

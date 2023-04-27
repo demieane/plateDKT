@@ -188,7 +188,8 @@ Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
-Bnodes = [Bound4(1), Bound3];
+% Bnodes = [Bound4(1), Bound3];
+Bnodes = [Bound1, Bound2];
 % Bnodes=Bound3; %for distributed load from function ANSYS
 % Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
@@ -310,7 +311,7 @@ inv(AA)
 GGin=inv(GGDST);
 GGin2=inv(GGDKT);
 
-telapsed = toc(tstart)
+
 
 % error('er')
 % error('er')
@@ -483,6 +484,8 @@ else
     U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
 end
 
+
+telapsed = toc(tstart)
 BBnodes=BBnodes_old;%DIMITRA
 
 %==========================================================================

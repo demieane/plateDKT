@@ -76,7 +76,8 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION*************
 % COMMENT: The numbering is offered by the pdeModeler
-Bnodes = [Bound4(1), Bound3];
+% Bnodes = [Bound4(1), Bound3];
+Bnodes = [Bound1, Bound2];
 %**************************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -137,6 +138,7 @@ fclose(file);
 
 system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin')
 
+error('Now run the program in c')
 
 %% read solution from binary file
 fileID = fopen('../c/OUTDATA_FEM.bin','rb')
