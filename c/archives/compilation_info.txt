@@ -43,7 +43,7 @@ Also
 
 nvcc -o mainFem mainFem.c -lm -llapack -lblas
 
-gcc -o mainFem2 mainFem.c femLibrary.c -lm -lblas -llapack
+gcc -o mainFem2 mainFem2.c femLibrary.c -lm -lblas -llapack
 
 
 Once-Only Headers

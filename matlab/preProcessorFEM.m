@@ -185,7 +185,7 @@ for i = 1:rowsUsol
     end
 end
 
-[XX,lamM,flag]=eigs(Kglob_aug,Mglob_aug,5),'sm');
+[XX,lamM,flag]=eigs(Kglob_aug,Mglob_aug,5)%,'sm');
 cc=sort(diag(lamM));
   
 freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
