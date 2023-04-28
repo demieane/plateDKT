@@ -197,28 +197,30 @@ freq'
 %     0.5755    0.6398    0.7611    0.9468    1.1977
 
 %%  VISUAL COMPARISON 
-% load solMatlab
-% u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
-% %
-% w=u(1:3:end);   % vertical displacement
-% bx=u(2:3:end);  % rotation x
-% by=u(3:3:end);  % rotation y
-% 
-% figure(1);
-% hold on;grid on;
+load solMatlab
+u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+%
+w=u(1:3:end);   % vertical displacement
+bx=u(2:3:end);  % rotation x
+by=u(3:3:end);  % rotation y
+
+figure(1);
+subplot(2,2,1);hold on;grid on;
 % subplot(1,3,[1 2]);
-% plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
-% hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
-% colorbar;shading interp;view([25 25]);%axis equal;
-% zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
-% xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
-% title('matlab')
-% %     title('w displacement','FontWeight','normal');
-% subplot(1,3,3);hold on;grid on;
-% pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
-% colorbar;shading interp;
-% xlabel('x-axis');ylabel('y-axis');
-% title('(contour)','FontWeight','normal');
+plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
+hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap',viridis);
+colorbar;shading interp;view([25 25]);%axis equal;
+zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
+xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
+title('Matlab solver (double precision) [LEFT]')
+%     title('w displacement','FontWeight','normal');
+% subplot(1,3,3);
+subplot(2,2,3);
+hold on;grid on;
+pdeplot(pp,ee,tt,'XYData',w,'colormap',viridis,'contour','on');
+colorbar;shading interp;
+xlabel('x-axis');ylabel('y-axis');
+title('(contour)','FontWeight','normal');
 
 u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 %
@@ -226,19 +228,17 @@ w_fromC=u_fromC(1:3:end);   % vertical displacement
 bx_fromC=u_fromC(2:3:end);  % rotation x
 by_fromC=u_fromC(3:3:end);  % rotation y
 
-
-figure(2);
-hold on;grid on;
-subplot(1,3,[1 2]);
+% figure(2);
+subplot(2,2,2);hold on;grid on;
 plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
-hh=pdeplot(pp,ee,tt,'XYData',w_fromC,"ZData",w_fromC,'colormap','jet');
+hh=pdeplot(pp,ee,tt,'XYData',w_fromC,"ZData",w_fromC,'colormap',viridis);
 colorbar;shading interp;view([25 25]);%axis equal;
 zlim([-2.5*max(max(abs(w_fromC))) 2.5*max(max(abs(w_fromC)))])
 xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
-title('sol from c')
-%     title('w displacement','FontWeight','normal');
-subplot(1,3,3);hold on;grid on;
-pdeplot(pp,ee,tt,'XYData',w_fromC,'colormap','jet','contour','on');
+title('C solver (single precision) [RIGHT]')
+subplot(2,2,4);
+hold on;grid on;
+pdeplot(pp,ee,tt,'XYData',w_fromC,'colormap',viridis,'contour','on');
 colorbar;shading interp;
 xlabel('x-axis');ylabel('y-axis');
 title('(contour)','FontWeight','normal');

@@ -517,6 +517,8 @@ title('(contour)','FontWeight','normal');
 
 max(abs(w))/inData.a3;
 
+save solMatlab U
+error('hh')
 %% MODAL ANALYSIS
 
 % Kglob = [50 -60 50 -27 6 6;
