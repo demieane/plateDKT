@@ -73,8 +73,13 @@ function zi = shepard_interp_2d ( nd, xd, yd, zd, p, ni, xi, yi )
         w = zeros ( nd, 1 );
         w(z) = 1.0;
       else
-        w(1:nd,1) = 1.0 ./ w(1:nd,1) .^ p;
-        s = sum ( w );
+        s = 0.0;
+        for ii = 1:nd
+            w(ii) = 1.0 ./ w(ii,1) .^ p;
+            s = s + w(ii);
+        end
+%         w(1:nd,1) = 1.0 ./ w(1:nd,1) .^ p;
+%         s = sum ( w );
         w(1:nd,1) = w(1:nd,1) / s;
       end
 
@@ -82,7 +87,11 @@ function zi = shepard_interp_2d ( nd, xd, yd, zd, p, ni, xi, yi )
 
 %     size(zd)
 %     size(w)
-    zi(i) = w' * zd;
+    dotproc = 0;
+    for k=1:nd
+        dotproc = dotproc + w(k)*zd(k);
+    end
+    zi(i) = dotproc;%w' * zd;
 
   end
   

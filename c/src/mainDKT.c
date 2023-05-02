@@ -49,7 +49,7 @@ int main(int argc, char **argv){
     }
     printf("\n\n%f,", inDataFem.xcp[inDataFem.sizexcp-1]);
 
-    exit(2023);
+    //
 
     /* TODO: Create output function to check whether the BCs are correct in a figure */
 
@@ -63,6 +63,23 @@ int main(int argc, char **argv){
 
     /* Create or load from matlab IEN, ID, LM */
     ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem );
+
+    /* TO DO: BUG */
+    int nd = inDataFem.sizexcp;
+    int ni = wingMeshFem.Nelem; //size(xm)
+    float pparam = 5.22;
+    float *distrLoad;
+    allocate1Darray(wingMeshFem.Nelem,&distrLoad);
+
+    shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.fcp, 
+    pparam, ni, wingMeshFem.xm, wingMeshFem.ym, distrLoad);
+    
+    for (int i = 0; i<100;i++){
+        //printf("%f,",distrLoad[i]);
+        printf("%f,",wingMeshFem.xm[i]);
+    }
+    
+    exit(2023);
 
     /* Gauss integration function - read about it */
     float xw[Ng][3]; // {xg,yg,wg}

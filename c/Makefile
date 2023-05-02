@@ -22,7 +22,7 @@ CFLAGS   := -Wall              # some warnings about bad code
 LDLIBS   := -lm -lblas -llapack                # Left empty if no libs are needed
 
 # this tells the make file which targets to execute based on their names
-all: mydir printInfo file1 file2 $(TARGET_EXEC) 
+all: mydir printInfo file1 file2 file3 $(TARGET_EXEC) 
 
 #make obj directory only if it doesnt exist
 mydir: 
@@ -38,6 +38,10 @@ file1: $(SRC_DIR)/mainDKT.c
 
 file2: $(SRC_DIR)/funcBLAS.c
 	$(CC) $(CFLAGS) -c -o $(OBJ_DIR)/funcBLAS.o $(SRC_DIR)/funcBLAS.c $(LDLIBS)
+
+file3: $(SRC_DIR)/funcFSI.c
+	$(CC) $(CFLAGS) -c -o $(OBJ_DIR)/funcFSI.o $(SRC_DIR)/funcFSI.c $(LDLIBS)
+
 
 $(TARGET_EXEC): $(OBJ) 
 	$(CC) -o $@ $^ $(LDLIBS)
