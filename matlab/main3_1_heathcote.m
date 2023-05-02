@@ -178,7 +178,7 @@ end
 GEN=max(max(LM)); %Total number of nodal unknowns taking into account the 
 % connectivity between the triangles
 
-% error('er')
+error('er')
 
 %
 %% Essential BCs (enforces on the displacements "w" and slopes "bx", "by")   

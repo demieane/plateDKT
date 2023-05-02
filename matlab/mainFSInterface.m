@@ -1,6 +1,12 @@
-% clear all;
-% close all;
-% clc;
+%==========================================================================
+% 
+%           FSI INTERFACE
+%
+%==========================================================================
+clear all;
+close all;
+clc;
+
 addpath('mesh/heathcote');
 load('mesh_h1_half');
 file1995 = 'bemDATA_h182_r';
@@ -155,11 +161,12 @@ if lll==1
 end
 fclose(file);
 
-system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin')
+system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
 
-error('Now run the program in c')
+%% RUN THE CODE
+system('../c/./mainDKT');
 
-%% read solution from binary file
+%% Read solution from binary file
 fileID = fopen('../c/OUTDATA_FEM.bin','rb')
 GEN_fromC = fread(fileID,1,'int')
 rowsUsol = fread(fileID,1,'int')
@@ -196,11 +203,9 @@ freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
 
 freq'
 
-%    1.0e+03 *
-% 
-%     0.5755    0.6398    0.7611    0.9468    1.1977
-
 %%  VISUAL COMPARISON 
+GEN = size(pp,2)*3;
+
 load solMatlab
 u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 %
@@ -246,39 +251,3 @@ pdeplot(pp,ee,tt,'XYData',w_fromC,'colormap',viridis,'contour','on');
 colorbar;shading interp;
 xlabel('x-axis');ylabel('y-axis');
 title('(contour)','FontWeight','normal');
-
-error('er')
-%% connectivity in c
-
-
-
-close all;
-
-%% Understanding the local-to-global assembly
-clr = viridis(10);
-hfig=figure(1);hold on;grid on;
-axis equal;
-plot(pp(1,:),pp(2,:),'o', 'MarkerSize',2, 'Color',clr(1,:));
-xlabel('x', 'interpreter','latex');
-ylabel('y', 'interpreter','latex');
-% view([25 45]);
-
-for ii = 1:size(IEN,2)
-    triangle=IEN(:,ii);
-    plot(pp(1,triangle),pp(2,triangle),'s-','MarkerSize',3, 'Color',clr(1,:));
-    plot([pp(1,triangle(end)) pp(1,triangle(1))],...
-        [pp(2,triangle(end)) pp(2,triangle(1))],'s-','MarkerSize',3, 'Color',clr(1,:));
-end
-
-triangle=IEN(:,100);
-plot(pp(1,triangle),pp(2,triangle),'o-','Color',clr(4,:), 'LineWidth',2);
-plot([pp(1,triangle(end)) pp(1,triangle(1))],...
-    [pp(2,triangle(end)) pp(2,triangle(1))],'-','Color',clr(4,:),'LineWidth',2);
-set(gca,'FontSize',14);
-saveas(hfig,'ch3_mesh.png');
-
-hbcs=plot(p(1,BBnodes),p(2,BBnodes),'rs','MarkerSize',5);
-% title('boundary condition affected element nodes','FontWeight','normal');
-legend([hbcs],'BCs')
-
-saveas(hfig,'ch3_meshBCs.png');
