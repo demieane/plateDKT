@@ -14,16 +14,13 @@
 #include <lapack.h> // use -llapack
 
 /* suppress or not execution times (custom profiler) */
-#define DEBUG_ON 0 /*allow printf for debugging purposes*/
 
 #ifndef DEBUG_ON
-    #define DEBUG_ON 0
+    #define DEBUG_ON 0 /*allow printf for debugging purposes*/
 #endif
 
-#define MODAL_ANALYSIS 1 /* Find eigenfrequencies */
-
 #ifndef MODAL_ANALYSIS
-    #define MODAL_ANALYSIS 0
+    #define MODAL_ANALYSIS 1 /* Find eigenfrequencies */
 #endif
 
 /*=========================================================================================*/
@@ -74,6 +71,9 @@ struct InDataRecFem{
     // ONLY FOR CONCENTRATED LOAD <--BELOW
     float P_xy[2];
     int P_node; 
+    // ONLY FOR DISTRIBUTED PROPERTIES LOAD/THICKNESS <--BELOW
+    int sizexcp;
+    float *xcp, *ycp, *fcp, *tcp;
 };
 
 struct triangleDKT{
@@ -251,11 +251,11 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     }
     //---------------------------------------------------------------------------->>
     fread(&(inDataFem->sizeBBnodes), sizeof(int) , 1, file);
-    printf("sizeBBnodes = %d\n",inDataFem->sizeBBnodes );
+    //printf("sizeBBnodes = %d\n",inDataFem->sizeBBnodes );
     inDataFem->BBnodes = (int*)malloc(inDataFem->sizeBBnodes *sizeof(int));
     for (int i=0;i<inDataFem->sizeBBnodes;i++){
         fread(&(inDataFem->BBnodes[i]), sizeof(int), 1, file);
-        printf("i=%d,BBnodes[i]=%d\n", i,inDataFem->BBnodes[i]);
+        //printf("i=%d,BBnodes[i]=%d\n", i,inDataFem->BBnodes[i]);
     }
     
     fread(&(inDataFem->sizeBdofs), sizeof(int) , 1, file);
@@ -265,14 +265,38 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
         //printf("i=%d,Bdofs[i]=%d\n", i,inDataFem->Bdofs[i]);
     }
     //printf("BBnodes = %d, Bdofs=%d\n",inDataFem->sizeBBnodes, inDataFem->sizeBdofs );
-
-    fread(&(inDataFem->P_load), sizeof(float) , 1, file);
+    if (inDataFem->LL == 2){
+        /* UNIFORM LOAD CASE */
+        fread(&(inDataFem->P_load), sizeof(float) , 1, file);
+    }
     if (inDataFem->LL == 1){
+        /* POINT LOAD CASE */
         fread(&(inDataFem->P_xy[0]), sizeof(float) , 1, file);
         fread(&(inDataFem->P_xy[1]), sizeof(float) , 1, file);
         printf("\n\n Px=%f, Py=%f\n\n",inDataFem->P_xy[0],inDataFem->P_xy[1]);
         fread(&(inDataFem->P_node), sizeof(int) , 1, file);
         printf("\n\n P_NODE=%d \n\n",inDataFem->P_node);
+    }
+    if (inDataFem->LL == 3){
+        /* DISTRIBUTED LOAD CASE */ /* TODO: use pre-processor directives instead*/
+        fread(&(inDataFem->sizexcp), sizeof(int), 1, file);
+        printf("sizexcp = %d\n", inDataFem->sizexcp);
+        inDataFem->xcp = (float*)malloc(inDataFem->sizexcp *sizeof(float));
+        inDataFem->ycp = (float*)malloc(inDataFem->sizexcp *sizeof(float));
+        inDataFem->fcp = (float*)malloc(inDataFem->sizexcp *sizeof(float));
+        inDataFem->tcp = (float*)malloc(inDataFem->sizexcp *sizeof(float));
+        for (int i = 0;i<inDataFem->sizexcp;i++){
+            fread(&(inDataFem->xcp[i]),sizeof(float),1,file);
+        }
+        for (int i = 0;i<inDataFem->sizexcp;i++){
+            fread(&(inDataFem->ycp[i]),sizeof(float),1,file);
+        }
+        for (int i = 0;i<inDataFem->sizexcp;i++){
+            fread(&(inDataFem->fcp[i]),sizeof(float),1,file);
+        }
+        for (int i = 0;i<inDataFem->sizexcp;i++){
+            fread(&(inDataFem->tcp[i]),sizeof(float),1,file);
+        }
     }
     fclose(file);
 

@@ -44,14 +44,12 @@ int main(int argc, char **argv){
     /* Boundary conditions nodes, dofs */
     CuFEMNum2DReadInData( &inDataFem );
 
-    //for (int i=0;i<inDataFem.sizeBBnodes;i++){
-    //    printf("%d, ", inDataFem.BBnodes[i]);
-    //}
+    for (int i = 0;i<100;i++){
+        printf("%f,", inDataFem.tcp[i]);
+    }
+    printf("\n\n%f,", inDataFem.xcp[inDataFem.sizexcp-1]);
 
-    printf("\n\ninDataFem.sizeBdofs = %d",inDataFem.sizeBdofs );
-    printf("\n\ninDataFem.sizeBBnodes = %d",inDataFem.sizeBBnodes );
-
-    printf("\n\n UP TO HERE\n\n");
+    exit(2023);
 
     /* TODO: Create output function to check whether the BCs are correct in a figure */
 

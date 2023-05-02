@@ -1,6 +1,7 @@
 function zi = shepard_interp_2d ( nd, xd, yd, zd, p, ni, xi, yi )
 
-nd 
+% https://people.sc.fsu.edu/~jburkardt/c_src/shepard_interp_2d/shepard_interp_2d.html
+
 %*****************************************************************************80
 %
 %% shepard_interp_2d() evaluates a 2D Shepard interpolant.

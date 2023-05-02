@@ -194,7 +194,7 @@ fclose(file);
 
 system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
 
-error('er')
+error()
 %% RUN THE CODE
 system('../c/./mainDKT');
 
