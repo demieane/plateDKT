@@ -32,7 +32,7 @@ if importFromFile.toggle
     dheave=w3*a3*cos(w3*d*dt+phase3);
     ddheave=-w3^2*a3*sin(w3*d*dt+phase3);
     
-    fx = fx  - 0*7850*h*ddheave; %FIX
+%     fx = fx  - 0*7850*h*ddheave; %FIX
     
 %     7850*0.001*ddheave
 %     error('er')
@@ -41,7 +41,7 @@ if importFromFile.toggle
 %     tx_modified = 0.15*chord.*(xc_fem_data-chord/2).^2+tx;
 
 %     tx_modified=th_fem_data;%0.15*chord.*(xc_fem_data-chord/2).^2+th_fem_data;
-    tx_modified= th_fem_data.*0 + h; %2.5*chord.*(xc_fem_data-chord/2).^2+th_fem_data;
+    tx_modified= th_fem_data + h; %2.5*chord.*(xc_fem_data-chord/2).^2+th_fem_data;
 %     tx_linear = 0.025*(xc_fem_data-chord/2) + 0.015;
 %     tx_linear = 0.5*(xc_fem_data-chord/2) + 0.015;
  

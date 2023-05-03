@@ -44,11 +44,12 @@ int main(int argc, char **argv){
     /* Boundary conditions nodes, dofs */
     CuFEMNum2DReadInData( &inDataFem );
 
-    for (int i = 0;i<10;i++){
-        printf("%f,", inDataFem.tcp[i]);
+    if (inDataFem.LL==3){
+        for (int i = 0;i<10;i++){
+            printf("%f,", inDataFem.tcp[i]);
+        }
+        printf("\n\ninDataFem.xcp[inDataFem.sizexcp-1]=%f\n", inDataFem.xcp[inDataFem.sizexcp-1]);
     }
-    printf("\n\ninDataFem.xcp[inDataFem.sizexcp-1]=%f\n", inDataFem.xcp[inDataFem.sizexcp-1]);
-
     //
 
     /* TODO: Create output function to check whether the BCs are correct in a figure */
@@ -63,7 +64,6 @@ int main(int argc, char **argv){
 
     /* Create or load from matlab IEN, ID, LM */
     ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem ); // BUG FOUND IN PREVIOUS VERSIONS in IEN_3
-
 /*
     printf("xm\n");
     for (int i = 0;i<10;i++){
@@ -74,7 +74,6 @@ int main(int argc, char **argv){
         printf("%f,",wingMeshFem.ym[i]);
     }
 */
-
     float *distrLoad, *distrThick;
     allocate1Darray(wingMeshFem.Nelem,&distrLoad);
     allocate1Darray(wingMeshFem.Nelem,&distrThick);

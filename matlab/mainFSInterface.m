@@ -84,8 +84,8 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION*************
 % COMMENT: The numbering is offered by the pdeModeler
-% Bnodes = [Bound4(1), Bound3];
-Bnodes = [Bound1, Bound2, Bound3, Bound4];
+Bnodes = [Bound4(1), Bound3];
+% Bnodes = [Bound1, Bound2, Bound3, Bound4];
 %**************************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -187,7 +187,7 @@ if lll==3%distributed load & distributed thickness
     % thickness at collocation point (to be updated) - TODO: increase the
     % values for the solution
     for ii = 1:length(tcp(:))
-        fwrite(file, h + 0.*tcp(ii),precision);
+        fwrite(file, tcp(ii),precision);
     end
 end
 fclose(file);
@@ -283,3 +283,5 @@ pdeplot(pp,ee,tt,'XYData',w_fromC,'colormap',viridis,'contour','on');
 colorbar;shading interp;
 xlabel('x-axis');ylabel('y-axis');
 title('(contour)','FontWeight','normal');
+
+check = [max(abs(w_fromC)), max(abs(w))]

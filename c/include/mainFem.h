@@ -269,10 +269,12 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     }
     //printf("BBnodes = %d, Bdofs=%d\n",inDataFem->sizeBBnodes, inDataFem->sizeBdofs );
     if (inDataFem->LL == 2){
+        printf("UNIFORM LOAD CASE LL == 2\n");
         /* UNIFORM LOAD CASE */
         fread(&(inDataFem->P_load), sizeof(float) , 1, file);
     }
     if (inDataFem->LL == 1){
+        printf("POINT LOAD CASE LL == 1\n");
         /* POINT LOAD CASE */
         fread(&(inDataFem->P_load), sizeof(float) , 1, file);
         fread(&(inDataFem->P_xy[0]), sizeof(float) , 1, file);
@@ -282,6 +284,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
         printf("\n\n P_NODE=%d \n\n",inDataFem->P_node);
     }
     if (inDataFem->LL == 3){
+        printf("DISTRIBUTED LOAD CASE LL == 3\n");
         /* DISTRIBUTED LOAD CASE */ /* TODO: use pre-processor directives instead*/
         fread(&(inDataFem->sizexcp), sizeof(int), 1, file);
         printf("sizexcp = %d\n", inDataFem->sizexcp);
