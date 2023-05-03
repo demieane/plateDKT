@@ -500,15 +500,15 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDK
     wingMeshFem->xm = (float*)malloc(wingMeshFem->Nelem *sizeof(float));
     wingMeshFem->ym = (float*)malloc(wingMeshFem->Nelem *sizeof(float));
     
-    int IEN_1, IEN_2;//, IEN_3;    
+    int IEN_1, IEN_2, IEN_3;    
     //i = wingMeshFem->Nelem-1;
     for (int i=0;i<wingMeshFem->Nelem;i++){ 
         IEN_1 = wingMeshFem->IEN[0][i] - 1;
         IEN_2 = wingMeshFem->IEN[1][i] - 1;
-        //IEN_3 = wingMeshFem->IEN[2][i] - 1;
+        IEN_3 = wingMeshFem->IEN[2][i] - 1;
         //printf("%d, %d, %d, \n",IEN_1, IEN_2, IEN_3);
-        wingMeshFem->xm[i] = (1.0/3.0)*(inDataFem->pp[0][IEN_1] + inDataFem->pp[0][IEN_1] + inDataFem->pp[0][IEN_2]);
-        wingMeshFem->ym[i] = (1.0/3.0)*(inDataFem->pp[1][IEN_1] + inDataFem->pp[1][IEN_1] + inDataFem->pp[1][IEN_2]);
+        wingMeshFem->xm[i] = (1.0/3.0)*(inDataFem->pp[0][IEN_1] + inDataFem->pp[0][IEN_2] + inDataFem->pp[0][IEN_3]);
+        wingMeshFem->ym[i] = (1.0/3.0)*(inDataFem->pp[1][IEN_1] + inDataFem->pp[1][IEN_2] + inDataFem->pp[1][IEN_3]);
         //printf("xm(%d)=%f, ym(%d)=%f\n",i, wingMeshFem->xm[i],i, wingMeshFem->ym[i]);
     }
     

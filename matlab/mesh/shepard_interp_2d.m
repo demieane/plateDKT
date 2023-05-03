@@ -51,7 +51,7 @@ function zi = shepard_interp_2d ( nd, xd, yd, zd, p, ni, xi, yi )
 %   
 %   error('er')
 
-  for i = 1 : 1%ni %448 (triangles)
+  for i = 1 : ni %448 (triangles)
 
     if ( p == 0.0 )
 
@@ -62,9 +62,9 @@ function zi = shepard_interp_2d ( nd, xd, yd, zd, p, ni, xi, yi )
       w = zeros ( nd, 1 );
 
       z = -1;
-      for j = 1 : 10%nd %930 (collocation points)
+      for j = 1 : nd %930 (collocation points)
         w(j) = sqrt ( ( xi(i) - xd(j) )^2 + ( yi(i) - yd(j) )^2 );
-        [xi(i),xd(j),yi(i),yd(j),w(j)]
+        %[xi(i),xd(j),yi(i),yd(j),w(j)]
 
         if ( w(j) == 0.0 )
           z = j;
@@ -94,8 +94,8 @@ function zi = shepard_interp_2d ( nd, xd, yd, zd, p, ni, xi, yi )
         dotproc = dotproc + w(k)*zd(k);
     end
     %=========================================
-    size(w)
-    size(zd)
+    %size(w)
+    %size(zd)
     zi(i) = dotproc;%w' * zd;
 
   end

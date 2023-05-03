@@ -62,8 +62,9 @@ int main(int argc, char **argv){
     //printf("inDataFem.pp[1][256]: %f\n", inDataFem.pp[1][250]); 
 
     /* Create or load from matlab IEN, ID, LM */
-    ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem );
+    ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem ); // BUG FOUND IN PREVIOUS VERSIONS in IEN_3
 
+/*
     printf("xm\n");
     for (int i = 0;i<10;i++){
         printf("%f,",wingMeshFem.xm[i]);
@@ -72,28 +73,42 @@ int main(int argc, char **argv){
     for (int i = 0;i<10;i++){
         printf("%f,",wingMeshFem.ym[i]);
     }
+*/
 
     /* TO DO: BUG */
     int nd = inDataFem.sizexcp;
     int ni = wingMeshFem.Nelem; //size(xm)
 
-    printf("nd=%d, ni=%d\n", nd, ni);
-    float p = 2.55;
-    float *pparam;
-    pparam = &p;   
-    printf("p=%f\n",*pparam);
+    //printf("nd=%d, ni=%d\n", nd, ni);
+    float p1 = 2.55, p2 = 10.55;
+    float *pparam1, *pparam2;
+    pparam1 = &p1;  
+    pparam2 = &p2; 
+    //printf("p=%f\n",*pparam);
 
-    float *distrLoad;
+    float *distrLoad, *distrThick;
     allocate1Darray(wingMeshFem.Nelem,&distrLoad);
+    allocate1Darray(wingMeshFem.Nelem,&distrThick);
 
     shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.fcp, 
-    pparam, ni, wingMeshFem.xm, wingMeshFem.ym, distrLoad);
+    pparam1, ni, wingMeshFem.xm, wingMeshFem.ym, distrLoad);
+
+    shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
+    pparam2, ni, wingMeshFem.xm, wingMeshFem.ym, distrThick);
 
     printf("distrLoad[i]=\n");
     for (int i = 0; i<15;i++){
         printf("%f,",distrLoad[i]);
         //printf("%f,",wingMeshFem.xm[i]);
     }
+
+    printf("distrThick[i]=\n");
+    for (int i = 0; i<15;i++){
+        printf("%f,",distrThick[i]);
+        //printf("%f,",wingMeshFem.xm[i]);
+    }
+
+
     exit(2023);
     
 

@@ -28,7 +28,6 @@ ym=(1/3)*(y(IEN(1,:))+y(IEN(2,:))+y(IEN(3,:)));    % y barycentric coordinate
 
 % zi = shepard_interp_2d ( nd, xd, yd, zd, p, ni, xi, yi )
 fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 2.55, length(xm(:)), xm, ym);
-error('er')
 % fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 5.22, length(xm(:)), xm, ym);
 txx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx(:), 10.5, length(xm(:)), xm, ym);
 %     

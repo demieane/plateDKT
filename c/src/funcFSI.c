@@ -5,8 +5,8 @@
 void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
     float *p, int ni, float *xi, float *yi, float *zi);
 
-/* single precision plays a role here as it changes the results a bit
-compared to matlab */
+/* single precision should be giving the same as matlab */
+
 void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
     float *p, int ni, float *xi, float *yi, float *zi){
 
@@ -21,7 +21,7 @@ void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
 
     float *w = ( float * ) malloc ( nd * sizeof ( float ) );
 
-    for (int i=0;i<1;i++){
+    for (int i=0;i<ni;i++){
         if (abs(*p) < 0.01){
             for ( int j = 0; j < nd; j++ ){
                 w[j] = 1.0 / ( double ) ( nd );
@@ -35,11 +35,11 @@ void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
             //}
 
             z = -1;
-            for ( int j = 0; j < 10; j++ ){
+            for ( int j = 0; j < nd; j++ ){
                 w[j] = sqrt ( pow ( (xi[i] - xd[j]), 2 )
                             + pow ( (yi[i] - yd[j]), 2 ) );
                 //printf("w[%d]=%f\n",j,w[j]);
-                printf("%f,%f,%f,%f,%f\n",xi[i],xd[j],yi[i],yd[j],w[j]);
+                //printf("%f,%f,%f,%f,%f\n",xi[i],xd[j],yi[i],yd[j],w[j]);
                 if ( w[j] == 0.0 ){
                     z = j;
                     break;
