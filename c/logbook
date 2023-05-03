@@ -1,0 +1,7 @@
+TO DO:
+
+1. FEM in single or double precision? Prepare a version that has both on switch
+2. Eigen-analysis using lapack functions 
+3. Very simple CUDA version of the FEM code (only the necessary stuff)
+
+
