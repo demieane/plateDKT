@@ -1,9 +1,14 @@
+#ifndef MAIN_FEM_HEADER_FILE
+#define MAIN_FEM_HEADER_FILE
+
+#include "../include/mainFem.h"
+
+#endif
+
 #include <stdio.h>
 #include <stdlib.h> //malloc
 #include <math.h> 
 
-void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
-    float *p, int ni, float *xi, float *yi, float *zi);
 
 /* single precision should be giving the same as matlab */
 

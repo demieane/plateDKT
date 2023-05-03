@@ -20,7 +20,7 @@
 #endif
 
 #ifndef MODAL_ANALYSIS
-    #define MODAL_ANALYSIS 1 /* Find eigenfrequencies */
+    #define MODAL_ANALYSIS 0 /* Find eigenfrequencies */
 #endif
 
 /*=========================================================================================*/
@@ -192,6 +192,9 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN);
 void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals); //FAILS IN SINGULAR MGLOB
 //
 void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M);
+//---------------------------03/04/2023
+void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
+    float *p, int ni, float *xi, float *yi, float *zi);
 
 /*=========================================================================================*/
 /* Definition of the functions follows */
@@ -271,6 +274,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     }
     if (inDataFem->LL == 1){
         /* POINT LOAD CASE */
+        fread(&(inDataFem->P_load), sizeof(float) , 1, file);
         fread(&(inDataFem->P_xy[0]), sizeof(float) , 1, file);
         fread(&(inDataFem->P_xy[1]), sizeof(float) , 1, file);
         printf("\n\n Px=%f, Py=%f\n\n",inDataFem->P_xy[0],inDataFem->P_xy[1]);

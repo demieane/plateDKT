@@ -119,7 +119,7 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=1;%2; %loading case
+lll=3;%2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
 P_load = 1; %[Pa] %pointing towards the Z-axis
@@ -178,7 +178,7 @@ end
 GEN=max(max(LM)); %Total number of nodal unknowns taking into account the 
 % connectivity between the triangles
 
-error('er')
+% error('er')
 
 %
 %% Essential BCs (enforces on the displacements "w" and slopes "bx", "by")   
@@ -246,13 +246,14 @@ Ng=3; %TO-DO
 % error('er')
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
-d=1;
+d=100;
 %  thick=h*ones(1,Nelem);
 [~,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, debugOn, importFromFile,...
     fluid_dens, Uvel, h, d);
+
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
 
-error('er')
+% error('er')
 % 
 % BeSt2(:,:,1)
 
@@ -299,7 +300,7 @@ yg=xw(:,2);
 
 AA = [1.0, 75.0;
       2.0, 1.0];
-inv(AA)
+inv(AA);
 
 % AA = [ 1.0  1.2  1.4  1.6  1.8  2.0  2.2  2.4  2.6 ;
 %         1.2  1.0  1.2  1.4  1.6  1.8  2.0  2.2  2.4 ;
@@ -476,7 +477,7 @@ Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];
 Kglob_dense2=[Kglob_dense kkk'; kkk zeros(length(BBnodes))];
 Kglob_dense2(GEN+1:end,1:27)
 Kglob_dense2(1:27,GEN+1:end)
-% error('er')
+error('er')
 
 %FORCING AND SOLUTION
 if lll==1

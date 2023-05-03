@@ -187,14 +187,14 @@ if lll==3%distributed load & distributed thickness
     % thickness at collocation point (to be updated) - TODO: increase the
     % values for the solution
     for ii = 1:length(tcp(:))
-        fwrite(file, tcp(ii),precision);
+        fwrite(file, h + 0.*tcp(ii),precision);
     end
 end
 fclose(file);
 
 system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
 
-error('er')
+% error('er')
 %% RUN THE CODE
 system('../c/./mainDKT');
 
@@ -209,31 +209,31 @@ for i = 1:rowsUsol
         Usol(i,j)=fread(fileID,1,'single');
     end
 end
-
-%% MODAL ANALYSIS 
-
-fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
-rowsUsol = fread(fileID,1,'int')
-colsUsol = fread(fileID,1,'int')
-
-for i = 1:rowsUsol
-    for j = 1:colsUsol
-        Kglob_aug(i,j)=fread(fileID,1,'single');
-    end
-end
-
-for i = 1:rowsUsol
-    for j = 1:colsUsol
-        Mglob_aug(i,j)=fread(fileID,1,'single');
-    end
-end
-
-[XX,lamM,flag]=eigs(Kglob_aug,Mglob_aug,5,'sm');
-cc=sort(diag(lamM));
-  
-freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
-
-freq'
+% % 
+% % %% MODAL ANALYSIS 
+% % 
+% % fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
+% % rowsUsol = fread(fileID,1,'int')
+% % colsUsol = fread(fileID,1,'int')
+% % 
+% % for i = 1:rowsUsol
+% %     for j = 1:colsUsol
+% %         Kglob_aug(i,j)=fread(fileID,1,'single');
+% %     end
+% % end
+% % 
+% % for i = 1:rowsUsol
+% %     for j = 1:colsUsol
+% %         Mglob_aug(i,j)=fread(fileID,1,'single');
+% %     end
+% % end
+% % 
+% % [XX,lamM,flag]=eigs(Kglob_aug,Mglob_aug,5,'sm');
+% % cc=sort(diag(lamM));
+% %   
+% % freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
+% % 
+% % freq'
 
 %%  VISUAL COMPARISON 
 GEN = size(pp,2)*3;

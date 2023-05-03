@@ -19,7 +19,7 @@ if importFromFile.toggle
     xx=xc_fem_data;%/0.33*2;
     yy=yc_fem_data;
 
-    fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2);%*chord*span); %dimensionalize data [N]
+    fx=DCoefpres(:,:,d);%*(0.5*fluid_dens*Uvel^2);%*chord*span); %dimensionalize data [N]
 %     Area = chord*span; % IS THIS OK?
 %     fx=fx/Area;
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data
@@ -32,7 +32,7 @@ if importFromFile.toggle
     dheave=w3*a3*cos(w3*d*dt+phase3);
     ddheave=-w3^2*a3*sin(w3*d*dt+phase3);
     
-    fx = fx  - 7850*h*ddheave; %FIX
+    fx = fx  - 0*7850*h*ddheave; %FIX
     
 %     7850*0.001*ddheave
 %     error('er')
@@ -112,8 +112,12 @@ size(fx);
 % COMMENT: If this is implemented in C matlap interpolation would not be
 % available (discuss)
 
-fxx=interp2(xx,yy,fx,xm,ym, 'spline');    
-txx=interp2(xx,yy,tx_modified,xm,ym,'spline');%is this OK?
+% % % fxx=interp2(xx,yy,fx,xm,ym, 'spline');    
+% % % txx=interp2(xx,yy,tx_modified,xm,ym,'spline');%is this OK?
+
+fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 10.5, length(xm(:)), xm, ym);
+% fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 5.22, length(xm(:)), xm, ym);
+txx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx_modified(:), 10.5, length(xm(:)), xm, ym);
         
 if debugOn
     figure;hold on;grid on;

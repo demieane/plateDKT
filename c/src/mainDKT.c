@@ -75,42 +75,45 @@ int main(int argc, char **argv){
     }
 */
 
-    /* TO DO: BUG */
-    int nd = inDataFem.sizexcp;
-    int ni = wingMeshFem.Nelem; //size(xm)
-
-    //printf("nd=%d, ni=%d\n", nd, ni);
-    float p1 = 2.55, p2 = 10.55;
-    float *pparam1, *pparam2;
-    pparam1 = &p1;  
-    pparam2 = &p2; 
-    //printf("p=%f\n",*pparam);
-
     float *distrLoad, *distrThick;
     allocate1Darray(wingMeshFem.Nelem,&distrLoad);
     allocate1Darray(wingMeshFem.Nelem,&distrThick);
 
-    shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.fcp, 
-    pparam1, ni, wingMeshFem.xm, wingMeshFem.ym, distrLoad);
+    if (inDataFem.LL == 3){
+        printf("DISTRIBUTED LOAD CASE 1. \n");
 
-    shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
-    pparam2, ni, wingMeshFem.xm, wingMeshFem.ym, distrThick);
+        /* DISTRIBUTED LOAD & THICKNESS CASE */
+        int nd = inDataFem.sizexcp;
+        int ni = wingMeshFem.Nelem; //size(xm)
 
-    printf("distrLoad[i]=\n");
-    for (int i = 0; i<15;i++){
-        printf("%f,",distrLoad[i]);
-        //printf("%f,",wingMeshFem.xm[i]);
+        //printf("nd=%d, ni=%d\n", nd, ni);
+        float p1 = 10.55, p2 = 10.55;
+        float *pparam1, *pparam2;
+        pparam1 = &p1;  
+        pparam2 = &p2; 
+        //printf("p=%f\n",*pparam);
+
+        shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.fcp, 
+        pparam1, ni, wingMeshFem.xm, wingMeshFem.ym, distrLoad);
+
+        shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
+        pparam2, ni, wingMeshFem.xm, wingMeshFem.ym, distrThick);
+
+        printf("distrLoad[i]=\n");
+        for (int i = 0; i<15;i++){
+            printf("%f,",distrLoad[i]);
+            //printf("%f,",wingMeshFem.xm[i]);
+        }
+        printf("%f,",distrLoad[wingMeshFem.Nelem-1]);
+
+        printf("\ndistrThick[i]=\n");
+        for (int i = 0; i<15;i++){
+            printf("%f,",distrThick[i]);
+            //printf("%f,",wingMeshFem.xm[i]);
+        }
+        printf("%f,",distrThick[wingMeshFem.Nelem-1]);
     }
-
-    printf("distrThick[i]=\n");
-    for (int i = 0; i<15;i++){
-        printf("%f,",distrThick[i]);
-        //printf("%f,",wingMeshFem.xm[i]);
-    }
-
-
-    exit(2023);
-    
+   
 
     /* Gauss integration function - read about it */
     float xw[Ng][3]; // {xg,yg,wg}
@@ -126,9 +129,9 @@ int main(int argc, char **argv){
 #endif
 
     /* Bending stiffness for each triangle - using python??? or constant thickness?? */
-    system(command);
+    //system(command);
 
-    printf("BeSt");
+    printf("\n BeSt \n");
     //float BeSt[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
     float **BeSt;
     allocate2Darray(3, 3, &BeSt);
@@ -172,7 +175,6 @@ int main(int argc, char **argv){
 
     matrixG(&wingMeshFem);
 
-
     printf("Testing BLAS\n\n");
 
     // EXAMPLE FROM cblas.h
@@ -186,7 +188,8 @@ int main(int argc, char **argv){
     squareMatInverse2(6, 6, wingMeshFem.GGDKT, wingMeshFem.GGin2);
 
 
-#if DEBUG_ON
+//#if DEBUG_ON
+    printf("wingMeshFem.GGDST\n");
     for (int i=0;i<10;i++){
         for (int j=0;j<10;j++){
             printf("%f, ",wingMeshFem.GGDST[i][j]);
@@ -194,6 +197,7 @@ int main(int argc, char **argv){
         printf("\n\n");
     }
 
+    printf("wingMeshFem.GGin\n");
     for (int i=0;i<10;i++){
         for (int j=0;j<10;j++){
             printf("%f, ",wingMeshFem.GGin[i][j]);
@@ -201,6 +205,7 @@ int main(int argc, char **argv){
         printf("\n");
     }
 
+    printf("wingMeshFem.GGDKT\n");
     for (int i=0;i<6;i++){
         for (int j=0;j<6;j++){
             printf("%f, ",wingMeshFem.GGDKT[i][j]);
@@ -208,13 +213,14 @@ int main(int argc, char **argv){
         printf("\n\n");
     }
 
+    printf("wingMeshFem.GGin2\n");
     for (int i=0;i<6;i++){
         for (int j=0;j<6;j++){
             printf("%f, ",wingMeshFem.GGin2[i][j]);
         }
         printf("\n");
     }
-#endif
+//#endif
 
 
 #if DEBUG_ON
@@ -255,8 +261,10 @@ int main(int argc, char **argv){
     //************************************************************************************
     //  DKT PLATE SOLVER: LOCAL MATRIX (mloc, kloc, floc)
     //************************************************************************************
-    printf("%f =>  P_load in [Pa]", inDataFem.P_load);
-
+    if (inDataFem.LL == 1){
+        printf("%f =>  P_load in [Pa]", inDataFem.P_load);
+    }
+    printf("P_load in [Pa] NOOO");
     /*
     initialize structure that contains all the arrays
     needed for the final global matrix assembly
@@ -358,6 +366,9 @@ int main(int argc, char **argv){
 #endif            
             // matrix addition needed 
             // kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
+            if (inDataFem.LL == 3.0){
+                BendingStiffness(inDataFem.E, inDataFem.v, distrThick[kk], BeSt);
+            }
             float **kb;
             allocate2Darray(9, 3, &kb);
             matMatMultiplication2(2, 3, 9, 3, 1.0, 0.0, elemFemArr.Bb, BeSt, kb);
@@ -406,7 +417,11 @@ int main(int argc, char **argv){
             allocate2Darray(9,9,&term5);
 
             //printf("h = %f,\n",inDataFem.h);    
-            float var0 = pow(inDataFem.h,2)/12.0;
+            float var0;
+            var0 = pow(inDataFem.h,2)/12.0;
+            if (inDataFem.LL==3){
+                var0 = pow(distrThick[kk],2)/12.0;
+            }
             //printf("txx^2/12*1000 = %f\n",var0*1000);
             
             matMatMultiplication2(2, 1, 9, 9, var0, 0.0, elemFemArr.Hx, elemFemArr.Hx, term1); //Hx'*Hx
@@ -424,6 +439,9 @@ int main(int argc, char **argv){
             allocate2Darray(9,9,&sum1);
             allocate2Darray(9,9,&sum2);
             float varmloc = inDataFem.mass*inDataFem.h*wingMeshFem.area[kk]*xw[ii][2];
+            if (inDataFem.LL==3){
+                varmloc = inDataFem.mass*distrThick[kk]*wingMeshFem.area[kk]*xw[ii][2];
+            }
             matSum2(varmloc, varmloc, 9, 9, term1, term2, sum1); // C = C + a * A + b * B
             matSum2(1.0, varmloc, 9, 9, sum1, term5, sum2);
             matSum2(1.0, 0.0, 9, 9, sum2, sum2, elemFemArr.mloc);
@@ -466,14 +484,25 @@ int main(int argc, char **argv){
             // version - 2 (EQUIVALENT) floc=P*HW'*floc1;
             //matMatMultiplication2(2, 10, 9, inDataFem.P_load, 1.0, 0.0, elemFemArr.HW, elemFemArr.floc1, elemFemArr.floc); //HW'*floc1
         }
+        if (inDataFem.LL == 3){
+            // version - 1
+            printf(" LLL = 3, %f,",distrLoad[kk]);
+            for (int i=0;i<9;i++){
+                for (int j=0;j<1;j++){
+                    elemFemArr.floc[i][j] = elemFemArr.floc[i][j] + wingMeshFem.area[kk]*distrLoad[kk]/3.0*lumpedMass[i];
+                }
+            }
+        }
 
-#if DEBUG_ON
+//
+        printf("\n");
         for (int i=0;i<9;i++){
             for (int j=0;j<1;j++){
                 printf("%f,",elemFemArr.floc[i][j]); 
             }
             printf("\n");
         }
+#if DEBUG_ON
 printf("\n");
         for (int i=0;i<10;i++){
             for (int j=0;j<1;j++){
@@ -515,7 +544,7 @@ printf("\n");
         }
 #endif
 
-        if (inDataFem.LL == 2){
+        if (inDataFem.LL == 2 || inDataFem.LL==3){
             for (int q=0;q<9;q++){
                 int cntFglob = wingMeshFem.LM[q][kk]-1;
                 elemFemArr.Fglob[cntFglob][0] = elemFemArr.Fglob[cntFglob][0] + elemFemArr.floc[q][0];
@@ -523,10 +552,10 @@ printf("\n");
             }
         }
 
-        //printf("\nFglob...\n");
-        //for (int j=0;j<20;j++){
-        //    printf("j=%d, %f,\n",j, elemFemArr.Fglob[j][0]); 
-        //}
+        printf("\nFglob...\n");
+        for (int j=0;j<20;j++){
+            printf("j=%d, %f,\n",j, elemFemArr.Fglob[j][0]); 
+        }
 
         // re-initialize mloc, kloc, floc, floc1
         for (int i = 0;i<9;i++){
@@ -556,6 +585,7 @@ printf("\n");
         printf("%f,\n",elemFemArr.Kg[j][0]); 
     }
 #endif
+
 //exit(5);
     //************************************************************************************
     //  DKT PLATE SOLVER: GLOBAL MATRIX ASSEMBLY (Mglob, Kglob, Fglob)
@@ -642,7 +672,7 @@ printf("\n");
         }
     }
 
-/*
+
     //printf("Kglob = \n");
     printf("\n\nMglob = \n");
     for (int i=0;i<10;i++){
@@ -671,8 +701,9 @@ printf("\n");
         printf("%d, %f, ",i, rr_col[i][0]);
     }
     
-*/
-    printf("\n\n Kglob, Mglob OK...");
+    
+//exit(10);
+    printf("\n\n Kglob, Mglob OK... DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)\n");
     //************************************************************************************
     //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
     //************************************************************************************
@@ -732,23 +763,26 @@ printf("\n");
         }
     }
 
-/*
+
     printf("Kglob sample (kkk)\n");
-    for (int i=wingMeshFem.GEN;i<sizeKMglob_aug;i++){
-        for (int j=0;j<27;j++){
+    //for (int i=wingMeshFem.GEN;i<sizeKMglob_aug;i++){
+    for (int i=1;i<10;i++){    
+        for (int j=0;j<10;j++){
             printf("%f, ",Kglob_aug[i][j]);
         }
         printf("\n");
     }
 
-    printf("Kglob sample (kkk')\n");
-    for (int i=wingMeshFem.GEN;i<sizeKMglob_aug;i++){
-        for (int j=0;j<27;j++){
-            printf("%f, ",Kglob_aug[j][i]);
+    printf("Mglob sample (kkk')\n");
+    //for (int i=wingMeshFem.GEN;i<sizeKMglob_aug;i++){
+    for (int i=1;i<10;i++){    
+        for (int j=0;j<10;j++){
+            //printf("%f, ",Mglob_aug[j][i]);
+            printf("%f, ",Mglob_aug[i][j]);
         }
         printf("\n");
     }
-*/
+
 
     //************************************************************************************
     //  DKT PLATE SOLVER: SOLUTION OPTIONS (1. EIGEN, 2. STATIC, 3. DYNAMIC)
@@ -777,7 +811,9 @@ printf("\n");
         printf("%f, ", Fglob_aug[i][0]);
     }
 */
-    printf("\nUNIFORM LOAD: P=%f [Pa]\n",inDataFem.P_load);
+    if (inDataFem.LL==2){
+        printf("\nUNIFORM LOAD: P=%f [Pa]\n",inDataFem.P_load);
+    }
 
     // solve linear system of eqs. using LAPACK sgels_ function
     linearSystemSolve(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
