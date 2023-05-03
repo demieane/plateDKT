@@ -3,103 +3,76 @@
 #include <math.h> 
 
 void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
-    float p, int ni, float *xi, float *yi, float *zi);
+    float *p, int ni, float *xi, float *yi, float *zi);
 
+/* single precision plays a role here as it changes the results a bit
+compared to matlab */
 void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
-    float p, int ni, float *xi, float *yi, float *zi){
-/*
-  Purpose:
+    float *p, int ni, float *xi, float *yi, float *zi){
 
-    SHEPARD_INTERP_2D evaluates a 2D Shepard interpolant.
+    printf("\n\nSHEPARD INTERP...\n");
+    
+    printf("nd=%d, ni=%d\n", nd, ni);
+    printf("p=%f\n",*p);
 
-    Modified:
-
-    02 October 2012
-
-  Author:
-
-    John Burkardt
-
-  Reference:
-
-    Donald Shepard,
-    A two-dimensional interpolation function for irregularly spaced data,
-    ACM '68: Proceedings of the 1968 23rd ACM National Conference,
-    ACM, pages 517-524, 1969.
-
-  Parameters:
-
-    Input, int ND, the number of data points.
-
-    Input, float XD[ND], YD[ND], the data points.
-
-    Input, float ZD[ND], the data values.
-
-    Input, float P, the power.
-
-    Input, int NI, the number of interpolation points.
-
-    Input, float XI[NI], YI[NI], the interpolation points.
-
-    Output, float ZI[NI], the interpolated values.
-
-  Comments: 
-
-    All matrices need to be allocated prior to the function call.
-
-*/
-
-    int i,j;
     int z;
-    float s = 0.0;
+    float suma, s;
     float dotproc;
-    float *w;
-    w = ( float * ) malloc ( nd * sizeof ( float ) ); //weights
 
-    // for each point at which the interpolation is intended
-    for (i = 0;i<ni;i++){
-        if (p == 0.0){
-            for (j=0; j<nd;j++){
-                w[j] = 1.0/ (float) nd;
+    float *w = ( float * ) malloc ( nd * sizeof ( float ) );
+
+    for (int i=0;i<1;i++){
+        if (abs(*p) < 0.01){
+            for ( int j = 0; j < nd; j++ ){
+                w[j] = 1.0 / ( double ) ( nd );
             }
+            printf("here...\n");
         }
         else{
-            z = -1.0; //flag
-            for (j = 0;j<nd;j++){
-                w[j] = sqrt ( pow ( xi[i] - xd[j], 2 ) + pow ( yi[i] - yd[j], 2 ) );
+            //w = zeros ( nd, 1 );
+            //for ( int k = 0; k < nd; k++ ){
+            //    w[k] = 0.0;
+            //}
+
+            z = -1;
+            for ( int j = 0; j < 10; j++ ){
+                w[j] = sqrt ( pow ( (xi[i] - xd[j]), 2 )
+                            + pow ( (yi[i] - yd[j]), 2 ) );
+                //printf("w[%d]=%f\n",j,w[j]);
+                printf("%f,%f,%f,%f,%f\n",xi[i],xd[j],yi[i],yd[j],w[j]);
                 if ( w[j] == 0.0 ){
                     z = j;
                     break;
                 }
             }
             if ( z != -1 ){
-                for ( j = 0; j < nd; j++ ){
-                    w[j] = 0.0; // initialize
+                for ( int j = 0; j < nd; j++ ){
+                    w[j] = 0.0;
                 }
                 w[z] = 1.0;
             }
-            else{  
-                
-                for ( j = 0; j < nd; j++ ){
-                    w[j] = 1.0 / pow ( w[j], p );
-                    s = s + w[j];
+            else{
+                for (int j = 0; j < nd; j++ ){
+                    w[j] = 1.0 / pow ( w[j], *p );
                 }
-                for ( j = 0; j < nd; j++ ){
+                suma = 0.0;
+                for (int k=0;k<nd;k++){
+                    suma = suma + w[k];
+                }
+                s = suma;
+                //s = r8vec_sum ( nd, w );
+                for ( int j = 0; j < nd; j++ ){
                     w[j] = w[j] / s;
                 }
-                s  = 0.0;
             }
         }
-
         dotproc = 0.0;
-        for ( int k = 0;k<nd;k++){
+        for (int k=0;k<nd;k++){
             dotproc = dotproc + w[k]*zd[k];
         }
         zi[i] = dotproc;
+        //zi[i] = r8vec_dot_product ( nd, w, zd );
     }
-    
-    free ( w );
 
-
+    printf("\n\nEXITING SHEPARD INTERP...\n");
 }
-

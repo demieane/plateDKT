@@ -63,9 +63,8 @@ function zi = shepard_interp_2d ( nd, xd, yd, zd, p, ni, xi, yi )
 
       z = -1;
       for j = 1 : 10%nd %930 (collocation points)
-        w(j) = sqrt ( ( xi(i) - xd(j) )^2 + ( yi(i) - yd(j) )^2 );
-        [xi(i),xd(j),yi(i),yd(j),w(j)]
-
+        w(j) = sqrt ( ( xi(i) - xd(j) )^2 + ( yi(i) - yd(j) )^2 )l
+        w)j
         if ( w(j) == 0.0 )
           z = j;
           break

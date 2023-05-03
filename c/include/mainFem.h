@@ -251,11 +251,11 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     }
     //---------------------------------------------------------------------------->>
     fread(&(inDataFem->sizeBBnodes), sizeof(int) , 1, file);
-    printf("sizeBBnodes = %d\n",inDataFem->sizeBBnodes );
+    //printf("sizeBBnodes = %d\n",inDataFem->sizeBBnodes );
     inDataFem->BBnodes = (int*)malloc(inDataFem->sizeBBnodes *sizeof(int));
     for (int i=0;i<inDataFem->sizeBBnodes;i++){
         fread(&(inDataFem->BBnodes[i]), sizeof(int), 1, file);
-        printf("i=%d,BBnodes[i]=%d\n", i,inDataFem->BBnodes[i]);
+        //printf("i=%d,BBnodes[i]=%d\n", i,inDataFem->BBnodes[i]);
     }
     
     fread(&(inDataFem->sizeBdofs), sizeof(int) , 1, file);
@@ -280,7 +280,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     if (inDataFem->LL == 3){
         /* DISTRIBUTED LOAD CASE */ /* TODO: use pre-processor directives instead*/
         fread(&(inDataFem->sizexcp), sizeof(int), 1, file);
-        printf("sizexcp = %d", inDataFem->sizexcp);
+        printf("sizexcp = %d\n", inDataFem->sizexcp);
         inDataFem->xcp = (float*)malloc(inDataFem->sizexcp *sizeof(float));
         inDataFem->ycp = (float*)malloc(inDataFem->sizexcp *sizeof(float));
         inDataFem->fcp = (float*)malloc(inDataFem->sizexcp *sizeof(float));

@@ -44,10 +44,10 @@ int main(int argc, char **argv){
     /* Boundary conditions nodes, dofs */
     CuFEMNum2DReadInData( &inDataFem );
 
-    for (int i = 0;i<100;i++){
+    for (int i = 0;i<10;i++){
         printf("%f,", inDataFem.tcp[i]);
     }
-    printf("\n\n%f,", inDataFem.xcp[inDataFem.sizexcp-1]);
+    printf("\n\ninDataFem.xcp[inDataFem.sizexcp-1]=%f\n", inDataFem.xcp[inDataFem.sizexcp-1]);
 
     //
 
@@ -64,22 +64,38 @@ int main(int argc, char **argv){
     /* Create or load from matlab IEN, ID, LM */
     ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem );
 
+    printf("xm\n");
+    for (int i = 0;i<10;i++){
+        printf("%f,",wingMeshFem.xm[i]);
+    }
+    printf("ym\n");
+    for (int i = 0;i<10;i++){
+        printf("%f,",wingMeshFem.ym[i]);
+    }
+
     /* TO DO: BUG */
     int nd = inDataFem.sizexcp;
     int ni = wingMeshFem.Nelem; //size(xm)
-    float pparam = 5.22;
+
+    printf("nd=%d, ni=%d\n", nd, ni);
+    float p = 2.55;
+    float *pparam;
+    pparam = &p;   
+    printf("p=%f\n",*pparam);
+
     float *distrLoad;
     allocate1Darray(wingMeshFem.Nelem,&distrLoad);
 
     shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.fcp, 
     pparam, ni, wingMeshFem.xm, wingMeshFem.ym, distrLoad);
-    
-    for (int i = 0; i<100;i++){
-        //printf("%f,",distrLoad[i]);
-        printf("%f,",wingMeshFem.xm[i]);
+
+    printf("distrLoad[i]=\n");
+    for (int i = 0; i<15;i++){
+        printf("%f,",distrLoad[i]);
+        //printf("%f,",wingMeshFem.xm[i]);
     }
-    
     exit(2023);
+    
 
     /* Gauss integration function - read about it */
     float xw[Ng][3]; // {xg,yg,wg}
