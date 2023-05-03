@@ -269,22 +269,22 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     }
     //printf("BBnodes = %d, Bdofs=%d\n",inDataFem->sizeBBnodes, inDataFem->sizeBdofs );
     if (inDataFem->LL == 2){
-        printf("UNIFORM LOAD CASE LL == 2\n");
+        printf("    UNIFORM LOAD CASE LL == 2\n");
         /* UNIFORM LOAD CASE */
         fread(&(inDataFem->P_load), sizeof(float) , 1, file);
     }
     if (inDataFem->LL == 1){
-        printf("POINT LOAD CASE LL == 1\n");
+        printf("    POINT LOAD CASE LL == 1\n");
         /* POINT LOAD CASE */
         fread(&(inDataFem->P_load), sizeof(float) , 1, file);
         fread(&(inDataFem->P_xy[0]), sizeof(float) , 1, file);
         fread(&(inDataFem->P_xy[1]), sizeof(float) , 1, file);
-        printf("\n\n Px=%f, Py=%f\n\n",inDataFem->P_xy[0],inDataFem->P_xy[1]);
+        printf("    Px=%f, Py=%f\n\n",inDataFem->P_xy[0],inDataFem->P_xy[1]);
         fread(&(inDataFem->P_node), sizeof(int) , 1, file);
-        printf("\n\n P_NODE=%d \n\n",inDataFem->P_node);
+        printf("    P_NODE=%d \n\n",inDataFem->P_node);
     }
     if (inDataFem->LL == 3){
-        printf("DISTRIBUTED LOAD CASE LL == 3\n");
+        printf("    DISTRIBUTED LOAD CASE LL == 3\n");
         /* DISTRIBUTED LOAD CASE */ /* TODO: use pre-processor directives instead*/
         fread(&(inDataFem->sizexcp), sizeof(int), 1, file);
         printf("sizexcp = %d\n", inDataFem->sizexcp);
@@ -346,7 +346,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
         printf("\n");
     }
 #endif
-    printf("EXITING CuFEMNum2DReadInData...\n\n");
+    printf("    EXITING CuFEMNum2DReadInData...\n");
 }
 
 void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN){
@@ -365,7 +365,7 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN){
     }
 
     fclose(fileOut);
-    printf("\nEXITING CuFEMNum2DWriteDataInBinary...\n\n");
+    printf("\n    EXITING CuFEMNum2DWriteDataInBinary...\n\n");
 }
 
 
@@ -502,7 +502,7 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDK
     }
 #endif
 
-    printf("Calculating barycentric coordinates.\n");
+    printf("    Calculating barycentric coordinates.\n");
     // allocate memory
     wingMeshFem->xm = (float*)malloc(wingMeshFem->Nelem *sizeof(float));
     wingMeshFem->ym = (float*)malloc(wingMeshFem->Nelem *sizeof(float));
@@ -519,7 +519,7 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem *inDataFem, struct triangleDK
         //printf("xm(%d)=%f, ym(%d)=%f\n",i, wingMeshFem->xm[i],i, wingMeshFem->ym[i]);
     }
     
-    printf("EXITING ConnectivityFEM_IEN_ID_LM...\n\n");
+    printf("    EXITING ConnectivityFEM_IEN_ID_LM...\n\n");
 }
 
 

@@ -21,8 +21,8 @@
 //***********************************************************************************
 
 void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut){
-    printf("\n------------------------------------");
-    printf("\n         Testing LAPACK           \n");
+    //printf("\n------------------------------------");
+    //printf("\n         Testing LAPACK           \n");
 
     // assuming that the given arrIn is a 2D array. 
     // transform it to 1D- array for lapack functions
@@ -64,8 +64,8 @@ void squareMatInverse2(int rows, int cols, float **arrIn, float **arrOut){
     //printf("\n%d,----------------------------------\n\n",INFO);
 
     free(AA);
-    printf("         Inverse 2D OK..          \n");
-    printf("------------------------------------\n");
+    //printf("         Inverse 2D OK..          \n");
+    //printf("------------------------------------\n");
 }
 
 void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, float alpha, float beta, float **arrA, float **arrB, float **arrOut){
@@ -289,14 +289,14 @@ void linearSystemSolve(int rowsA, int colsA, float **arrA, float **arrB, float *
         //printf("\n");
     }
     //printf("\n\n");
-    printf("Allocated A.. OK!\n");
+    //printf("Allocated A.. OK!\n");
 
     float *BB;
     BB = (float*)malloc((rowsA*1) *sizeof(float));
     for (int i = 0; i < rowsA; i++) {
         BB[i] = arrB[i][0];
     }
-    printf("Allocated B.. OK!\n");
+    //printf("Allocated B.. OK!\n");
 
     int nrhs = 1; //number of rhs vectors B 
     int LDA = colsA;
@@ -309,13 +309,13 @@ void linearSystemSolve(int rowsA, int colsA, float **arrA, float **arrB, float *
     sgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
 
     if (info >= 0){
-        printf("Solution successfull");
+        printf("\n    Solution successfull");
     } 
 
     for (int i = 0; i < rowsA; i++) {
         Usol[i][0]=BB[i];
     }
-    printf("Transfered solution from B to Usol.. OK!\n");
+    printf("\n    Transfered solution from B to Usol.. OK!\n");
 
 
 }
@@ -369,7 +369,7 @@ void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals){
         //printf("\n");
     }
     //printf("\n\n");
-    printf("\nAllocated A.. OK!\n");
+    //printf("\nAllocated A.. OK!\n");
 
     float *BB;
     BB = (float*)malloc((N*N) *sizeof(float));
@@ -381,7 +381,7 @@ void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals){
         } 
         //printf("\n");
     }
-    printf("\nAllocated B.. OK!\n");
+    //printf("\nAllocated B.. OK!\n");
 
     char JOBVL = 'N';
     char JOBVR = 'N'; //the right generalized eigenvectors are computed.

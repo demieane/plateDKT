@@ -19,7 +19,7 @@ if importFromFile.toggle
     xx=xc_fem_data;%/0.33*2;
     yy=yc_fem_data;
 
-    fx=DCoefpres(:,:,d).*0 + 1;%*(0.5*fluid_dens*Uvel^2);%*chord*span); %dimensionalize data [N]
+    fx=DCoefpres(:,:,d).*0 + ;%*(0.5*fluid_dens*Uvel^2);%*chord*span); %dimensionalize data [N]
 %     Area = chord*span; % IS THIS OK?
 %     fx=fx/Area;
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data

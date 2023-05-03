@@ -196,7 +196,7 @@ int main(int argc, char **argv){
     //************************************************************************************
     //  DKT PLATE SOLVER: LOCAL MATRIX (mloc, kloc, floc)
     //************************************************************************************
-    printf("%f =>  P_load in [Pa]", inDataFem.P_load);
+    printf("\n    P_load=%f in [Pa]", inDataFem.P_load);
 
     /*
     initialize structure that contains all the arrays
