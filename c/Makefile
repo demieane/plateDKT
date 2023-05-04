@@ -1,6 +1,7 @@
 # Name your final target, that is, your executable:
 TARGET_EXEC := mainDKT
 CC = gcc
+#CC = nvcc
 
 # List your source and build output directories:
 SRC_DIR := src
@@ -19,6 +20,7 @@ OBJ := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
 # If you want to print every warning so that you can examine 
 # your code and make it better than ever, use the -Wall flag.
 CFLAGS   := -Wall              # some warnings about bad code
+#CFLAGS   :=               # some warnings about bad code
 LDLIBS   := -lm -lblas -llapack                # Left empty if no libs are needed
 
 # this tells the make file which targets to execute based on their names

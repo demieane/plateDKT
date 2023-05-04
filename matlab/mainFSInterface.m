@@ -121,20 +121,20 @@ end
 
 
 %% CREATE MODE.bin binary file for passing data 
-modeFem = 1; %double:1, single(or mixed):2
-% write to binary for communication with GPU executable
-file1 = fopen('MODE_FEM.bin', 'wb');
-fwrite(file1, modeFem, 'int');
-fclose(file1);
-system('cp MODE_FEM.bin ../c/MODE_FEM.bin');
+% modeFem = 1; %double:1, single(or mixed):2
+% % write to binary for communication with GPU executable
+% file1 = fopen('MODE_FEM.bin', 'wb');
+% fwrite(file1, modeFem, 'int');
+% fclose(file1);
+% system('cp MODE_FEM.bin ../c/MODE_FEM.bin');
 
-error('er')
+% error('er')
 %%
-if modeFem == 1
-    precision = 'double';
-else
+% if modeFem == 1
+%     precision = 'double';
+% else
     precision = 'single';
-end
+% end
 
 
 % write to binary for communication with GPU executable
@@ -208,7 +208,7 @@ fclose(file);
 
 system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
 
-error('er')
+% error('er')
 %% RUN THE CODE
 system('../c/./mainDKT');
 

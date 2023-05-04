@@ -16,11 +16,10 @@ Search file for COMMENT
 /*=========================================================================================*/
 int main(int argc, char **argv){
 
-    printf("\n----\n plateDKT solver in single precision");
-    printf("\n----\n\n");
     /* Variable declarations */
     clock_t tstart, tend;
     int Ng = 3; // Gauss integration points
+    
     struct InDataRecFem inDataFem;
     struct triangleDKT wingMeshFem;   
 
@@ -32,6 +31,8 @@ int main(int argc, char **argv){
     /* read input parameters from a file */
     /* Boundary conditions nodes, dofs */
     CuFEMNum2DReadInData( &inDataFem );
+
+    exit(100);
     /* Create or load from matlab IEN, ID, LM */
     ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem ); // BUG FOUND IN PREVIOUS VERSIONS in IEN_3
     /* Gauss integration function - read about it */
