@@ -243,14 +243,14 @@ Ng=3; %TO-DO
 xm=(1/3)*(x(IEN(1,:))+x(IEN(2,:))+x(IEN(3,:)));   % x barycentric coordinate
 ym=(1/3)*(y(IEN(1,:))+y(IEN(2,:))+y(IEN(3,:)));    % y barycentric coordinate
 % 
-error('er')
+
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
 d=100;
 %  thick=h*ones(1,Nelem);
-[~,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, debugOn, importFromFile,...
+[loadFem,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, debugOn, importFromFile,...
     fluid_dens, Uvel, h, d);
-
+error('er')
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
 
 % error('er')

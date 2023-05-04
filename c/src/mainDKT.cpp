@@ -3,11 +3,15 @@
  as the preprocessor directives used in the code. Else, it gives instant
  segmentation fault. 
 
+ COMPLILE using:
+ >> gcc -g mainDKT.cpp -lm
+
 */
 
 #include<stdio.h>
 #include<stdlib.h> //malloc
 #include<time.h>
+#include<math.h>
 
 #ifndef DEBUG_ON
     #define DEBUG_ON 0 /*allow printf for debugging purposes*/
@@ -23,9 +27,7 @@
     #endif
 #endif
 
-
-
-#define Ng 3 /* Gauss Integration Points */
+#define GaussIntegrPoints 3 /* Gauss Integration Points */
 
 /*=========================================================================================*/
 /* Declarations for data structures and functions */
@@ -33,6 +35,7 @@
 template<class T>
 struct InDataRecFem{
     /* UNIT SYSTEM SI */
+    int modeFem;
     T cRoot;
     T span;
     T U;
@@ -131,7 +134,16 @@ void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem );
 //
 template<class T>
 void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem );
+//
+template<class T>
+void TriGaussPoints(T xw[GaussIntegrPoints][3]);
 
+template<class T>
+void allocate1Darray(int rows, T **arrIn);
+
+template<class T>
+void shepard_interp_2d(int nd, T *xd, T *yd, T *zd,
+    T *p, int ni, T *xi, T *yi, T *zi);
 
 /*=========================================================================================*/
 /* MAIN PROGRAM BELOW */
@@ -148,6 +160,39 @@ int main(int argc, char **argv){
     /* Create or load from matlab IEN, ID, LM */
     struct triangleDKT<mytype> wingMeshFem;  
     ConnectivityFEM_IEN_ID_LM(&inDataFem, &wingMeshFem); // BUG FOUND IN PREVIOUS VERSIONS in IEN_3
+
+    /* Gauss integration function - read about it */
+    mytype xw[GaussIntegrPoints][3]; // {xg,yg,wg}
+    TriGaussPoints(xw);
+
+    /* Distributed properties */
+    mytype *distrLoad, *distrThick;
+    allocate1Darray(wingMeshFem.Nelem,&distrLoad);
+    allocate1Darray(wingMeshFem.Nelem,&distrThick);
+
+    if (inDataFem.LL == 3){
+        /* DISTRIBUTED LOAD & THICKNESS CASE */
+        int nd = inDataFem.sizexcp;
+        int ni = wingMeshFem.Nelem; //size(xm)
+
+        mytype p1 = 10.55;
+        mytype p2 = 10.55;
+        mytype *pparam1, *pparam2;
+        pparam1 = &p1;  
+        pparam2 = &p2; 
+
+        shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.fcp, 
+        pparam1, ni, wingMeshFem.xm, wingMeshFem.ym, distrLoad);
+
+        shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
+        pparam2, ni, wingMeshFem.xm, wingMeshFem.ym, distrThick);
+
+        printf("distrThick[i], distrLoad[i]\n");
+        for (int i = 0; i<10; i++){
+            printf("%f, %f\n", distrThick[i], distrLoad[i]);
+        }
+    }
+
 
     
 
@@ -175,6 +220,10 @@ void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem ){
     printf("\n    Entering CuFEMNum2DReadInData().\n");
     FILE *file;
 	file = fopen("../INDATA_FEM.bin", "rb"); // r for read, b for binary
+    fread(&(inDataFem->modeFem), sizeof(int) , 1, file);
+    if ((inDataFem->modeFem != PRECISION_MODE_FEM)){
+        printf("    Compile code with correct precision mode. Enjoy the seg fault :) \n");   
+    }
     fread(&(inDataFem->cRoot), sizeof(T) , 1, file);
     fread(&(inDataFem->span), sizeof(T) , 1, file);
     fread(&(inDataFem->U), sizeof(T) , 1, file);
@@ -260,7 +309,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem ){
         printf("    DISTRIBUTED LOAD CASE LL == 3\n");
         /* DISTRIBUTED LOAD CASE */ /* TODO: use pre-processor directives instead*/
         fread(&(inDataFem->sizexcp), sizeof(int), 1, file);
-        printf("sizexcp = %d\n", inDataFem->sizexcp);
+        printf("    sizexcp = %d\n", inDataFem->sizexcp);
         inDataFem->xcp = (T*)malloc(inDataFem->sizexcp *sizeof(T));
         inDataFem->ycp = (T*)malloc(inDataFem->sizexcp *sizeof(T));
         inDataFem->fcp = (T*)malloc(inDataFem->sizexcp *sizeof(T));
@@ -450,4 +499,176 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem<T> *inDataFem, struct triangl
     }
     
     printf("    Exiting ConnectivityFEM_IEN_ID_LM. OK.\n");
+}
+
+
+
+template<class T>
+void TriGaussPoints(T xw[GaussIntegrPoints][3]){
+    /* TODO : Add more options for the gauss integration */
+    int Ng = GaussIntegrPoints;
+    int Mcol=Ng;
+    int Ncol=3;
+
+    if (Ng==1){
+        T xw_temp[1][3] = {{0.33333333333333, 0.33333333333333, 1.00000000000000}};
+
+        for (int i=0;i<Mcol;i++){
+            for (int j=0;j<Ncol;j++){
+                //printf("xw_temp [%d]:%f,",j,xw_temp[i][j]);
+                xw[i][j]=xw_temp[i][j];
+                //printf("xw [%d]:%f,",j,xw[i][j]);
+            }
+        }
+    }
+    
+    if (Ng==3){
+        T xw_temp[3][3]={{0.16666666666667, 0.16666666666667, 0.33333333333333},
+                            {0.16666666666667, 0.66666666666667, 0.33333333333333},
+                            {0.66666666666667, 0.16666666666667, 0.33333333333333}};
+
+        for (int i=0;i<Mcol;i++){
+            for (int j=0;j<Ncol;j++){
+            //printf("xw_temp [%d]:%f,",j,xw_temp[i][j]);
+            xw[i][j]=xw_temp[i][j];
+            //printf("xw [%d]:%f,",j,xw[i][j]);
+            }
+        }
+    }
+
+    if (Ng==4){
+        T xw_temp[4][3]={ {0.33333333333333, 0.33333333333333, -0.56250000000000},
+                                {0.20000000000000, 0.20000000000000, 0.52083333333333},
+                                {0.20000000000000, 0.60000000000000, 0.52083333333333},
+                                {0.60000000000000, 0.20000000000000, 0.52083333333333}};
+
+
+        for (int i=0;i<Mcol;i++){
+            for (int j=0;j<Ncol;j++){
+                //printf("xw_temp [%d]:%f,",j,xw_temp[i][j]);
+                xw[i][j]=xw_temp[i][j];
+                //printf("xw [%d]:%f,",j,xw[i][j]);
+            }
+        }
+    }
+
+    if (Ng==6){
+        T xw_temp[6][3]={{0.44594849091597, 0.44594849091597, 0.22338158967801},
+                                {0.44594849091597, 0.10810301816807, 0.22338158967801},
+                                {0.10810301816807, 0.44594849091597, 0.22338158967801},
+                                {0.09157621350977, 0.09157621350977, 0.10995174365532},
+                                {0.09157621350977, 0.81684757298046, 0.10995174365532},
+                                {0.81684757298046, 0.09157621350977, 0.10995174365532}};
+
+
+        for (int i=0;i<Mcol;i++){
+            for (int j=0;j<Ncol;j++){
+                //printf("xw_temp [%d]:%f,",j,xw_temp[i][j]);
+                xw[i][j]=xw_temp[i][j];
+                //printf("xw [%d]:%f,",j,xw[i][j]);
+            }
+        }
+    }
+}
+
+
+// from funcBLAS.c
+
+// Allocate 1-D array based on double pointer type
+template<class T>
+void allocate1Darray(int rows, T **arrIn){
+
+    int i;//, j;
+
+    // allocate local 2D array and pass the pointer to 
+    // the pointer to double pointer, otherwise the main
+    // can't access the memory.
+    T *arrTemp = (T*)malloc(rows * sizeof(T));
+    if(arrIn == NULL){
+        printf("Memory allocation failed. allocate2Darray()");
+        return;
+    }
+
+    //printf("\nInside allocate1Darray()..\n");
+    // Note that arr[i][j] is same as *(*(arr+i)+j)
+    for (i = 0; i < rows; i++){
+        arrTemp[i] = 0.0;
+        //printf("\n%f,",arrTemp[i]);
+    }
+
+    *arrIn = arrTemp; // this will do?
+}
+
+
+// FSI 
+
+template<class T>
+void shepard_interp_2d(int nd, T *xd, T *yd, T *zd,
+    T *p, int ni, T *xi, T *yi, T *zi){
+
+    printf("\n    Entering SHEPARD INTERP, p=%f...\n",*p);
+    
+    //printf("nd=%d, ni=%d\n", nd, ni);
+    //printf("p=%f\n",*p);
+
+    int z;
+    T suma, s;
+    T dotproc;
+
+    T *w = ( T * ) malloc ( nd * sizeof ( T ) );
+
+    for (int i=0;i<ni;i++){
+        if (abs(*p) < 0.01){
+            for ( int j = 0; j < nd; j++ ){
+                w[j] = 1.0 / ( double ) ( nd );
+            }
+            printf("here...\n");
+        }
+        else{
+            //w = zeros ( nd, 1 );
+            //for ( int k = 0; k < nd; k++ ){
+            //    w[k] = 0.0;
+            //}
+
+            z = -1;
+            for ( int j = 0; j < nd; j++ ){
+                w[j] = sqrt ( pow ( (xi[i] - xd[j]), 2 )
+                            + pow ( (yi[i] - yd[j]), 2 ) );
+                //printf("w[%d]=%f\n",j,w[j]);
+                //printf("%f,%f,%f,%f,%f\n",xi[i],xd[j],yi[i],yd[j],w[j]);
+                if ( w[j] == 0.0 ){
+                    z = j;
+                    break;
+                }
+            }
+            if ( z != -1 ){
+                for ( int j = 0; j < nd; j++ ){
+                    w[j] = 0.0;
+                }
+                w[z] = 1.0;
+            }
+            else{
+                for (int j = 0; j < nd; j++ ){
+                    w[j] = 1.0 / pow ( w[j], *p );
+                }
+                suma = 0.0;
+                for (int k=0;k<nd;k++){
+                    suma = suma + w[k];
+                }
+                s = suma;
+                //s = r8vec_sum ( nd, w );
+                for ( int j = 0; j < nd; j++ ){
+                    w[j] = w[j] / s;
+                }
+            }
+        }
+        dotproc = 0.0;
+        for (int k=0;k<nd;k++){
+            dotproc = dotproc + w[k]*zd[k];
+        }
+        zi[i] = dotproc;
+        //zi[i] = r8vec_dot_product ( nd, w, zd );
+    }
+
+    printf("    Exiting SHEPARD INTERP. OK.\n");
 }

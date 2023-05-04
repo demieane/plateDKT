@@ -19,7 +19,7 @@ if importFromFile.toggle
     xx=xc_fem_data;%/0.33*2;
     yy=yc_fem_data;
 
-    fx=DCoefpres(:,:,d).*0 + 1;%*(0.5*fluid_dens*Uvel^2);%*chord*span); %dimensionalize data [N]
+    fx=DCoefpres(:,:,d);%*(0.5*fluid_dens*Uvel^2);%*chord*span); %dimensionalize data [N]
 %     Area = chord*span; % IS THIS OK?
 %     fx=fx/Area;
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data
@@ -41,7 +41,7 @@ if importFromFile.toggle
 %     tx_modified = 0.15*chord.*(xc_fem_data-chord/2).^2+tx;
 
 %     tx_modified=th_fem_data;%0.15*chord.*(xc_fem_data-chord/2).^2+th_fem_data;
-    tx_modified= th_fem_data.*0 + h; %2.5*chord.*(xc_fem_data-chord/2).^2+th_fem_data;
+    tx_modified= th_fem_data;%.*0 + h; %2.5*chord.*(xc_fem_data-chord/2).^2+th_fem_data;
 %     tx_linear = 0.025*(xc_fem_data-chord/2) + 0.015;
 %     tx_linear = 0.5*(xc_fem_data-chord/2) + 0.015;
  

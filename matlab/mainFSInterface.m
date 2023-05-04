@@ -38,7 +38,7 @@ elseif CC==2
 end
 % Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=2;%2; %loading case
+lll=3;%2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
 P_load = 1; %[Pa] %pointing towards the Z-axis
@@ -123,10 +123,10 @@ end
 %% CREATE MODE.bin binary file for passing data 
 modeFem = 2; %double:1, single(or mixed):2
 % write to binary for communication with GPU executable
-file1 = fopen('MODE_FEM.bin', 'wb');
-fwrite(file1, modeFem, 'int');
-fclose(file1);
-system('cp MODE_FEM.bin ../c/MODE_FEM.bin');
+% file1 = fopen('MODE_FEM.bin', 'wb');
+% fwrite(file1, modeFem, 'int');
+% fclose(file1);
+% system('cp MODE_FEM.bin ../c/MODE_FEM.bin');
 
 %
 if modeFem == 1
@@ -141,6 +141,7 @@ end
 
 % write to binary for communication with GPU executable
 file = fopen(fileName, 'wb');
+fwrite(file, modeFem, 'int');
 fwrite(file, chord, precision);
 fwrite(file, span, precision);
 fwrite(file, Uvel, precision);
