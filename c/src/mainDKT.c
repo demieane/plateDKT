@@ -34,6 +34,14 @@ int main(int argc, char **argv){
     CuFEMNum2DReadInData( &inDataFem );
     /* Create or load from matlab IEN, ID, LM */
     ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem ); // BUG FOUND IN PREVIOUS VERSIONS in IEN_3
+
+
+    for (int i=0;i<15;i++){
+        printf("%f,",wingMeshFem.xm[i]);
+    }
+    exit(5);
+
+
     /* Gauss integration function - read about it */
     float xw[Ng][3]; // {xg,yg,wg}
     TriGaussPoints(Ng, xw);

@@ -209,7 +209,7 @@ void freeInDataRecFem(struct InDataRecFem *inDataFem);
 /*=========================================================================================*/
 void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     FILE *file;
-	file = fopen("../c/INDATA_FEM.bin", "rb"); // r for read, b for binary
+	file = fopen("../c/INDATA_FEM_single.bin", "rb"); // r for read, b for binary
     fread(&(inDataFem->cRoot), sizeof(float) , 1, file);
     fread(&(inDataFem->span), sizeof(float) , 1, file);
     fread(&(inDataFem->U), sizeof(float) , 1, file);
@@ -315,7 +315,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     }
     fclose(file);
 
-#if DEBUG_ON_ON
+#if DEBUG_ON
     /* Printing data */
     printf("cRoot = %f\n",inDataFem->cRoot );
 	printf("span  = %f\n",inDataFem->span );

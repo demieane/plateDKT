@@ -121,24 +121,26 @@ end
 
 
 %% CREATE MODE.bin binary file for passing data 
-% modeFem = 1; %double:1, single(or mixed):2
-% % write to binary for communication with GPU executable
-% file1 = fopen('MODE_FEM.bin', 'wb');
-% fwrite(file1, modeFem, 'int');
-% fclose(file1);
-% system('cp MODE_FEM.bin ../c/MODE_FEM.bin');
+modeFem = 2; %double:1, single(or mixed):2
+% write to binary for communication with GPU executable
+file1 = fopen('MODE_FEM.bin', 'wb');
+fwrite(file1, modeFem, 'int');
+fclose(file1);
+system('cp MODE_FEM.bin ../c/MODE_FEM.bin');
 
-% error('er')
-%%
-% if modeFem == 1
-%     precision = 'double';
-% else
+%
+if modeFem == 1
+    precision = 'double';
+    fileName = 'INDATA_FEM.bin';
+else
     precision = 'single';
-% end
+    fileName = 'INDATA_FEM.bin';
+%     fileName = 'INDATA_FEM_single.bin';
+end
 
 
 % write to binary for communication with GPU executable
-file = fopen('INDATA_FEM.bin', 'wb');
+file = fopen(fileName, 'wb');
 fwrite(file, chord, precision);
 fwrite(file, span, precision);
 fwrite(file, Uvel, precision);
@@ -206,9 +208,14 @@ if lll==3%distributed load & distributed thickness
 end
 fclose(file);
 
-system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
+if modeFem == 1
+    system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
+else
+    system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
+%     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
+end
 
-% error('er')
+error('er')
 %% RUN THE CODE
 system('../c/./mainDKT');
 
