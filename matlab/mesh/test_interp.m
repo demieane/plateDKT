@@ -27,7 +27,7 @@ ym=(1/3)*(y(IEN(1,:))+y(IEN(2,:))+y(IEN(3,:)));    % y barycentric coordinate
 % txx=interp2(xx,yy,tx,xm,ym, 'spline');%is this OK?
 
 % zi = shepard_interp_2d ( nd, xd, yd, zd, p, ni, xi, yi )
-fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 2.55, length(xm(:)), xm, ym);
+fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 10.55, length(xm(:)), xm, ym);
 % fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 5.22, length(xm(:)), xm, ym);
 txx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx(:), 10.5, length(xm(:)), xm, ym);
 %     

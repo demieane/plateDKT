@@ -39,7 +39,7 @@ int main(int argc, char **argv){
     for (int i=0;i<15;i++){
         printf("%f,",wingMeshFem.xm[i]);
     }
-    exit(5);
+    //exit(5);
 
 
     /* Gauss integration function - read about it */

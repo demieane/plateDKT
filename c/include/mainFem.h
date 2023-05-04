@@ -16,11 +16,15 @@
 /* suppress or not execution times (custom profiler) */
 
 #ifndef DEBUG_ON
-    #define DEBUG_ON 0 /*allow printf for debugging purposes*/
+    #define DEBUG_ON 1 /*allow printf for debugging purposes*/
 #endif
 
 #ifndef MODAL_ANALYSIS
     #define MODAL_ANALYSIS 0 /* Find eigenfrequencies */
+#endif
+
+#ifndef PRECISION_MODE_FEM
+    #define PRECISION_MODE_FEM 2 /* 1. DOUBLE, 2. SINGLE */
 #endif
 
 
@@ -29,6 +33,7 @@
 /*=========================================================================================*/
 struct InDataRecFem{
     /* UNIT SYSTEM SI */
+    int modeFem;
     float cRoot;
     float span;
     float U;
@@ -209,7 +214,11 @@ void freeInDataRecFem(struct InDataRecFem *inDataFem);
 /*=========================================================================================*/
 void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     FILE *file;
-	file = fopen("../c/INDATA_FEM_single.bin", "rb"); // r for read, b for binary
+	file = fopen("../c/INDATA_FEM.bin", "rb"); // r for read, b for binary
+    fread(&(inDataFem->modeFem), sizeof(int) , 1, file);
+    if ((inDataFem->modeFem != PRECISION_MODE_FEM)){
+        printf("    Compile code with correct precision mode. Enjoy the seg fault :) \n");   
+    }
     fread(&(inDataFem->cRoot), sizeof(float) , 1, file);
     fread(&(inDataFem->span), sizeof(float) , 1, file);
     fread(&(inDataFem->U), sizeof(float) , 1, file);

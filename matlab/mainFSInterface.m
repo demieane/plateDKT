@@ -127,12 +127,11 @@ modeFem = 2; %double:1, single(or mixed):2
 % fwrite(file1, modeFem, 'int');
 % fclose(file1);
 % system('cp MODE_FEM.bin ../c/MODE_FEM.bin');
-
 %
 if modeFem == 1
     precision = 'double';
     fileName = 'INDATA_FEM.bin';
-else
+elseif modeFem == 2
     precision = 'single';
     fileName = 'INDATA_FEM.bin';
 %     fileName = 'INDATA_FEM_single.bin';
@@ -211,12 +210,12 @@ fclose(file);
 
 if modeFem == 1
     system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
-else
+elseif modeFem == 2
     system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
 %     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
 end
 
-error('er')
+% error('er')
 %% RUN THE CODE
 system('../c/./mainDKT');
 

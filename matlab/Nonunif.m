@@ -115,9 +115,9 @@ size(fx);
 % % % fxx=interp2(xx,yy,fx,xm,ym, 'spline');    
 % % % txx=interp2(xx,yy,tx_modified,xm,ym,'spline');%is this OK?
 
-fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 10.5, length(xm(:)), xm, ym);
+fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 10.55, length(xm(:)), xm, ym);
 % fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 5.22, length(xm(:)), xm, ym);
-txx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx_modified(:), 10.5, length(xm(:)), xm, ym);
+txx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx_modified(:), 10.55, length(xm(:)), xm, ym);
         
 if debugOn
     figure;hold on;grid on;

@@ -250,7 +250,7 @@ d=100;
 %  thick=h*ones(1,Nelem);
 [loadFem,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, debugOn, importFromFile,...
     fluid_dens, Uvel, h, d);
-error('er')
+% error('er')
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
 
 % error('er')
