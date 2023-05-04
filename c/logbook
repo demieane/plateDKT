@@ -4,4 +4,6 @@ TO DO:
 2. Eigen-analysis using lapack functions 
 3. Very simple CUDA version of the FEM code (only the necessary stuff)
 
+4. free structures
+
 

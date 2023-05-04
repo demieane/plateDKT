@@ -192,9 +192,16 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN);
 void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals); //FAILS IN SINGULAR MGLOB
 //
 void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M);
-//---------------------------03/04/2023
+//---------------------------03/05/2023
 void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
     float *p, int ni, float *xi, float *yi, float *zi);
+//---------------------------04/05/2023
+void freefemArraysDKT(struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr);  
+//
+void freetriangleDKT(int Ng, struct triangleDKT *wingMeshFem);
+//
+void freeInDataRecFem(struct InDataRecFem *inDataFem);
+
 
 /*=========================================================================================*/
 /* Definition of the functions follows */
@@ -368,7 +375,238 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN){
     printf("\n    EXITING CuFEMNum2DWriteDataInBinary...\n\n");
 }
 
+void freeInDataRecFem(struct InDataRecFem *inDataFem){
+/*
+    float *pp[2]; 
+    int *tt[4]; 
+    float *ee[7]; 
+    int *BBnodes; 
+    int *Bdofs; 
+    float *xcp, *ycp, *fcp, *tcp;
+*/
 
+for (int i=0;i<inDataFem->pp_rows;i++){
+    free(inDataFem->pp[i]);
+}
+for (int i=0;i<inDataFem->tt_rows;i++){
+    free(inDataFem->tt[i]);
+}
+for (int i=0;i<inDataFem->ee_rows;i++){
+    free(inDataFem->ee[i]);
+}
+if (inDataFem->LL == 3){
+    free(inDataFem->xcp);
+    free(inDataFem->ycp);
+    free(inDataFem->fcp);
+    free(inDataFem->tcp);
+}
+
+}
+
+void freefemArraysDKT(struct triangleDKT *wingMeshFem, struct femArraysDKT *elemFemArr){
+
+/*
+struct femArraysDKT
+{
+    float **Fglob; //[GEN x 1] global
+    float **Hm, **HW; //[10 x 9] overwrite massHmDKT()
+    float **kloc, **mloc;//[9 x 9]
+    float **floc; // [9 x 1]
+    float **floc1; // [10 x 1]
+    float **Hxx, **Hyy; // [6 x 9] overwrite rotationMass2()
+    float **Hx, **Hy; // [1 x 9] from ShapeFunDKT2()
+    float *Hx_xsi, *Hx_eta, *Hy_xsi, *Hy_eta; // [1 x 9] from ShapeFunDKT2()
+    float **Bb; // [3 x 9] from ShapeFunDKT2()
+    float **LW; // [1 x 10] from pseudoMassDKT()
+    float *L; // [1 x 6] from pseudoMassDKT()
+    float **Mg, **Kg; // [81 x Nelem] pre-assembly matrices
+}
+*/
+// How to free double pointer.
+for (int i=0;i<wingMeshFem->Nelem;i++){
+    free(elemFemArr->Fglob[i]);
+}
+free(elemFemArr->Fglob);
+//
+for (int i=0;i<10;i++){
+    //printf("elemFemArr->Hm[%d]=%f\n",i,elemFemArr->Hm[i][0]);
+    free(elemFemArr->Hm[i]);
+    free(elemFemArr->HW[i]);
+}
+free(elemFemArr->Hm);
+free(elemFemArr->HW);
+//
+for (int i=0;i<9;i++){
+    free(elemFemArr->kloc[i]);
+    free(elemFemArr->mloc[i]);
+}
+free(elemFemArr->kloc);
+free(elemFemArr->mloc);
+//
+for (int i=0;i<9;i++){
+    free(elemFemArr->floc[i]);
+}
+free(elemFemArr->floc);
+//
+for (int i=0;i<10;i++){
+    free(elemFemArr->floc1[i]);
+}
+free(elemFemArr->floc1);
+//
+for (int i=0;i<6;i++){
+    free(elemFemArr->Hxx[i]);
+    free(elemFemArr->Hyy[i]);
+}
+free(elemFemArr->Hxx);
+free(elemFemArr->Hyy);
+//
+for (int i=0;i<1;i++){
+    free(elemFemArr->Hx[i]);
+    free(elemFemArr->Hy[i]);
+    free(elemFemArr->LW[i]);
+}
+free(elemFemArr->Hx);
+free(elemFemArr->Hy);
+free(elemFemArr->LW);// [1 x 10] from pseudoMassDKT()
+//
+free(elemFemArr->Hx_xsi);
+free(elemFemArr->Hx_eta);
+free(elemFemArr->Hy_xsi);
+free(elemFemArr->Hy_eta);
+for (int i=0;i<3;i++){
+    free(elemFemArr->Bb[i]);
+}
+free(elemFemArr->Bb); // [3 x 9] from ShapeFunDKT2()
+free(elemFemArr->L); // [1 x 6] from pseudoMassDKT()
+//
+for (int i=0;i<81;i++){
+    free(elemFemArr->Mg[i]);// [81 x Nelem] pre-assembly matrices
+    free(elemFemArr->Kg[i]);
+}
+free(elemFemArr->Mg);
+free(elemFemArr->Kg);
+
+}
+
+void freetriangleDKT(int Ng, struct triangleDKT *wingMeshFem){
+/*
+struct triangleDKT  
+{
+    int Nelem; // number of triangles
+    int NN; // number of nodes
+    int GEN; // number of dofs (system of eqs. before BCs)
+    int *ID[3];  // [3,NN]
+    int *IEN[3]; // [3,Nelem]
+    int *LM[9];  // [9,Nelem]
+    float *xm; // x barycentric coordinate [Nelem]
+    float *ym; // y barycentric coordinate [Nelem]
+    float *l23, *l31, *l12; // [1 x Nelem]
+    float *y12, *y31, *y23;
+    float *x12, *x31, *x23;
+    float *area;
+    float *a4, *a5, *a6, *b4, *b5, *b6, *c4, *c5, *c6;
+    float *d4, *d5, *d6, *e4, *e5, *e6;
+    float *C4, *C5, *C6, *S4, *S5, *S6;
+    float **SF, **DxsiSF, **DetaSF; //[Ng x 6]
+    float *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
+    float **SFm, **DxsiSFm, **DetaSFm; //[Ng x 3]
+    float **GGDST, **GGDKT; //[10 x 10]  
+    float **GGin, **GGin2; //inverse of above
+}
+*/
+//printf(" Ng=%d",Ng);
+
+for (int i=0;i<3;i++){
+    free(wingMeshFem->ID[i]);
+    free(wingMeshFem->IEN[i]);
+}
+//free(wingMeshFem->ID);
+//free(wingMeshFem->IEN);
+for (int i=0;i<9;i++){
+    free(wingMeshFem->LM[i]);
+}
+//free(wingMeshFem->LM);
+
+free(wingMeshFem->xm);
+free(wingMeshFem->ym);
+free(wingMeshFem->l12);
+free(wingMeshFem->l23);
+free(wingMeshFem->l31);
+//
+free(wingMeshFem->x12);
+free(wingMeshFem->x23);
+free(wingMeshFem->x31);
+//
+free(wingMeshFem->y12);
+free(wingMeshFem->y23);
+free(wingMeshFem->y31);
+//
+free(wingMeshFem->area);
+//
+free(wingMeshFem->a4);
+free(wingMeshFem->a5);
+free(wingMeshFem->a6);
+//
+free(wingMeshFem->b4);
+free(wingMeshFem->b5);
+free(wingMeshFem->b6);
+//
+free(wingMeshFem->c4);
+free(wingMeshFem->c5);
+free(wingMeshFem->c6);
+//
+free(wingMeshFem->e4);
+free(wingMeshFem->e5);
+free(wingMeshFem->e6);
+//
+free(wingMeshFem->d4);
+free(wingMeshFem->d5);
+free(wingMeshFem->d6);
+//
+free(wingMeshFem->C4);
+free(wingMeshFem->C5);
+free(wingMeshFem->C6);
+//
+free(wingMeshFem->S4);
+free(wingMeshFem->S5);
+free(wingMeshFem->S6);
+//
+
+for (int i=0;i<Ng;i++){
+    free(wingMeshFem->SF[i]);
+    free(wingMeshFem->DxsiSF[i]);
+    free(wingMeshFem->DetaSF[i]);
+    free(wingMeshFem->SFm[i]);
+    free(wingMeshFem->DxsiSFm[i]);
+    free(wingMeshFem->DetaSFm[i]);
+}
+free(wingMeshFem->SF);
+free(wingMeshFem->DxsiSF);
+free(wingMeshFem->DetaSF);
+free(wingMeshFem->SFm);
+free(wingMeshFem->DxsiSFm);
+free(wingMeshFem->DetaSFm);
+// 
+free(wingMeshFem->D2xsiSF);
+free(wingMeshFem->D2xsietaSF);
+free(wingMeshFem->D2etaSF);
+
+for (int i = 0;i<10;i++){
+    free(wingMeshFem->GGDST[i]);//[10 x 10]    
+    free(wingMeshFem->GGin[i]);
+}
+for (int i = 0;i<6;i++){
+    free(wingMeshFem->GGDKT[i]);//[6 X 6] 
+    free(wingMeshFem->GGin2[i]); //inverse of above
+}
+free(wingMeshFem->GGDST);
+free(wingMeshFem->GGDKT); //[10 x 10]  
+free(wingMeshFem->GGin);
+free(wingMeshFem->GGin2); //inverse of above
+
+}
+
+//============================== FEM FUNCTIONS ==================================================//
 void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M){
 
     FILE *fileOut;

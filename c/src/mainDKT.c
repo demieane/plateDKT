@@ -34,7 +34,10 @@ int main(int argc, char **argv){
     CuFEMNum2DReadInData( &inDataFem );
     /* Create or load from matlab IEN, ID, LM */
     ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem ); // BUG FOUND IN PREVIOUS VERSIONS in IEN_3
-
+    /* Gauss integration function - read about it */
+    float xw[Ng][3]; // {xg,yg,wg}
+    TriGaussPoints(Ng, xw);
+    /* Distributed properties */
     float *distrLoad, *distrThick;
     allocate1Darray(wingMeshFem.Nelem,&distrLoad);
     allocate1Darray(wingMeshFem.Nelem,&distrThick);
@@ -57,17 +60,11 @@ int main(int argc, char **argv){
         shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
         pparam2, ni, wingMeshFem.xm, wingMeshFem.ym, distrThick);
     }
-   
-    /* Gauss integration function - read about it */
-    float xw[Ng][3]; // {xg,yg,wg}
-    TriGaussPoints(Ng, xw);
-
     float **BeSt;
     allocate2Darray(3, 3, &BeSt);
     if (inDataFem.LL==2 || inDataFem.LL==1){
         BendingStiffness(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
     }
-
     /* DKT */
     TrigElCoefsDKT(&inDataFem, &wingMeshFem);
     LNShapeFunDST(Ng, xw, &wingMeshFem);
@@ -122,21 +119,14 @@ int main(int argc, char **argv){
 
     //for each triangle in the mesh
     for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
-    //for (int kk = 0;kk<1;kk++){   
-
         massHmDKT(kk, &wingMeshFem, &elemFemArr); // Hm, HW
         rotationMass2(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
-
         //------------------------------------------------------------->>
         // for each gauss point
-        //for (int ii = 0; ii<1; ii++){
         for (int ii = 0; ii<Ng; ii++){
-
-            //printf(" ENTERING ShapeFunDKT2\n");
             ShapeFunDKT2(ii, kk, &wingMeshFem, &elemFemArr);
-            //printf(" EXITING ShapeFunDKT2\n");
             pseudoMassDKT(ii, kk, &wingMeshFem, &elemFemArr); // not exactly used (only LW)
-        
+
             // matrix addition needed 
             // kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
             if (inDataFem.LL == 3.0){
@@ -173,14 +163,12 @@ int main(int argc, char **argv){
             allocate2Darray(10,10,&term3);
             allocate2Darray(9,10,&term4);
             allocate2Darray(9,9,&term5);
-
-            //printf("h = %f,\n",inDataFem.h);    
+  
             float var0;
             var0 = pow(inDataFem.h,2)/12.0;
             if (inDataFem.LL==3){
                 var0 = pow(distrThick[kk],2)/12.0;
             }
-            //printf("txx^2/12*1000 = %f\n",var0*1000);
             
             matMatMultiplication2(2, 1, 9, 9, var0, 0.0, elemFemArr.Hx, elemFemArr.Hx, term1); //Hx'*Hx
             //
@@ -216,7 +204,6 @@ int main(int argc, char **argv){
 
         }
         //------------------------------------------------------------->> for each gauss point
-
         // lumped mass approach for the uniform load
         float lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
         if (inDataFem.LL == 2){
@@ -238,7 +225,6 @@ int main(int argc, char **argv){
                 }
             }
         }
-
         //Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
         //Kg(:,kk)=[kloc(:,1);kloc(:,2);kloc(:,3);kloc(:,4);kloc(:,5);kloc(:,6);kloc(:,7);kloc(:,8);kloc(:,9)];
         int cntMg = 0;
@@ -426,14 +412,14 @@ int main(int argc, char **argv){
     //************************************************************************************
     //  DKT PLATE SOLVER: CLEAN UP AND EXIT
     //************************************************************************************
-
     /* TODO free pointers - after using the malloc() */
+
+    freefemArraysDKT(&wingMeshFem, &elemFemArr);
+    freetriangleDKT(Ng,&wingMeshFem);
+    freeInDataRecFem(&inDataFem);
+
     free(distrLoad);
     free(distrThick);
-    free(inDataFem.pp[0]);
-    free(inDataFem.pp[1]);
-    free(inDataFem.tt[0]);
-    free(inDataFem.tt[1]);
     //free(inDataFem.tt);
     //free(inDataFem.ee);
     //free(wingMeshFem.ID);
