@@ -133,14 +133,26 @@ template<class T>
 void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem );
 //
 template<class T>
+void freeInDataRecFem(struct InDataRecFem<T> *inDataFem);
+//
+template<class T>
 void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem );
 //
 template<class T>
+void freetriangleDKT(int Ng, struct triangleDKT<T> *wingMeshFem);
+//
+template<class T>
 void TriGaussPoints(T xw[GaussIntegrPoints][3]);
-
+//
+template<class T>
+void BendingStiffness(float E, float v, float tx, T **BeSt);
+//
 template<class T>
 void allocate1Darray(int rows, T **arrIn);
-
+//
+template<class T>
+void allocate2Darray(int rows, int cols, T ***arrIn);
+//
 template<class T>
 void shepard_interp_2d(int nd, T *xd, T *yd, T *zd,
     T *p, int ni, T *xi, T *yi, T *zi);
@@ -192,6 +204,11 @@ int main(int argc, char **argv){
             printf("%f, %f\n", distrThick[i], distrLoad[i]);
         }
     }
+    float **BeSt;
+    allocate2Darray(3, 3, &BeSt);
+    if (inDataFem.LL==2 || inDataFem.LL==1){
+        BendingStiffness(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
+    }
 
 
     
@@ -204,6 +221,12 @@ int main(int argc, char **argv){
     double cpu_time_used = ((double) (tend-tstart))/ CLOCKS_PER_SEC;
     printf("\n----\n Elapsed time [s]: %f\n----\n", cpu_time_used);
     printf("In Matlab the same operations using vectorization take 2.0383 sec.\n");
+
+
+    freeInDataRecFem(&inDataFem);
+    int Ng = GaussIntegrPoints;
+    //freetriangleDKT(Ng,&wingMeshFem);
+
     return 0;
 
 }
@@ -372,6 +395,34 @@ void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem ){
 }
 
 template<class T>
+void freeInDataRecFem(struct InDataRecFem<T> *inDataFem){
+/*
+    float *pp[2]; 
+    int *tt[4]; 
+    float *ee[7]; 
+    int *BBnodes; 
+    int *Bdofs; 
+    float *xcp, *ycp, *fcp, *tcp;
+*/
+    for (int i=0;i<inDataFem->pp_rows;i++){
+        free(inDataFem->pp[i]);
+    }
+    for (int i=0;i<inDataFem->tt_rows;i++){
+        free(inDataFem->tt[i]);
+    }
+    for (int i=0;i<inDataFem->ee_rows;i++){
+        free(inDataFem->ee[i]);
+    }
+    if (inDataFem->LL == 3){
+        free(inDataFem->xcp);
+        free(inDataFem->ycp);
+        free(inDataFem->fcp);
+        free(inDataFem->tcp);
+    }
+}
+
+
+template<class T>
 void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem ){
     printf("\n    Exiting ConnectivityFEM_IEN_ID_LM().  \n");
     /* Use the information on Delaunay triangulation from matlab to
@@ -501,6 +552,118 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem<T> *inDataFem, struct triangl
     printf("    Exiting ConnectivityFEM_IEN_ID_LM. OK.\n");
 }
 
+template<class T>
+void freetriangleDKT(int Ng, struct triangleDKT<T> *wingMeshFem){
+/*
+struct triangleDKT  
+{
+    int Nelem; // number of triangles
+    int NN; // number of nodes
+    int GEN; // number of dofs (system of eqs. before BCs)
+    int *ID[3];  // [3,NN]
+    int *IEN[3]; // [3,Nelem]
+    int *LM[9];  // [9,Nelem]
+    float *xm; // x barycentric coordinate [Nelem]
+    float *ym; // y barycentric coordinate [Nelem]
+    float *l23, *l31, *l12; // [1 x Nelem]
+    float *y12, *y31, *y23;
+    float *x12, *x31, *x23;
+    float *area;
+    float *a4, *a5, *a6, *b4, *b5, *b6, *c4, *c5, *c6;
+    float *d4, *d5, *d6, *e4, *e5, *e6;
+    float *C4, *C5, *C6, *S4, *S5, *S6;
+    float **SF, **DxsiSF, **DetaSF; //[Ng x 6]
+    float *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
+    float **SFm, **DxsiSFm, **DetaSFm; //[Ng x 3]
+    float **GGDST, **GGDKT; //[10 x 10]  
+    float **GGin, **GGin2; //inverse of above
+}
+*/
+    for (int i=0;i<3;i++){
+        free(wingMeshFem->ID[i]);
+        free(wingMeshFem->IEN[i]);
+    }
+    for (int i=0;i<9;i++){
+        free(wingMeshFem->LM[i]);
+    }
+    free(wingMeshFem->xm);
+    free(wingMeshFem->ym);
+    //    
+    free(wingMeshFem->l12);
+    free(wingMeshFem->l23);
+    free(wingMeshFem->l31);
+    //
+    free(wingMeshFem->x12);
+    free(wingMeshFem->x23);
+    free(wingMeshFem->x31);
+    //
+    free(wingMeshFem->y12);
+    free(wingMeshFem->y23);
+    free(wingMeshFem->y31);
+    //
+    free(wingMeshFem->area);
+    //
+    free(wingMeshFem->a4);
+    free(wingMeshFem->a5);
+    free(wingMeshFem->a6);
+    //
+    free(wingMeshFem->b4);
+    free(wingMeshFem->b5);
+    free(wingMeshFem->b6);
+    //
+    free(wingMeshFem->c4);
+    free(wingMeshFem->c5);
+    free(wingMeshFem->c6);
+    //
+    free(wingMeshFem->e4);
+    free(wingMeshFem->e5);
+    free(wingMeshFem->e6);
+    //
+    free(wingMeshFem->d4);
+    free(wingMeshFem->d5);
+    free(wingMeshFem->d6);
+    //
+    free(wingMeshFem->C4);
+    free(wingMeshFem->C5);
+    free(wingMeshFem->C6);
+    //
+    free(wingMeshFem->S4);
+    free(wingMeshFem->S5);
+    free(wingMeshFem->S6);
+    //
+    for (int i=0;i<Ng;i++){
+        free(wingMeshFem->SF[i]);
+        free(wingMeshFem->DxsiSF[i]);
+        free(wingMeshFem->DetaSF[i]);
+        free(wingMeshFem->SFm[i]);
+        free(wingMeshFem->DxsiSFm[i]);
+        free(wingMeshFem->DetaSFm[i]);
+    }
+    free(wingMeshFem->SF);
+    free(wingMeshFem->DxsiSF);
+    free(wingMeshFem->DetaSF);
+    free(wingMeshFem->SFm);
+    free(wingMeshFem->DxsiSFm);
+    free(wingMeshFem->DetaSFm);
+    // 
+    free(wingMeshFem->D2xsiSF);
+    free(wingMeshFem->D2xsietaSF);
+    free(wingMeshFem->D2etaSF);
+
+    for (int i = 0;i<10;i++){
+        free(wingMeshFem->GGDST[i]);//[10 x 10]    
+        free(wingMeshFem->GGin[i]);
+    }
+    for (int i = 0;i<6;i++){
+        free(wingMeshFem->GGDKT[i]);//[6 X 6] 
+        free(wingMeshFem->GGin2[i]); //inverse of above
+    }
+    free(wingMeshFem->GGDST);
+    free(wingMeshFem->GGDKT); //[10 x 10]  
+    free(wingMeshFem->GGin);
+    free(wingMeshFem->GGin2); //inverse of above
+}
+
 
 
 template<class T>
@@ -571,6 +734,19 @@ void TriGaussPoints(T xw[GaussIntegrPoints][3]){
     }
 }
 
+template<class T>
+void BendingStiffness(float E, float v, float tx, T **BeSt){
+  
+    T la = (E*pow(tx,3.0))/(12*(1-pow(v,2)));
+
+    BeSt[0][0] = la;
+    BeSt[0][1] = v*la;
+    BeSt[1][0] = v*la;
+    BeSt[1][1] = la;
+    BeSt[2][2] = (1.0-v)*la/2.0; 
+
+}
+
 
 // from funcBLAS.c
 
@@ -594,6 +770,39 @@ void allocate1Darray(int rows, T **arrIn){
     for (i = 0; i < rows; i++){
         arrTemp[i] = 0.0;
         //printf("\n%f,",arrTemp[i]);
+    }
+
+    *arrIn = arrTemp; // this will do?
+}
+
+
+// Allocate 2-D array based on double pointer type
+template<class T>
+void allocate2Darray(int rows, int cols, T ***arrIn){
+
+    int i, j;
+
+    // allocate local 2D array and pass the pointer to 
+    // the pointer to double pointer, otherwise the main
+    // can't access the memory.
+    T **arrTemp = (T**)malloc(rows * sizeof(T*));
+    if(arrIn == NULL){
+        printf("Memory allocation failed. allocate2Darray()");
+        return;
+    }
+
+    for (i = 0; i < rows; i++){
+        arrTemp[i] = (T*)malloc(cols * sizeof(T));
+    }
+
+    //printf("\nInside allocate2Darray()..\n");
+    // Note that arr[i][j] is same as *(*(arr+i)+j)
+    for (i = 0; i < rows; i++){
+        for (j = 0; j < cols; j++){
+            arrTemp[i][j] = 0.0;
+            //printf("%f,",arrTemp[i][j]);
+        } 
+        //printf("\n");
     }
 
     *arrIn = arrTemp; // this will do?
