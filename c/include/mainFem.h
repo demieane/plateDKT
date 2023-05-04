@@ -23,6 +23,11 @@
     #define MODAL_ANALYSIS 0 /* Find eigenfrequencies */
 #endif
 
+#ifndef PRECISION_MODE_FEM
+    #define PRECISION_MODE_FEM 1 /* double: 1, single: 2 */
+#endif
+
+
 /*=========================================================================================*/
 /* Declarations for data structures and functions */
 /*=========================================================================================*/

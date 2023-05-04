@@ -16,19 +16,11 @@ Search file for COMMENT
 /*=========================================================================================*/
 int main(int argc, char **argv){
 
-    int modeFem = 0;
-   
-	FILE *file1;
-	file1 = fopen("../c/MODE_FEM.bin", "rb");
-	fread(&modeFem, sizeof(int) , 1, file1);
-	fclose(file1);
-
-    printf("\nRUNNING IN PRECISION (1. DOUBLE, 2. SINGLE) MODE: %d\n", modeFem);
-
+    printf("\n----\n plateDKT solver in single precision");
+    printf("\n----\n\n");
     /* Variable declarations */
     clock_t tstart, tend;
     int Ng = 3; // Gauss integration points
-    
     struct InDataRecFem inDataFem;
     struct triangleDKT wingMeshFem;   
 
