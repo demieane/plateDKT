@@ -19,6 +19,9 @@ void squareMatInverse2(int rows, int cols, T **arrIn, T **arrOut);
 template<class T>
 void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, T alpha, T beta, T **arrA, T **arrB, T **arrOut);
 //
+template<class T>
+void matSum2(T alpha, T beta, int rows, int cols, T **arrA, T **arrB, T **arrOut);
+//
 
 
 // from funcBLAS.c
@@ -309,4 +312,24 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, T al
 //#if DEBUG_ON   
 //    printf(" EXITING matMatMultiplication2...\n");
 //#endif
+}
+
+template<class T>
+void matSum2(T alpha, T beta, int rows, int cols, T **arrA, T **arrB, T **arrOut){
+
+    for (int i=0;i<rows;i++){
+        for (int j=0;j<cols;j++){
+            arrOut[i][j]= arrOut[i][j] + alpha*arrA[i][j]  + beta*arrB[i][j];
+        }
+    }
+
+/*
+    for (int i=0;i<rows;i++){
+        for (int j=0;j<cols;j++){
+            printf("%f, ",arrOut[i][j]);
+        }
+        printf("\n");
+    }
+*/
+
 }
