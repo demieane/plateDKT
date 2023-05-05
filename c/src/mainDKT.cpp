@@ -4,7 +4,7 @@
  segmentation fault. 
 
  COMPLILE using:
- >> gcc -g mainDKT.cpp -lm
+ >> gcc -Wall -g3 -fsanitize=address mainDKT.cpp -lm
 
 */
 #include "../include/mainDKT.h"
@@ -27,19 +27,20 @@ int main(int argc, char **argv){
     /* read input parameters from a file */
     /* Boundary conditions nodes, dofs */
     struct InDataRecFem<mytype> inDataFem;
-    CuFEMNum2DReadInData(&inDataFem );
+    CuFEMNum2DReadInData<mytype>(&inDataFem);
+
     /* Create or load from matlab IEN, ID, LM */
     struct triangleDKT<mytype> wingMeshFem;  
-    ConnectivityFEM_IEN_ID_LM(&inDataFem, &wingMeshFem); // BUG FOUND IN PREVIOUS VERSIONS in IEN_3
+    ConnectivityFEM_IEN_ID_LM<mytype>(&inDataFem, &wingMeshFem); // BUG FOUND IN PREVIOUS VERSIONS in IEN_3
 
     /* Gauss integration function - read about it */
     mytype xw[GaussIntegrPoints][3]; // {xg,yg,wg}
-    TriGaussPoints(xw);
+    TriGaussPoints<mytype>(xw);
 
     /* Distributed properties */
-    mytype *distrLoad, *distrThick;
-    allocate1Darray(wingMeshFem.Nelem,&distrLoad);
-    allocate1Darray(wingMeshFem.Nelem,&distrThick);
+    mytype *distrLoad = NULL, *distrThick = NULL;
+    allocate1Darray<mytype>(wingMeshFem.Nelem,&distrLoad);
+    allocate1Darray<mytype>(wingMeshFem.Nelem,&distrThick);
 
     if (inDataFem.LL == 3){
         /* DISTRIBUTED LOAD & THICKNESS CASE */
@@ -52,10 +53,10 @@ int main(int argc, char **argv){
         pparam1 = &p1;  
         pparam2 = &p2; 
 
-        shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.fcp, 
+        shepard_interp_2d<mytype>(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.fcp, 
         pparam1, ni, wingMeshFem.xm, wingMeshFem.ym, distrLoad);
 
-        shepard_interp_2d(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
+        shepard_interp_2d<mytype>(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
         pparam2, ni, wingMeshFem.xm, wingMeshFem.ym, distrThick);
 
         printf("distrThick[i], distrLoad[i]\n");
@@ -63,19 +64,29 @@ int main(int argc, char **argv){
             printf("%f, %f\n", distrThick[i], distrLoad[i]);
         }
     }
-    mytype **BeSt;
-    allocate2Darray(3, 3, &BeSt);
-    if (inDataFem.LL==2 || inDataFem.LL==1){
-        BendingStiffness(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
-    }
-    /* DKT */
-    TrigElCoefsDKT(&inDataFem, &wingMeshFem);
-    LNShapeFunDST(xw, &wingMeshFem);
 
-    for (int j=0;j<6;j++){
-        printf("    D2etaSF[%d]=%f, ", j,wingMeshFem.D2etaSF[j]);
+    mytype BeSt[3][3] = {0};
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            printf("%f,",BeSt[i][j]);
+        } 
+        printf("\n");
     }
-   
+    if (inDataFem.LL==2 || inDataFem.LL==1){
+        BendingStiffness<mytype>(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
+    }
+
+    
+    /* DKT */
+    TrigElCoefsDKT<mytype>(&inDataFem, &wingMeshFem);
+    //
+    LNShapeFunDST<mytype>(GaussIntegrPoints, xw, &wingMeshFem);
+    //
+    LNShapeFunMassDST<mytype>(GaussIntegrPoints, xw, &wingMeshFem);
+    //
+    matrixG(&wingMeshFem);
+    
+
 
 
 
@@ -87,8 +98,12 @@ int main(int argc, char **argv){
     printf("In Matlab the same operations using vectorization take 2.0383 sec.\n");
 
 
+    // DE-ALLOCATE MEMORY TO RESOLVE MEMORY LEAKS
+    free(distrLoad);
+    free(distrThick);
     freeInDataRecFem(&inDataFem);
-    //freetriangleDKT(Ng,&wingMeshFem);
+    freetriangleDKT(GaussIntegrPoints,&wingMeshFem);
+
 
     return 0;
 

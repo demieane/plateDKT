@@ -11,8 +11,6 @@
 #endif
 
 
-
-
 /*=========================================================================================*/
 /* Declarations for data structures and functions */
 /*=========================================================================================*/
@@ -27,9 +25,9 @@ struct InDataRecFem{
     /*material properties (mass: kg/m3, Young's modulus: Pa, Poisson's ratio, (average)thickness: m)*/
     T mass, E, v, h; 
     /*boundary conditions: 1- SS, 2-CC */
-    unsigned int CC; 
+    int CC; 
     /*type of load: 1- concentrated load, 2- uniform load, 3- distributed load*/
-    unsigned int LL; 
+    int LL; 
     /* Delaunay triangulation - unstructured mesh 
             pp (mesh nodes) = [x1,x2,x3,x4...;
                                y1,y2,y3,y4...]; nodal coordinates
@@ -44,27 +42,27 @@ struct InDataRecFem{
     
             tt (triangles)
     */
-    unsigned int pp_rows; // dummy
-    unsigned int pp_cols;
-    T *pp[2]; /*2-D array*/
-    unsigned int tt_rows; // dummy
-    unsigned int tt_cols;
-    int *tt[4]; /*2-D array*/
-    unsigned int ee_rows; // dummy
-    unsigned int ee_cols;
-    T *ee[7]; /*2-D array*/
-    unsigned int sizeBBnodes;
-    int *BBnodes; /* id of nodes affected by boundary conditions*/
-    unsigned int sizeBdofs;
-    int *Bdofs; /* global numbering of dofs affected by boundary conditions*/
+    int pp_rows; // dummy
+    int pp_cols;
+    T *pp[2] = {0}; /*2-D array*/
+    int tt_rows; // dummy
+    int tt_cols;
+    int *tt[4] = {0}; /*2-D array*/
+    int ee_rows; // dummy
+    int ee_cols;
+    T *ee[7] = {0}; /*2-D array*/
+    int sizeBBnodes;
+    int *BBnodes = NULL; /* id of nodes affected by boundary conditions*/
+    int sizeBdofs;
+    int *Bdofs = NULL; /* global numbering of dofs affected by boundary conditions*/
 
     T P_load; // Pa: positive values point towards the positive Z-axis (reverse for ANSYS) 
     // ONLY FOR CONCENTRATED LOAD <--BELOW
-    T P_xy[2];
+    T P_xy[2] = {0};
     int P_node; 
     // ONLY FOR DISTRIBUTED PROPERTIES LOAD/THICKNESS <--BELOW
     int sizexcp;
-    T *xcp, *ycp, *fcp, *tcp;
+    T *xcp = NULL, *ycp = NULL, *fcp = NULL, *tcp = NULL;
 };
 
 template<class T>
@@ -79,9 +77,9 @@ struct triangleDKT{
     int Nelem; // number of triangles
     int NN; // number of nodes
     int GEN; // number of dofs (system of eqs. before BCs)
-    int *ID[3];  // [3,NN]
-    int *IEN[3]; // [3,Nelem]
-    int *LM[9];  // [9,Nelem]
+    int *ID[3] = {0};  // [3,NN]
+    int *IEN[3]= {0}; // [3,Nelem]
+    int *LM[9]= {0};  // [9,Nelem]
     //
     T *xm = NULL; // x barycentric coordinate [Nelem]
     T *ym = NULL; // y barycentric coordinate [Nelem]
@@ -92,27 +90,27 @@ struct triangleDKT{
     T *x12 = NULL, *x31 = NULL, *x23 = NULL;
     T *area = NULL;
     T *a4 = NULL, *a5 = NULL, *a6 = NULL,
-     *b4 = NULL, *b5 = NULL, *b6 = NULL,
-     *c4 = NULL, *c5 = NULL, *c6 = NULL;
+      *b4 = NULL, *b5 = NULL, *b6 = NULL,
+      *c4 = NULL, *c5 = NULL, *c6 = NULL;
     T *d4 = NULL, *d5 = NULL, *d6 = NULL,
-     *e4 = NULL, *e5 = NULL, *e6 = NULL;
+      *e4 = NULL, *e5 = NULL, *e6 = NULL;
     T *C4 = NULL, *C5 = NULL, *C6 = NULL,
-     *S4 = NULL, *S5 = NULL, *S6 = NULL;
+      *S4 = NULL, *S5 = NULL, *S6 = NULL;
     /*
     The C language is case-sensitive. This means that all language keywords,
     identifiers, function names, and other variables
     must be entered with consistent letter capitalization. 
     */
     /* output of LNShapeFunDST() */
-    T **SF, **DxsiSF, **DetaSF; //[Ng x 6]
-    T *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
+    T **SF = NULL, **DxsiSF = NULL, **DetaSF = NULL; //[Ng x 6]
+    T *D2xsiSF = NULL, *D2xsietaSF = NULL, *D2etaSF = NULL;// [1 x 6]
     /* output of LNShapeFunMassDST() */
     T **SFm = NULL;
     T **DxsiSFm = NULL;
     T **DetaSFm = NULL; //[Ng x 3]
 
-    T **GGDST, **GGDKT; //[10 x 10]  
-    T **GGin, **GGin2; //inverse of above
+    T **GGDST = NULL, **GGDKT = NULL; //[10 x 10]  
+    T **GGin = NULL, **GGin2 = NULL; //inverse of above
 };
 
 /*=========================================================================================*/
@@ -134,7 +132,7 @@ template<class T>
 void TriGaussPoints(T xw[GaussIntegrPoints][3]);
 //
 template<class T>
-void BendingStiffness(T E, T v, T tx, T **BeSt);
+void BendingStiffness(T E, T v, T tx, T BeSt[3][3]);
 //
 template<class T>
 void TrigElCoefsDKT(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem);
@@ -142,9 +140,21 @@ void TrigElCoefsDKT(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wi
 // Calculation of shape functions and their derivatives at gauss points on
 // the parent element
 template<class T>
-void LNShapeFunDST(T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFem);
+void LNShapeFunDST(int Ng, T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFem);
 //
-
+template<class T>
+void LNShapeFunMassDST(int Ng, T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFem);
+//
+// ax, ay, bx,by are constant for constant h (independednt of î,ç)
+template<class T>
+void matrixG(struct triangleDKT<T> *wingMeshFem);
+//
+// utilities
+template<class T>
+void assignRowArrayMatrixG_DST(int rowID, T xsi, T eta, T **array);
+//
+template<class T>
+void assignRowArrayMatrixG_DKT(int rowID, T xsi, T eta, T **array);
 
 
 /*=========================================================================================*/
@@ -154,7 +164,12 @@ template<class T>
 void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem ){
     printf("\n    Entering CuFEMNum2DReadInData().\n");
     FILE *file;
-	file = fopen("../INDATA_FEM.bin", "rb"); // r for read, b for binary
+    #if PRECISION_MODE_FEM == 1
+	    file = fopen("../INDATA_FEM_double.bin", "rb"); // r for read, b for binary
+    #endif
+    #if PRECISION_MODE_FEM == 2
+	    file = fopen("../INDATA_FEM.bin", "rb"); // r for read, b for binary
+    #endif
     fread(&(inDataFem->modeFem), sizeof(int) , 1, file);
     if ((inDataFem->modeFem != PRECISION_MODE_FEM)){
         printf("    Compile code with correct precision mode. Enjoy the seg fault :) \n");   
@@ -331,6 +346,8 @@ void freeInDataRecFem(struct InDataRecFem<T> *inDataFem){
         free(inDataFem->fcp);
         free(inDataFem->tcp);
     }
+    free(inDataFem->BBnodes);
+    free(inDataFem->Bdofs);
 }
 
 
@@ -349,7 +366,7 @@ void ConnectivityFEM_IEN_ID_LM(struct InDataRecFem<T> *inDataFem, struct triangl
      - pick a column - it gives you the index numbers of the triangle nodes on the 
       global numbering */
     for (int i=0;i<3;i++){
-        wingMeshFem->IEN[i] = (int*)malloc(inDataFem->tt_cols *sizeof(int));
+        wingMeshFem->IEN[i] = (int*)malloc( (inDataFem->tt_cols) *sizeof(int));
     }
     //
     //for (int i = 0; i < inDataFem->tt_rows-1; i++)
@@ -647,7 +664,7 @@ void TriGaussPoints(T xw[GaussIntegrPoints][3]){
 }
 
 template<class T>
-void BendingStiffness(T E, T v, T tx, T **BeSt){
+void BendingStiffness(T E, T v, T tx, T BeSt[3][3]){
   
     T la = (E*pow(tx,3.0))/(12*(1-pow(v,2)));
 
@@ -703,7 +720,6 @@ void TrigElCoefsDKT(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wi
     wingMeshFem->S4 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
     wingMeshFem->S5 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
     wingMeshFem->S6 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
-
 
     int IEN_1, IEN_2, IEN_3;    
     //i = wingMeshFem->Nelem-1;
@@ -771,9 +787,9 @@ void TrigElCoefsDKT(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wi
 }
 
 template<class T>
-void LNShapeFunDST(T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFem){
+void LNShapeFunDST(int Ng, T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFem){
     // Ng, xw are given data based on which we will fill up some matrices
-    int Ng = GaussIntegrPoints;
+    //int Ng = GaussIntegrPoints;
 
 #if DEBUG_ON    
     printf("    Ng: %d\n", Ng);
@@ -786,7 +802,7 @@ void LNShapeFunDST(T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFe
     }
 #endif
 
-    // Initialize matrices that are Ng x 6
+    // Initialize matrices that are [Ng x 6]   
     wingMeshFem->SF = (T**)malloc(Ng *sizeof(T*)); // pointer array with Ng rows
     wingMeshFem->DxsiSF = (T**)malloc(Ng *sizeof(T*)); // pointer array with Ng rows
     wingMeshFem->DetaSF = (T**)malloc(Ng *sizeof(T*)); // pointer array with Ng rows
@@ -831,8 +847,8 @@ void LNShapeFunDST(T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFe
 #if DEBUG_ON
     for (int i=0;i<Ng;i++){
         for (int j=0;j<6;j++){
-            //printf("SF[%d][%d]=%f, ", i,j,wingMeshFem->SF[i][j] );
-            //printf("DxsiSF[%d][%d]=%f, ", i,j,wingMeshFem->DxsiSF[i][j] );
+            //printf("    SF[%d][%d]=%f, ", i,j,wingMeshFem->SF[i][j] );
+            //printf("    DxsiSF[%d][%d]=%f, ", i,j,wingMeshFem->DxsiSF[i][j] );
             printf("    DetaSF[%d][%d]=%f, ", i,j,wingMeshFem->DetaSF[i][j]);
         }
         printf("\n");
@@ -842,11 +858,10 @@ void LNShapeFunDST(T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFe
 #endif
 
     //float *SF, *DxsiSF, *DetaSF; //[Ng x 6]
-    //float *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
-
-    wingMeshFem->D2xsiSF = (T*)malloc(Ng *sizeof(T)); // [1 x 6]
-    wingMeshFem->D2xsietaSF = (T*)malloc(Ng *sizeof(T)); // [1 x 6]
-    wingMeshFem->D2etaSF = (T*)malloc(Ng *sizeof(T)); // [1 x 6]
+    //    T *D2xsiSF = NULL, *D2xsietaSF = NULL, *D2etaSF = NULL;// [1 x 6]
+    wingMeshFem->D2xsiSF = (T*)malloc(6 *sizeof(T)); // [1 x 6]
+    wingMeshFem->D2xsietaSF = (T*)malloc(6 *sizeof(T)); // [1 x 6]
+    wingMeshFem->D2etaSF = (T*)malloc(6 *sizeof(T)); // [1 x 6]
 
     // 2nd derivative--> î    %checked
     wingMeshFem->D2xsiSF[0]=4.0;
@@ -884,3 +899,173 @@ void LNShapeFunDST(T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFe
 #endif
 }
 
+//
+template<class T>
+void LNShapeFunMassDST(int Ng, T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFem){
+    // Ng, xw are given data based on which we will fill up some matrices
+
+
+#if DEBUG_ON    
+    printf("Ng: %d\n", Ng);
+
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<3;j++){
+            printf("xw [%d]:%f,",j,xw[i][j]);
+        }
+        printf("\n");
+    }
+#endif
+
+    // Initialize matrices that are Ng x 3
+    wingMeshFem->SFm = (T**)malloc(Ng *sizeof(T*)); // pointer array with Ng rows
+    wingMeshFem->DxsiSFm = (T**)malloc(Ng *sizeof(T*)); // pointer array with Ng rows
+    wingMeshFem->DetaSFm = (T**)malloc(Ng *sizeof(T*)); // pointer array with Ng rows
+    for (int i=0;i<Ng;i++){
+        wingMeshFem->SFm[i] = (T*)malloc(3 *sizeof(T));
+        wingMeshFem->DxsiSFm[i] = (T*)malloc(3 *sizeof(T));
+        wingMeshFem->DetaSFm[i] = (T*)malloc(3 *sizeof(T));
+    }
+
+    T xg, yg;
+    int i;
+    for (i=0; i<Ng; i++){
+        
+        xg = xw[i][0];
+        yg = xw[i][1];
+
+        wingMeshFem->SFm[i][0]=(1.0-xg-yg); //checked
+        wingMeshFem->SFm[i][1]=xg;//checked
+        wingMeshFem->SFm[i][2]=yg;
+
+        // 1st derivative --> î
+        wingMeshFem->DxsiSFm[i][0]=-1.0; //checked
+        wingMeshFem->DxsiSFm[i][1]=1.0; //checked
+        wingMeshFem->DxsiSFm[i][2]=0.0; //checked
+
+        //1st derivative ç
+        wingMeshFem->DetaSFm[i][0]=-1.0;
+        wingMeshFem->DetaSFm[i][1]=0.0;
+        wingMeshFem->DetaSFm[i][2]=1.0;
+
+    }
+
+#if DEBUG_ON
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<3;j++){
+            //printf("SFm[%d][%d]=%f, ", i,j,wingMeshFem->SFm[i][j] );
+            //printf("DxsiSFm[%d][%d]=%f, ", i,j,wingMeshFem->DxsiSFm[i][j] );
+            printf("DetaSFm[%d][%d]=%f, ", i,j,wingMeshFem->DetaSFm[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+#endif
+#if DEBUG_ON
+    printf("EXITING LNShapeFunMassDST...\n\n");
+#endif
+
+}
+
+template<class T>
+void matrixG(struct triangleDKT<T> *wingMeshFem){
+
+    int r = 10, c = 10, i, j;
+    T xsi, eta, rowID;
+ 
+    wingMeshFem->GGDST = (T**)malloc(r * sizeof(T*));
+    wingMeshFem->GGin = (T**)malloc(r * sizeof(T*));//inverse matrix
+    for (i = 0; i < r; i++){
+        wingMeshFem->GGDST[i] = (T*)malloc(c * sizeof(T));
+        wingMeshFem->GGin[i] = (T*)malloc(c * sizeof(T));
+    }
+
+    // Note that arr[i][j] is same as *(*(arr+i)+j)
+    for (i = 0; i < r; i++){
+        for (j = 0; j < c; j++){
+                wingMeshFem->GGDST[i][j] = 0.0;
+                wingMeshFem->GGin[i][j] = 0.0;
+                //printf("%f, ", wingMeshFem->GGDST[i][j]);
+        }
+        //printf("\n\n");
+    }
+
+    r = 6; c = 6;
+    wingMeshFem->GGDKT = (T**)malloc(r * sizeof(T*));
+    wingMeshFem->GGin2 = (T**)malloc(r * sizeof(T*));
+    for (i = 0; i < r; i++){
+        wingMeshFem->GGDKT[i] = (T*)malloc(c * sizeof(T));
+        wingMeshFem->GGin2[i] = (T*)malloc(c * sizeof(T));
+    }
+
+    // Note that arr[i][j] is same as *(*(arr+i)+j)
+    for (i = 0; i < r; i++){
+        for (j = 0; j < c; j++){
+                wingMeshFem->GGDKT[i][j] = 0.0;
+                wingMeshFem->GGin2[i][j] = 0.0;
+                //printf("%f, ", wingMeshFem->GGDKT[i][j]);
+        }
+        //printf("\n\n");
+    }
+
+    assignRowArrayMatrixG_DST(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 2.0, xsi=1.0, eta = 0.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 3.0, xsi=0.0, eta = 1.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 4.0, xsi=(1.0/3.0), eta = (1.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 5.0, xsi=(2.0/3.0), eta = (1.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 6.0, xsi=(1.0/3.0), eta = (2.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 7.0, xsi=0.0, eta = (2.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 8.0, xsi=0.0, eta = (1.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 9.0, xsi=(1.0/3.0), eta = 0.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST(rowID = 10.0, xsi=(2.0/3.0), eta = 0.0, wingMeshFem->GGDST);
+    //
+    assignRowArrayMatrixG_DKT(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 2.0, xsi=1.0, eta = 0.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 3.0, xsi=0.0, eta = 1.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 4.0, xsi=(1.0/2.0), eta = (1.0/2.0), wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 5.0, xsi=0.0, eta = (1.0/2.0), wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT(rowID = 6.0, xsi=(1.0/2.0), eta = 0.0, wingMeshFem->GGDKT);
+}
+
+
+/* 
+COMMENT: The following functions are not dependent on my new datatypes! Therefore,
+they can be included without the structure declaration in a separate .c file! That is why in the BEM code
+the DATASTRUCTURES are defined in multiple destinations within preprocessor directives.
+*/
+template<class T>
+void assignRowArrayMatrixG_DST(int rowID, T xsi, T eta, T **array){
+
+    T rowMat[10] = {1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2),
+     pow(xsi,2)*eta, pow(eta,2)*xsi, pow(xsi,3), pow(eta,3)};
+
+    //for (int i=0;i<10;i++){
+    //    printf("%f, ", rowMat[i]);
+    //}
+
+    //printf("\nInside assignRowArrayMatrixG_DST()... \n\n");
+    int i = rowID -1;
+    for (int j=0;j<10;j++){
+        array[i][j]=rowMat[j];
+        //printf("%d, %f, ",j, array[I][j]);
+    }
+    //printf("\n\n");
+}
+
+template<class T>
+void assignRowArrayMatrixG_DKT(int rowID, T xsi, T eta, T **array){
+
+    T rowMat[6] = {1.0, xsi, eta, xsi*eta, pow(xsi,2), pow(eta,2)};
+
+    //for (int i=0;i<6;i++){
+    //    printf("%f, ", rowMat[i]);
+    //}
+
+    //printf("\nInside assignRowArrayMatrixG_DKT()... \n\n");
+    int i = rowID -1;
+    for (int j=0;j<6;j++){
+        array[i][j]=rowMat[j];
+    //    printf("%d, %f, ",j, array[I][j]);
+    }
+    //printf("\n\n");
+}

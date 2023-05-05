@@ -121,7 +121,7 @@ end
 
 
 %% CREATE MODE.bin binary file for passing data 
-modeFem = 1; %double:1, single(or mixed):2
+modeFem = 2; %double:1, single(or mixed):2
 % write to binary for communication with GPU executable
 % file1 = fopen('MODE_FEM.bin', 'wb');
 % fwrite(file1, modeFem, 'int');
@@ -130,7 +130,7 @@ modeFem = 1; %double:1, single(or mixed):2
 %
 if modeFem == 1
     precision = 'double';
-    fileName = 'INDATA_FEM.bin';
+    fileName = 'INDATA_FEM_double.bin';
 elseif modeFem == 2
     precision = 'single';
     fileName = 'INDATA_FEM.bin';
@@ -209,7 +209,7 @@ end
 fclose(file);
 
 if modeFem == 1
-    system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
+    system('cp INDATA_FEM_double.bin ../c/INDATA_FEM_double.bin');
 elseif modeFem == 2
     system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
 %     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');

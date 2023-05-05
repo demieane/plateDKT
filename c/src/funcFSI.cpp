@@ -84,5 +84,6 @@ void shepard_interp_2d(int nd, T *xd, T *yd, T *zd,
         //zi[i] = r8vec_dot_product ( nd, w, zd );
     }
 
+    free(w);
     printf("    Exiting SHEPARD INTERP. OK.\n");
 }
