@@ -4,7 +4,7 @@
  segmentation fault. 
 
  COMPLILE using:
- >> gcc -Wall -g3 -fsanitize=address mainDKT.cpp -lm
+ >> gcc -Wall -g3 -fsanitize=address mainDKT.cpp -lm -lblas -llapack
 
 */
 #include "../include/mainDKT.h"
@@ -76,16 +76,36 @@ int main(int argc, char **argv){
         BendingStiffness<mytype>(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
     }
 
-    
     /* DKT */
     TrigElCoefsDKT<mytype>(&inDataFem, &wingMeshFem);
-    //
     LNShapeFunDST<mytype>(GaussIntegrPoints, xw, &wingMeshFem);
-    //
     LNShapeFunMassDST<mytype>(GaussIntegrPoints, xw, &wingMeshFem);
-    //
     matrixG(&wingMeshFem);
-    
+    //
+    //int rows, cols;
+    squareMatInverse2(10, 10, wingMeshFem.GGDST, wingMeshFem.GGin);
+    squareMatInverse2(6, 6, wingMeshFem.GGDKT, wingMeshFem.GGin2);
+
+    printf("\n GGin \n");
+    for (int i=0;i<10;i++){
+        for (int j=0;j<10;j++){
+            printf("%f,",wingMeshFem.GGin[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n GGin2 \n");
+    for (int i=0;i<6;i++){
+        for (int j=0;j<6;j++){
+            printf("%f,",wingMeshFem.GGin2[i][j]);
+        }
+        printf("\n");
+    }
+    //************************************************************************************
+    //  DKT PLATE SOLVER: LOCAL MATRIX (mloc, kloc, floc)
+    //************************************************************************************
+    if (inDataFem.LL == 1){
+         printf("\n    P_load=%f in [Pa]", inDataFem.P_load);
+    }
 
 
 
