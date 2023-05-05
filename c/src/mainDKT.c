@@ -393,6 +393,11 @@ int main(int argc, char **argv){
     // solve linear system of eqs. using LAPACK sgels_ function
     linearSystemSolve(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
 
+    printf("Usol[i]\n\n");
+    for (int i = 0; i<10;i++){
+        printf("%f,",Usol[i][0]);
+    }
+
     free(Fglob_aug);
 
     //************************************************************************************

@@ -22,7 +22,12 @@ void matMatMultiplication2(int optionCalc, int rowsA, int colsA, int colsB, T al
 template<class T>
 void matSum2(T alpha, T beta, int rows, int cols, T **arrA, T **arrB, T **arrOut);
 //
-
+template<class T>
+void deallocate2Darray(int rows, T ***arrIn);
+//
+template<class T>
+void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol);
+    //
 
 // from funcBLAS.c
 /*=========================================================================================*/
@@ -53,6 +58,15 @@ void allocate1Darray(int rows, T **arrIn){
     *arrIn = arrTemp; // this will do?
 }
 
+// Allocate 2-D array based on double pointer type
+template<class T>
+void deallocate2Darray(int rows, T **arrIn){
+
+    for (int i = 0; i < rows; i++){
+        free(arrIn[i]);
+    }
+    free(arrIn);
+}
 
 // Allocate 2-D array based on double pointer type
 template<class T>
@@ -331,5 +345,61 @@ void matSum2(T alpha, T beta, int rows, int cols, T **arrA, T **arrB, T **arrOut
         printf("\n");
     }
 */
+
+}
+
+template<class T>
+void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
+
+    // assuming that the given arrA, arrB are 2D arrays. 
+    // transform it to 1D- array for lapack functions
+    T *AA;
+    AA = (T*)malloc((rowsA*colsA) *sizeof(T));
+
+    for (int i = 0; i < rowsA; i++) {
+        for (int j = 0; j < colsA; j++){
+            AA[i * colsA + j] = arrA[i][j];
+            //printf("Local: %f, In: %f ", AA[i * colsA + j],arrA[i][j]);
+        } 
+        //printf("\n");
+    }
+    //printf("\n\n");
+    //printf("Allocated A.. OK!\n");
+
+    T *BB;
+    BB = (T*)malloc((rowsA*1) *sizeof(T));
+    for (int i = 0; i < rowsA; i++) {
+        BB[i] = arrB[i][0];
+    }
+    //printf("Allocated B.. OK!\n");
+
+    int nrhs = 1; //number of rhs vectors B 
+    int LDA = colsA;
+    int LDB = rowsA;
+    int info;
+
+    int *IPIV = (int*)malloc((rowsA) *sizeof(int));
+
+    // https://www.intel.com/content/www/us/en/docs/onemkl/code-samples-lapack/2022-1/sgesv-example-c.html
+    #if PRECISION_MODE_FEM == 2
+        sgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
+    #endif
+    #if PRECISION_MODE_FEM == 1
+        dgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
+    #endif
+
+    if (info >= 0){
+        printf("\n    Solution successfull");
+    } 
+
+    for (int i = 0; i < rowsA; i++) {
+        Usol[i][0]=BB[i];
+    }
+    printf("\n    Transfered solution from B to Usol.. OK!\n");
+
+    free(IPIV);
+    free(BB);
+    free(AA);
+
 
 }

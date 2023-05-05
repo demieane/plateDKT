@@ -198,7 +198,10 @@ void ShapeFunDKT2(int ii, int kk, struct triangleDKT<T> *wingMeshFem, struct fem
 //
 template<class T>
 void pseudoMassDKT(int ii, int kk, struct triangleDKT<T> *wingMeshFem, struct femArraysDKT<T> *elemFemArr);
-
+//
+template<class T>
+void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN);
+//
 
 
 /*=========================================================================================*/
@@ -1554,4 +1557,29 @@ for (int i = 0; i<10; i++){
 //    printf("%f, ",elemFemArr->LW[0][i]);
 //}
 
+}
+
+template<class T>
+void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN){
+
+    FILE *fileOut;
+    #if PRECISION_MODE_FEM == 1
+	    fileOut = fopen("../OUTDATA_FEM_double.bin", "wb"); // w for write, b for binary
+    #endif
+    #if PRECISION_MODE_FEM == 2
+	    fileOut = fopen("../OUTDATA_FEM_single.bin", "wb"); // w for write, b for binary
+    #endif
+
+    fwrite(&GEN, sizeof(int), 1, fileOut);
+    fwrite(&rows, sizeof(int), 1, fileOut);
+    fwrite(&cols, sizeof(int), 1, fileOut);
+
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < cols; j++){
+            fwrite(&(Usol[i][j]), sizeof(T), 1, fileOut);
+        }
+    }
+
+    fclose(fileOut);
+    printf("\n    EXITING CuFEMNum2DWriteDataInBinary...\n\n");
 }

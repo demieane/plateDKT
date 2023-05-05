@@ -121,7 +121,7 @@ end
 
 
 %% CREATE MODE.bin binary file for passing data 
-modeFem = 2; %double:1, single(or mixed):2
+modeFem = 1; %double:1, single(or mixed):2
 % write to binary for communication with GPU executable
 % file1 = fopen('MODE_FEM.bin', 'wb');
 % fwrite(file1, modeFem, 'int');
@@ -133,8 +133,7 @@ if modeFem == 1
     fileName = 'INDATA_FEM_double.bin';
 elseif modeFem == 2
     precision = 'single';
-    fileName = 'INDATA_FEM.bin';
-%     fileName = 'INDATA_FEM_single.bin';
+    fileName = 'INDATA_FEM_single.bin';
 end
 
 
@@ -211,16 +210,25 @@ fclose(file);
 if modeFem == 1
     system('cp INDATA_FEM_double.bin ../c/INDATA_FEM_double.bin');
 elseif modeFem == 2
-    system('cp INDATA_FEM.bin ../c/INDATA_FEM.bin');
-%     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
+    system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
 end
 
-error('er')
+% error('er')
 %% RUN THE CODE
-system('../c/./mainDKT');
+if modeFem == 1
+    system('../c/src/./a.out');
+elseif modeFem == 2
+    system('../c/./mainDKT');
+end
+% system('../c/./mainDKT');
 
 %% Read solution from binary file
-fileID = fopen('../c/OUTDATA_FEM.bin','rb')
+if modeFem == 1
+    fileID = fopen('../c/OUTDATA_FEM_double.bin','rb')
+elseif modeFem == 2
+    fileID = fopen('../c/OUTDATA_FEM_single.bin','rb')
+end
+% fileID = fopen('../c/OUTDATA_FEM.bin','rb')
 GEN_fromC = fread(fileID,1,'int')
 rowsUsol = fread(fileID,1,'int')
 colsUsol = fread(fileID,1,'int')

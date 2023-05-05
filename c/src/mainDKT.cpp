@@ -169,15 +169,9 @@ int main(int argc, char **argv){
             matSum2<mytype>(1.0, 0.0, 9, 9, kb1, kb1, elemFemArr.kloc); // kloc = kloc + kb1
 
 //==========================DE - ALLOCATE ---->
-            for (int i=0;i<9;i++){
-                free(kb[i]);
-            }
-            free(kb);
-            //
-            for (int i=0;i<9;i++){
-                free(kb1[i]);
-            }
-            free(kb1);   
+            deallocate2Darray<mytype>(9,kb);
+            deallocate2Darray<mytype>(9,kb1);
+            //printf("It worked!");
 //==========================DE - ALLOCATE ---->
 
             if (inDataFem.LL == 1){
@@ -227,25 +221,13 @@ int main(int argc, char **argv){
             matSum2<mytype>(1.0, 0.0, 9, 9, sum2, sum2, elemFemArr.mloc);
 
 //==========================DE - ALLOCATE ---->
-            for (int i=0;i<9;i++){
-                free(term1[i]);
-                free(term2[i]);
-                free(term4[i]);
-                free(term5[i]);
-                free(sum1[i]);
-                free(sum2[i]);
-            }
-            free(term1);
-            free(term2);
-            free(term4);
-            free(term5);
-            free(sum1);
-            free(sum2);
-            //
-            for (int i=0;i<10;i++){
-                free(term3[i]);
-            }
-            free(term3);
+            deallocate2Darray<mytype>(9,term1);
+            deallocate2Darray<mytype>(9,term2);
+            deallocate2Darray<mytype>(10,term3);
+            deallocate2Darray<mytype>(9,term4);
+            deallocate2Darray<mytype>(9,term5);
+            deallocate2Darray<mytype>(9,sum1);
+            deallocate2Darray<mytype>(9,sum2);
 //==========================DE - ALLOCATE ---->
   
             // mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*(mlocTEMP);
@@ -315,9 +297,181 @@ int main(int argc, char **argv){
     //************************************************************************************
     //  DKT PLATE SOLVER: GLOBAL MATRIX ASSEMBLY (Mglob, Kglob, Fglob)
     //************************************************************************************
+    mytype **iii, **rr, **iii_col, **rr_col;
+    allocate2Darray<mytype>(9,9,&iii);
+    allocate2Darray<mytype>(9,9,&rr);
+    allocate2Darray<mytype>(81,1,&iii_col);
+    allocate2Darray<mytype>(81,1,&rr_col);
+
+    for (int i=0;i<9;i++){
+        for (int j=0;j<9;j++){
+            iii[i][j] = i;//from 0-8 (instead of 1-9 in matlab)
+            rr[i][j] = j;
+        }
+    }
+
+    int cnt = 0;
+    for (int i=0;i<9;i++){
+        for (int j=0;j<9;j++){
+            iii_col[cnt][0]=iii[j][i];
+            rr_col[cnt][0]=rr[j][i];
+            cnt++;
+        }
+    }
+
+    deallocate2Darray<mytype>(9,iii);
+    deallocate2Darray<mytype>(9,rr);
+
+    mytype **Ig, **Jg;
+    allocate2Darray<mytype>(81,wingMeshFem.Nelem,&Ig);//LM(iii(:),:);
+    allocate2Darray<mytype>(81,wingMeshFem.Nelem,&Jg);//LM(rr(:),:);
+
+    int indexIg, indexJg;
+    for (int i=0;i<81;i++){
+        for (int j=0;j<wingMeshFem.Nelem;j++){
+            indexIg = iii_col[i][0];
+            indexJg = rr_col[i][0];
+            Ig[i][j] = wingMeshFem.LM[indexIg][j]-1;
+            Jg[i][j] = wingMeshFem.LM[indexJg][j]-1;
+        }
+    }   
+
+    mytype **Kglob, **Mglob;
+    allocate2Darray<mytype>(wingMeshFem.GEN,wingMeshFem.GEN,&Kglob);
+    allocate2Darray<mytype>(wingMeshFem.GEN,wingMeshFem.GEN,&Mglob);
+
+    int indexKi, indexKj;
+    for (int i=0;i<81;i++){
+        for (int j=0;j<wingMeshFem.Nelem;j++){
+            indexKi = Ig[i][j];
+            indexKj = Jg[i][j];
+            Kglob[indexKi][indexKj] = Kglob[indexKi][indexKj] + elemFemArr.Kg[i][j];
+            Mglob[indexKi][indexKj] = Mglob[indexKi][indexKj] + elemFemArr.Mg[i][j];
+        }
+    }
 
 
-    
+    printf("Kglob \n");
+    for (int i = 0;i<15;i++){
+        for (int j = 0;j<15;j++){
+            printf("%f, ",Kglob[i][j]);
+        }
+        printf("\n");
+    }
+
+
+    printf("Mglob \n");
+    for (int i = 0;i<15;i++){
+        for (int j = 0;j<15;j++){
+            printf("%f, ",Mglob[i][j]);
+        }
+        printf("\n");
+    }
+
+    exit(2);
+
+    printf("\n    Kglob, Mglob OK... DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)\n");
+    //************************************************************************************
+    //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
+    //************************************************************************************
+    //************************************************************************************
+    //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
+    //************************************************************************************
+    mytype **kkk, **mmm;
+    allocate2Darray<mytype>(inDataFem.sizeBdofs,wingMeshFem.GEN,&kkk);
+    allocate2Darray<mytype>(inDataFem.sizeBdofs,wingMeshFem.GEN,&mmm);
+
+    int index_kkk;
+    for (int j=0;j<inDataFem.sizeBdofs;j++){
+        index_kkk = inDataFem.Bdofs[j]-1;
+        kkk[j][index_kkk] = 1.0;
+        //kkk(j,:)=[zeros(1,Bdofs(j)-1) 1 zeros(1,Dofs-Bdofs(j))]; %matlab code sample
+    }
+
+    //Kglob=[Kglob kkk'; kkk zeros(length(BBnodes))];  %matlab code sample
+    //Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];  %matlab code sample
+    mytype **Kglob_aug, **Mglob_aug; // augmented
+    int sizeKMglob_aug = wingMeshFem.GEN+inDataFem.sizeBdofs;
+    allocate2Darray<mytype>(sizeKMglob_aug,sizeKMglob_aug,&Kglob_aug);
+    allocate2Darray<mytype>(sizeKMglob_aug,sizeKMglob_aug,&Mglob_aug);
+
+    for (int i=0;i<wingMeshFem.GEN;i++){
+        for (int j=0;j<wingMeshFem.GEN;j++){
+            Kglob_aug[i][j] = Kglob[i][j];
+            Mglob_aug[i][j] = Mglob[i][j]; //OK
+        }
+    }
+
+    int indexKaug;
+    for (int i=0;i<inDataFem.sizeBdofs;i++){
+        for (int j=0;j<wingMeshFem.GEN;j++){
+            indexKaug = wingMeshFem.GEN + i;
+            Kglob_aug[indexKaug][j] = kkk[i][j];
+            Kglob_aug[j][indexKaug] = kkk[i][j];
+        }
+    }
+
+    //************************************************************************************
+    //  DKT PLATE SOLVER: SOLUTION OPTIONS (1. EIGEN, 2. STATIC, 3. DYNAMIC)
+    //************************************************************************************
+    printf("    Starting linear system solution (Kglob_aug, Mglob_aug are dense matrices!)\n");
+
+    int indexPointLoad;
+    if (inDataFem.LL == 1){
+        indexPointLoad = wingMeshFem.ID[0][inDataFem.P_node-1]-1;
+        elemFemArr.Fglob[indexPointLoad][0] = inDataFem.P_load;
+
+        //printf("index point load %d", indexPointLoad);
+    }
+
+    mytype **Usol;
+    allocate2Darray<mytype>(sizeKMglob_aug,1, &Usol);
+
+    mytype **Fglob_aug;
+    allocate2Darray<mytype>(sizeKMglob_aug,1,&Fglob_aug);
+    for (int i=0;i<wingMeshFem.GEN;i++){
+        Fglob_aug[i][0]=elemFemArr.Fglob[i][0];
+    }
+
+    if (inDataFem.LL==2){
+        printf("    UNIFORM LOAD: P=%f [Pa]\n",inDataFem.P_load);
+    }
+
+    // solve linear system of eqs. using LAPACK sgels_ function
+    linearSystemSolve<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
+
+    printf("Usol[i]\n\n");
+    for (int i = 0; i<10;i++){
+        printf("%f,",Usol[i][0]);
+    }
+
+    //************************************************************************************
+    //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
+    //************************************************************************************
+    //int optionSelect = 0;
+    CuFEMNum2DWriteDataInBinary<mytype>(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
+
+
+    // TODO: MODAL ANALYSIS
+
+//----
+
+
+
+
+
+
+
+
+    deallocate2Darray(inDataFem.sizeBdofs,kkk);
+    deallocate2Darray(inDataFem.sizeBdofs,mmm);
+    //
+    deallocate2Darray<mytype>(sizeKMglob_aug,Kglob_aug);
+    deallocate2Darray<mytype>(sizeKMglob_aug,Mglob_aug);
+
+    deallocate2Darray(sizeKMglob_aug,Usol);
+    deallocate2Darray<mytype>(sizeKMglob_aug,Fglob_aug);
+
     tend = clock();
 
     double cpu_time_used = ((double) (tend-tstart))/ CLOCKS_PER_SEC;
@@ -338,6 +492,13 @@ int main(int argc, char **argv){
     freetriangleDKT(GaussIntegrPoints,&wingMeshFem);
 
     freefemArraysDKT(&wingMeshFem, &elemFemArr);
+
+    deallocate2Darray<mytype>(wingMeshFem.GEN,Kglob);
+    deallocate2Darray<mytype>(wingMeshFem.GEN,Mglob);
+    deallocate2Darray<mytype>(81,iii_col);
+    deallocate2Darray<mytype>(81,rr_col);
+    deallocate2Darray<mytype>(81,Ig);//LM(iii(:),:);
+    deallocate2Darray<mytype>(81,Jg);//LM(rr(:),:);
 
 
     return 0;

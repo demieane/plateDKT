@@ -214,7 +214,7 @@ void freeInDataRecFem(struct InDataRecFem *inDataFem);
 /*=========================================================================================*/
 void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
     FILE *file;
-	file = fopen("../c/INDATA_FEM.bin", "rb"); // r for read, b for binary
+	file = fopen("../c/INDATA_FEM_single.bin", "rb"); // r for read, b for binary
     fread(&(inDataFem->modeFem), sizeof(int) , 1, file);
     if ((inDataFem->modeFem != PRECISION_MODE_FEM)){
         printf("    Compile code with correct precision mode. Enjoy the seg fault :) \n");   
@@ -369,7 +369,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem *inDataFem ){
 void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN){
 
     FILE *fileOut;
-	fileOut = fopen("../c/OUTDATA_FEM.bin", "wb"); // w for write, b for binary
+	fileOut = fopen("../c/OUTDATA_FEM_single.bin", "wb"); // w for write, b for binary
 
     fwrite(&GEN, sizeof(int), 1, fileOut);
     fwrite(&rows, sizeof(int), 1, fileOut);
