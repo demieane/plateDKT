@@ -121,7 +121,7 @@ end
 
 
 %% CREATE MODE.bin binary file for passing data 
-modeFem = 1; %double:1, single(or mixed):2
+modeFem = 2; %double:1, single(or mixed):2
 % write to binary for communication with GPU executable
 % file1 = fopen('MODE_FEM.bin', 'wb');
 % fwrite(file1, modeFem, 'int');
@@ -218,9 +218,12 @@ end
 if modeFem == 1
     system('../c/src/./a.out');
 elseif modeFem == 2
+%     system('../c/src/./a.out');
     system('../c/./mainDKT');
 end
 % system('../c/./mainDKT');
+
+% error('er')
 
 %% Read solution from binary file
 if modeFem == 1

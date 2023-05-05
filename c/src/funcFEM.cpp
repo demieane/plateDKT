@@ -215,7 +215,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem ){
 	    file = fopen("../INDATA_FEM_double.bin", "rb"); // r for read, b for binary
     #endif
     #if PRECISION_MODE_FEM == 2
-	    file = fopen("../INDATA_FEM.bin", "rb"); // r for read, b for binary
+	    file = fopen("../INDATA_FEM_single.bin", "rb"); // r for read, b for binary
     #endif
     fread(&(inDataFem->modeFem), sizeof(int) , 1, file);
     if ((inDataFem->modeFem != PRECISION_MODE_FEM)){

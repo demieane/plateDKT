@@ -199,6 +199,17 @@ int main(int argc, char **argv){
             }
             
             matMatMultiplication2<mytype>(2, 1, 9, 9, var0, 0.0, elemFemArr.Hx, elemFemArr.Hx, term1); //Hx'*Hx
+
+/*
+            for (int i = 0;i<9;i++){
+                for (int j = 0;j<9;j++){
+                    printf("%f, ",term1[i][j]);
+                }
+                printf("\n");
+            }
+*/            
+
+            //exit(5);
             //
             matMatMultiplication2<mytype>(2, 1, 9, 9, var0, 0.0, elemFemArr.Hy, elemFemArr.Hy, term2); //Hy'*Hy
             //
@@ -368,7 +379,6 @@ int main(int argc, char **argv){
         printf("\n");
     }
 
-    exit(2);
 
     printf("\n    Kglob, Mglob OK... DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)\n");
     //************************************************************************************
@@ -441,7 +451,7 @@ int main(int argc, char **argv){
     linearSystemSolve<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
 
     printf("Usol[i]\n\n");
-    for (int i = 0; i<10;i++){
+    for (int i = 0; i<100;i++){
         printf("%f,",Usol[i][0]);
     }
 
