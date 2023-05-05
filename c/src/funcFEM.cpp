@@ -10,6 +10,12 @@
 
 #endif
 
+#ifndef FUNCMAT
+    #define FUNCMAT
+
+    #include "../src/funcMat.cpp" // Functions used to facilitate martix, vector operations in c
+#endif
+
 
 /*=========================================================================================*/
 /* Declarations for data structures and functions */
@@ -113,6 +119,28 @@ struct triangleDKT{
     T **GGin = NULL, **GGin2 = NULL; //inverse of above
 };
 
+template<class T>
+struct femArraysDKT{
+    /* global intermediate matrices Mg, Kg, Fglob */
+    T **Fglob; //[GEN x 1] global
+    T **Hm, **HW; //[10 x 9] overwrite massHmDKT()
+    T **kloc, **mloc;//[9 x 9]
+    T **floc; // [9 x 1]
+    T **floc1; // [10 x 1]
+    T **Hxx, **Hyy; // [6 x 9] overwrite rotationMass2()
+    T **Hx, **Hy; // [1 x 9] from ShapeFunDKT2()
+    /*
+    NEW
+    */
+    T *Hx_xsi, *Hx_eta, *Hy_xsi, *Hy_eta; // [1 x 9] from ShapeFunDKT2()
+
+    T **Bb; // [3 x 9] from ShapeFunDKT2()
+    T **LW; // [1 x 10] from pseudoMassDKT()
+    T *L; // [1 x 6] from pseudoMassDKT()
+    T **Mg, **Kg; // [81 x Nelem] pre-assembly matrices
+};
+
+
 /*=========================================================================================*/
 /* Function prototypes*/
 /*=========================================================================================*/
@@ -155,7 +183,15 @@ void assignRowArrayMatrixG_DST(int rowID, T xsi, T eta, T **array);
 //
 template<class T>
 void assignRowArrayMatrixG_DKT(int rowID, T xsi, T eta, T **array);
-
+//
+template<class T>
+void freefemArraysDKT(struct triangleDKT<T> *wingMeshFem, struct femArraysDKT<T> *elemFemArr);  
+//
+template<class T>
+void massHmDKT(int kk, struct triangleDKT<T> *wingMeshFem, struct femArraysDKT<T> *elemFemArr);
+//
+template<class T>
+void rotationMass2(int kk, struct triangleDKT<T> *wingMeshFem, struct femArraysDKT<T> *elemFemArr);
 
 
 
@@ -1010,23 +1046,23 @@ void matrixG(struct triangleDKT<T> *wingMeshFem){
         //printf("\n\n");
     }
 
-    assignRowArrayMatrixG_DST(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDST);
-    assignRowArrayMatrixG_DST(rowID = 2.0, xsi=1.0, eta = 0.0, wingMeshFem->GGDST);
-    assignRowArrayMatrixG_DST(rowID = 3.0, xsi=0.0, eta = 1.0, wingMeshFem->GGDST);
-    assignRowArrayMatrixG_DST(rowID = 4.0, xsi=(1.0/3.0), eta = (1.0/3.0), wingMeshFem->GGDST);
-    assignRowArrayMatrixG_DST(rowID = 5.0, xsi=(2.0/3.0), eta = (1.0/3.0), wingMeshFem->GGDST);
-    assignRowArrayMatrixG_DST(rowID = 6.0, xsi=(1.0/3.0), eta = (2.0/3.0), wingMeshFem->GGDST);
-    assignRowArrayMatrixG_DST(rowID = 7.0, xsi=0.0, eta = (2.0/3.0), wingMeshFem->GGDST);
-    assignRowArrayMatrixG_DST(rowID = 8.0, xsi=0.0, eta = (1.0/3.0), wingMeshFem->GGDST);
-    assignRowArrayMatrixG_DST(rowID = 9.0, xsi=(1.0/3.0), eta = 0.0, wingMeshFem->GGDST);
-    assignRowArrayMatrixG_DST(rowID = 10.0, xsi=(2.0/3.0), eta = 0.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 2.0, xsi=1.0, eta = 0.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 3.0, xsi=0.0, eta = 1.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 4.0, xsi=(1.0/3.0), eta = (1.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 5.0, xsi=(2.0/3.0), eta = (1.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 6.0, xsi=(1.0/3.0), eta = (2.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 7.0, xsi=0.0, eta = (2.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 8.0, xsi=0.0, eta = (1.0/3.0), wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 9.0, xsi=(1.0/3.0), eta = 0.0, wingMeshFem->GGDST);
+    assignRowArrayMatrixG_DST<T>(rowID = 10.0, xsi=(2.0/3.0), eta = 0.0, wingMeshFem->GGDST);
     //
-    assignRowArrayMatrixG_DKT(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDKT);
-    assignRowArrayMatrixG_DKT(rowID = 2.0, xsi=1.0, eta = 0.0, wingMeshFem->GGDKT);
-    assignRowArrayMatrixG_DKT(rowID = 3.0, xsi=0.0, eta = 1.0, wingMeshFem->GGDKT);
-    assignRowArrayMatrixG_DKT(rowID = 4.0, xsi=(1.0/2.0), eta = (1.0/2.0), wingMeshFem->GGDKT);
-    assignRowArrayMatrixG_DKT(rowID = 5.0, xsi=0.0, eta = (1.0/2.0), wingMeshFem->GGDKT);
-    assignRowArrayMatrixG_DKT(rowID = 6.0, xsi=(1.0/2.0), eta = 0.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT<T>(rowID = 1.0, xsi=0.0, eta = 0.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT<T>(rowID = 2.0, xsi=1.0, eta = 0.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT<T>(rowID = 3.0, xsi=0.0, eta = 1.0, wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT<T>(rowID = 4.0, xsi=(1.0/2.0), eta = (1.0/2.0), wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT<T>(rowID = 5.0, xsi=0.0, eta = (1.0/2.0), wingMeshFem->GGDKT);
+    assignRowArrayMatrixG_DKT<T>(rowID = 6.0, xsi=(1.0/2.0), eta = 0.0, wingMeshFem->GGDKT);
 }
 
 
@@ -1070,4 +1106,256 @@ void assignRowArrayMatrixG_DKT(int rowID, T xsi, T eta, T **array){
     //    printf("%d, %f, ",j, array[I][j]);
     }
     //printf("\n\n");
+}
+
+template<class T>
+void freefemArraysDKT(struct triangleDKT<T> *wingMeshFem, struct femArraysDKT<T> *elemFemArr){
+
+/*
+struct femArraysDKT
+{
+    float **Fglob; //[GEN x 1] global
+    float **Hm, **HW; //[10 x 9] overwrite massHmDKT()
+    float **kloc, **mloc;//[9 x 9]
+    float **floc; // [9 x 1]
+    float **floc1; // [10 x 1]
+    float **Hxx, **Hyy; // [6 x 9] overwrite rotationMass2()
+    float **Hx, **Hy; // [1 x 9] from ShapeFunDKT2()
+    float *Hx_xsi, *Hx_eta, *Hy_xsi, *Hy_eta; // [1 x 9] from ShapeFunDKT2()
+    float **Bb; // [3 x 9] from ShapeFunDKT2()
+    float **LW; // [1 x 10] from pseudoMassDKT()
+    float *L; // [1 x 6] from pseudoMassDKT()
+    float **Mg, **Kg; // [81 x Nelem] pre-assembly matrices
+}
+*/
+// How to free double pointer.
+for (int i=0;i<wingMeshFem->GEN;i++){
+    free(elemFemArr->Fglob[i]);
+}
+free(elemFemArr->Fglob);
+//
+for (int i=0;i<10;i++){
+    //printf("elemFemArr->Hm[%d]=%f\n",i,elemFemArr->Hm[i][0]);
+    free(elemFemArr->Hm[i]);
+    free(elemFemArr->HW[i]);
+}
+free(elemFemArr->Hm);
+free(elemFemArr->HW);
+//
+for (int i=0;i<9;i++){
+    free(elemFemArr->kloc[i]);
+    free(elemFemArr->mloc[i]);
+}
+free(elemFemArr->kloc);
+free(elemFemArr->mloc);
+//
+for (int i=0;i<9;i++){
+    free(elemFemArr->floc[i]);
+}
+free(elemFemArr->floc);
+//
+for (int i=0;i<10;i++){
+    free(elemFemArr->floc1[i]);
+}
+free(elemFemArr->floc1);
+//
+for (int i=0;i<6;i++){
+    free(elemFemArr->Hxx[i]);
+    free(elemFemArr->Hyy[i]);
+}
+free(elemFemArr->Hxx);
+free(elemFemArr->Hyy);
+//
+for (int i=0;i<1;i++){
+    free(elemFemArr->Hx[i]);
+    free(elemFemArr->Hy[i]);
+    free(elemFemArr->LW[i]);
+}
+free(elemFemArr->Hx);
+free(elemFemArr->Hy);
+free(elemFemArr->LW);// [1 x 10] from pseudoMassDKT()
+//
+free(elemFemArr->Hx_xsi);
+free(elemFemArr->Hx_eta);
+free(elemFemArr->Hy_xsi);
+free(elemFemArr->Hy_eta);
+for (int i=0;i<3;i++){
+    free(elemFemArr->Bb[i]);
+}
+free(elemFemArr->Bb); // [3 x 9] from ShapeFunDKT2()
+free(elemFemArr->L); // [1 x 6] from pseudoMassDKT()
+//
+
+for (int i=0;i<81;i++){
+    free(elemFemArr->Mg[i]);// [81 x Nelem] pre-assembly matrices
+    free(elemFemArr->Kg[i]);
+}
+free(elemFemArr->Mg);
+free(elemFemArr->Kg);
+
+
+}
+
+template<class T>
+void massHmDKT(int kk, struct triangleDKT<T> *wingMeshFem, struct femArraysDKT<T> *elemFemArr){
+
+    elemFemArr->Hm[0][0] = 1.0;// Hm(1,:)
+    elemFemArr->Hm[1][3] = 1.0;// Hm(2,:)
+    elemFemArr->Hm[2][6] = 1.0;// Hm(3,:)
+
+    elemFemArr->Hm[3][0] = (1.0/3.0);// Hm(4,:)
+    elemFemArr->Hm[3][3] = (1.0/3.0);
+    elemFemArr->Hm[3][6] = (1.0/3.0);
+
+    //printf("\nPrinting Hm...\n");
+    //for (int i=0;i<10;i++){
+    //    for (int j=0;j<9;j++){
+    //        printf("%f, ", elemFemArr->Hm[i][j]);
+    //    }
+    //    printf("\n");
+    //}
+
+    T Hm_5[] = {0.0, 0.0, 0.0,
+     (20.0/27.0), 4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), -4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk]),
+     (7.0/27.0), -2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), 2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk])};
+
+    T Hm_6[] = {0.0, 0.0, 0.0,
+     (7.0/27.0), 2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), -2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk]),
+     (20.0/27.0), -4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), 4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk])};
+
+    T Hm_7[] = {(7.0/27.0), -2.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->S5[kk], 2.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->C5[kk],
+     0.0, 0.0, 0.0,
+     (20.0/27.0), 4.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->S5[kk], -4.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->C5[kk]};
+
+    T Hm_8[] = {(20.0/27.0), -4.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->S5[kk], 4.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->C5[kk],
+     0.0, 0.0, 0.0,
+     (7.0/27.0), 2.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->S5[kk], -2.0*wingMeshFem->l31[kk]/27.0*wingMeshFem->C5[kk]};
+
+    T Hm_9[] = {(20.0/27.0), 4.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->S6[kk], -4.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->C6[kk],
+     (7.0/27.0), -2.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->S6[kk], 2.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->C6[kk],
+      0.0, 0.0, 0.0};
+
+    T Hm_10[] = {(7.0/27.0), 2.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->S6[kk], -2.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->C6[kk],
+     (20.0/27.0), -4.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->S6[kk], 4.0*wingMeshFem->l12[kk]/27.0*wingMeshFem->C6[kk],
+      0.0, 0.0, 0.0};
+
+    for (int j=0; j<9; j++){
+        elemFemArr->Hm[4][j]=Hm_5[j];
+        elemFemArr->Hm[5][j]=Hm_6[j];
+        elemFemArr->Hm[6][j]=Hm_7[j];
+        elemFemArr->Hm[7][j]=Hm_8[j];
+        elemFemArr->Hm[8][j]=Hm_9[j];
+        elemFemArr->Hm[9][j]=Hm_10[j];
+    }
+
+    //printf("\nPrinting Hm...\n");
+    //for (int i=0;i<10;i++){
+    //    for (int j=0;j<9;j++){
+    //        printf("%f, ", elemFemArr->Hm[i][j]);
+    //    }
+    //    printf("\n");
+    //}
+
+    //int myVariable = -5;
+    /*
+    with op( A ) an m by k matrix, op( B )  a  k by n matrix
+    
+    HW=GGin*Hm;  % [10 x 10] x[10 x 9] 
+    */
+    int M = 10, N = 10, K = 9;
+    int optionCalc = 1; //without transpose
+    T alpha = 1.0, beta = 0.0;
+    matMatMultiplication2<T>(optionCalc, M, N, K, alpha, beta, wingMeshFem->GGin, elemFemArr->Hm, elemFemArr->HW);
+
+//#if DEBUG_ON
+//    printf("\n EXITING massHmDKT...");
+//#endif
+}
+
+template<class T>
+void rotationMass2(int kk, struct triangleDKT<T> *wingMeshFem, struct femArraysDKT<T> *elemFemArr){
+
+// Hxx, Hyy [6 x 9]
+T A4 = wingMeshFem->a4[kk];
+T A6 = wingMeshFem->a6[kk];
+T A5 = wingMeshFem->a5[kk];
+//
+T B4 = wingMeshFem->b4[kk];
+T B5 = wingMeshFem->b5[kk];
+T B6 = wingMeshFem->b6[kk];
+//
+T C4 = wingMeshFem->c4[kk];
+T C5 = wingMeshFem->c5[kk];
+T C6 = wingMeshFem->c6[kk];
+//
+T D4 = wingMeshFem->d4[kk];
+T D5 = wingMeshFem->d5[kk];
+T D6 = wingMeshFem->d6[kk];
+//
+T E4 = wingMeshFem->e4[kk];
+T E5 = wingMeshFem->e5[kk];
+T E6 = wingMeshFem->e6[kk];
+//
+T Hxx1[]={0.0, 6.0*A6, -6.0*A5, 6.0*A5-6.0*A6, -6.0*A6, 6.0*A5}; //columns of Hxx
+T Hxx2[]={0.0, 4.0*B6, 4.0*B5, -4.0*B5-4.0*B6, -4.0*B6, -4*B5};  
+T Hxx3[]={1.0, -4.0*C6-3, -3.0-4.0*C5, 4.0+4.0*C5+4.0*C6, 4.0*C6+2.0, 4.0*C5+2.0};
+T Hxx4[]={0.0, -6.0*A6, 0.0, 6.0*A4+6.0*A6, 6.0*A6, 0.0};
+T Hxx5[]={0.0, 4.0*B6, 0.0, 4.0*B4-4.0*B6, -4.0*B6, 0.0};
+T Hxx6[]={0.0, -1.0-4.0*C6, 0.0, 4.0*C6-4.0*C4, 2.0+4.0*C6, 0.0};
+T Hxx7[]={0.0, 0.0, 6.0*A5, -6.0*A5-6.0*A4, 0.0, -6.0*A5};
+T Hxx8[]={0.0, 0.0, 4.0*B5, 4.0*B4-4.0*B5, 0.0, -4.0*B5};
+T Hxx9[]={0.0, 0.0, -4.0*C5-1.0, 4.0*C5-4.0*C4, 0.0, 4.0*C5+2.0};
+
+for (int i=0; i<6; i++){
+    elemFemArr->Hxx[i][0]=Hxx1[i];
+    elemFemArr->Hxx[i][1]=Hxx2[i];
+    elemFemArr->Hxx[i][2]=Hxx3[i];
+    elemFemArr->Hxx[i][3]=Hxx4[i];
+    elemFemArr->Hxx[i][4]=Hxx5[i];
+    elemFemArr->Hxx[i][5]=Hxx6[i];
+    elemFemArr->Hxx[i][6]=Hxx7[i];
+    elemFemArr->Hxx[i][7]=Hxx8[i];
+    elemFemArr->Hxx[i][8]=Hxx9[i];
+}
+/*
+printf("\n");
+for (int i=0; i<6; i++){
+    for (int j=0; j<9; j++){
+        printf("%f, ", elemFemArr->Hxx[i][j]);
+    }
+    printf("\n");
+}
+*/
+
+// now we do the same for Hyy
+T Hyy1[]={0.0, 6.0*D6, -6.0*D5, 6.0*D5-6.0*D6, -6.0*D6, 6.0*D5}; //column
+T Hyy2[]={-1.0, 4,0*E6+3.0, 4.0*E5+3.0, -4.0*E5-4.0*E6-4.0, -4.0*E6-2.0, -4.0*E5-2.0};
+T Hyy3[]={0.0, -4.0*B6, -4.0*B5, 4.0*B5+4.0*B6, 4.0*B6, 4.0*B5};
+T Hyy4[]={0.0, -6.0*D6, 0.0, 6.0*D4+6.0*D6, 6.0*D6, 0.0};
+T Hyy5[]={0.0, 1.0+4.0*E6, 0.0, 4.0*E4-4.0*E6, -4.0*E6-2.0, 0.0};
+T Hyy6[]={0.0, -4.0*B6, 0.0, -4.0*B4+4.0*B6, 4.0*B6, 0.0};
+T Hyy7[]={0.0, 0.0, 6.0*D5, -6.0*D5-6.0*D4, 0.0, -6.0*D5};
+T Hyy8[]={0.0, 0.0, 1.0+4.0*E5, 4.0*E4-4.0*E5, 0.0, -4.0*E5-2.0};
+T Hyy9[]={0.0, 0.0, -4.0*B5, -4.0*B4+4.0*B5, 0.0, 4.0*B5};
+
+for (int i=0; i<6; i++){
+    elemFemArr->Hyy[i][0]=Hyy1[i];
+    elemFemArr->Hyy[i][1]=Hyy2[i];
+    elemFemArr->Hyy[i][2]=Hyy3[i];
+    elemFemArr->Hyy[i][3]=Hyy4[i];
+    elemFemArr->Hyy[i][4]=Hyy5[i];
+    elemFemArr->Hyy[i][5]=Hyy6[i];
+    elemFemArr->Hyy[i][6]=Hyy7[i];
+    elemFemArr->Hyy[i][7]=Hyy8[i];
+    elemFemArr->Hyy[i][8]=Hyy9[i];
+}
+/*
+printf("\n");
+for (int i=0; i<6; i++){
+    for (int j=0; j<9; j++){
+        printf("%f, ", elemFemArr->Hyy[i][j]);
+    }
+    printf("\n");
+}
+*/
 }

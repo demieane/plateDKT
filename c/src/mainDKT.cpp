@@ -11,8 +11,12 @@
 
 #include "../src/funcFEM.cpp" // Karperaki functions for DKT fem
 #include "../src/funcFSI.cpp" // Functions used for the coupling of bem - fem 
-#include "../src/funcMat.cpp" // Functions used to facilitate martix, vector operations in c
 
+#ifndef FUNCMAT
+    #define FUNCMAT
+
+    #include "../src/funcMat.cpp" // Functions used to facilitate martix, vector operations in c
+#endif
 
 /*=========================================================================================*/
 /* MAIN PROGRAM BELOW */
@@ -80,11 +84,11 @@ int main(int argc, char **argv){
     TrigElCoefsDKT<mytype>(&inDataFem, &wingMeshFem);
     LNShapeFunDST<mytype>(GaussIntegrPoints, xw, &wingMeshFem);
     LNShapeFunMassDST<mytype>(GaussIntegrPoints, xw, &wingMeshFem);
-    matrixG(&wingMeshFem);
+    matrixG<mytype>(&wingMeshFem);
     //
     //int rows, cols;
-    squareMatInverse2(10, 10, wingMeshFem.GGDST, wingMeshFem.GGin);
-    squareMatInverse2(6, 6, wingMeshFem.GGDKT, wingMeshFem.GGin2);
+    squareMatInverse2<mytype>(10, 10, wingMeshFem.GGDST, wingMeshFem.GGin);
+    squareMatInverse2<mytype>(6, 6, wingMeshFem.GGDKT, wingMeshFem.GGin2);
 
     printf("\n GGin \n");
     for (int i=0;i<10;i++){
@@ -106,6 +110,44 @@ int main(int argc, char **argv){
     if (inDataFem.LL == 1){
          printf("\n    P_load=%f in [Pa]", inDataFem.P_load);
     }
+    /*
+    initialize structure that contains all the arrays
+    needed for the final global matrix assembly
+    */
+    struct femArraysDKT<mytype> elemFemArr;
+
+    allocate2Darray<mytype>(wingMeshFem.GEN, 1, &(elemFemArr.Fglob)); //[GEN x 1]
+    allocate2Darray<mytype>(10, 9, &(elemFemArr.Hm)); 
+    allocate2Darray<mytype>(10, 9, &(elemFemArr.HW)); 
+    allocate2Darray<mytype>(9, 9, &(elemFemArr.kloc));
+    allocate2Darray<mytype>(9, 9, &(elemFemArr.mloc));
+    //==========================================
+    allocate2Darray<mytype>(9, 1, &(elemFemArr.floc)); // TODO : floc, floc1 uniform/distributed load
+    allocate2Darray<mytype>(10, 1, &(elemFemArr.floc1)); // point load
+    //==========================================
+    allocate2Darray<mytype>(6, 9, &(elemFemArr.Hxx));
+    allocate2Darray<mytype>(6, 9, &(elemFemArr.Hyy));
+    //
+    allocate2Darray<mytype>(1, 9, &(elemFemArr.Hx)); // [1 x 9]
+    allocate2Darray<mytype>(1, 9, &(elemFemArr.Hy)); // [1 x 9]
+    allocate1Darray<mytype>(9, &(elemFemArr.Hx_xsi)); // [1 x 9]
+    allocate1Darray<mytype>(9, &(elemFemArr.Hx_eta)); // [1 x 9]
+    allocate1Darray<mytype>(9, &(elemFemArr.Hy_xsi)); // [1 x 9]
+    allocate1Darray<mytype>(9, &(elemFemArr.Hy_eta)); // [1 x 9]
+    //
+    allocate2Darray<mytype>(1, 10, &(elemFemArr.LW)); //[1 x 10]
+    allocate1Darray<mytype>(6, &(elemFemArr.L)); 
+    //
+    allocate2Darray<mytype>(3, 9, &(elemFemArr.Bb));
+    allocate2Darray<mytype>(81, wingMeshFem.Nelem, &(elemFemArr.Mg));
+    allocate2Darray<mytype>(81, wingMeshFem.Nelem, &(elemFemArr.Kg));
+
+    //for each triangle in the mesh
+    for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
+        massHmDKT<mytype>(kk, &wingMeshFem, &elemFemArr); // Hm, HW
+        rotationMass2<mytype>(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
+
+    }
 
 
 
@@ -123,6 +165,8 @@ int main(int argc, char **argv){
     free(distrThick);
     freeInDataRecFem(&inDataFem);
     freetriangleDKT(GaussIntegrPoints,&wingMeshFem);
+
+    freefemArraysDKT(&wingMeshFem, &elemFemArr);
 
 
     return 0;
