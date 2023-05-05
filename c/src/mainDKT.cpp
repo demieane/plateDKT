@@ -9,15 +9,17 @@
 */
 #include "../include/mainDKT.h"
 
-#include "../src/funcFEM.cpp"
-#include "../src/funcFSI.cpp"
-#include "../src/funcMat.cpp"
+#include "../src/funcFEM.cpp" // Karperaki functions for DKT fem
+#include "../src/funcFSI.cpp" // Functions used for the coupling of bem - fem 
+#include "../src/funcMat.cpp" // Functions used to facilitate martix, vector operations in c
 
 
 /*=========================================================================================*/
 /* MAIN PROGRAM BELOW */
 /*=========================================================================================*/
 int main(int argc, char **argv){
+
+    printf("    RUNNING IN MODE: %d (1. DOUBLE, 2. SINGLE)", PRECISION_MODE_FEM);
 
     clock_t tstart, tend;
     tstart = clock();
@@ -61,14 +63,19 @@ int main(int argc, char **argv){
             printf("%f, %f\n", distrThick[i], distrLoad[i]);
         }
     }
-    float **BeSt;
+    mytype **BeSt;
     allocate2Darray(3, 3, &BeSt);
     if (inDataFem.LL==2 || inDataFem.LL==1){
         BendingStiffness(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
     }
+    /* DKT */
+    TrigElCoefsDKT(&inDataFem, &wingMeshFem);
+    LNShapeFunDST(xw, &wingMeshFem);
 
-
-    
+    for (int j=0;j<6;j++){
+        printf("    D2etaSF[%d]=%f, ", j,wingMeshFem.D2etaSF[j]);
+    }
+   
 
 
 
@@ -81,7 +88,6 @@ int main(int argc, char **argv){
 
 
     freeInDataRecFem(&inDataFem);
-    int Ng = GaussIntegrPoints;
     //freetriangleDKT(Ng,&wingMeshFem);
 
     return 0;

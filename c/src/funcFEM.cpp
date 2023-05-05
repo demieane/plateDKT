@@ -6,8 +6,11 @@
     #ifndef GaussIntegrPoints
         #define GaussIntegrPoints 3 /* Gauss Integration Points */
     #endif
+    
 
 #endif
+
+
 
 
 /*=========================================================================================*/
@@ -80,17 +83,21 @@ struct triangleDKT{
     int *IEN[3]; // [3,Nelem]
     int *LM[9];  // [9,Nelem]
     //
-    T *xm; // x barycentric coordinate [Nelem]
-    T *ym; // y barycentric coordinate [Nelem]
+    T *xm = NULL; // x barycentric coordinate [Nelem]
+    T *ym = NULL; // y barycentric coordinate [Nelem]
 
     /* output of TrigElCoefsDKT() */ 
-    T *l23, *l31, *l12; // [1 x Nelem]
-    T *y12, *y31, *y23;
-    T *x12, *x31, *x23;
-    T *area;
-    T *a4, *a5, *a6, *b4, *b5, *b6, *c4, *c5, *c6;
-    T *d4, *d5, *d6, *e4, *e5, *e6;
-    T *C4, *C5, *C6, *S4, *S5, *S6;
+    T *l23 = NULL, *l31 = NULL, *l12 = NULL; // [1 x Nelem]
+    T *y12 = NULL, *y31 = NULL, *y23 = NULL;
+    T *x12 = NULL, *x31 = NULL, *x23 = NULL;
+    T *area = NULL;
+    T *a4 = NULL, *a5 = NULL, *a6 = NULL,
+     *b4 = NULL, *b5 = NULL, *b6 = NULL,
+     *c4 = NULL, *c5 = NULL, *c6 = NULL;
+    T *d4 = NULL, *d5 = NULL, *d6 = NULL,
+     *e4 = NULL, *e5 = NULL, *e6 = NULL;
+    T *C4 = NULL, *C5 = NULL, *C6 = NULL,
+     *S4 = NULL, *S5 = NULL, *S6 = NULL;
     /*
     The C language is case-sensitive. This means that all language keywords,
     identifiers, function names, and other variables
@@ -99,9 +106,10 @@ struct triangleDKT{
     /* output of LNShapeFunDST() */
     T **SF, **DxsiSF, **DetaSF; //[Ng x 6]
     T *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
-
     /* output of LNShapeFunMassDST() */
-    T **SFm, **DxsiSFm, **DetaSFm; //[Ng x 3]
+    T **SFm = NULL;
+    T **DxsiSFm = NULL;
+    T **DetaSFm = NULL; //[Ng x 3]
 
     T **GGDST, **GGDKT; //[10 x 10]  
     T **GGin, **GGin2; //inverse of above
@@ -126,7 +134,17 @@ template<class T>
 void TriGaussPoints(T xw[GaussIntegrPoints][3]);
 //
 template<class T>
-void BendingStiffness(float E, float v, float tx, T **BeSt);
+void BendingStiffness(T E, T v, T tx, T **BeSt);
+//
+template<class T>
+void TrigElCoefsDKT(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem);
+//
+// Calculation of shape functions and their derivatives at gauss points on
+// the parent element
+template<class T>
+void LNShapeFunDST(T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFem);
+//
+
 
 
 /*=========================================================================================*/
@@ -629,7 +647,7 @@ void TriGaussPoints(T xw[GaussIntegrPoints][3]){
 }
 
 template<class T>
-void BendingStiffness(float E, float v, float tx, T **BeSt){
+void BendingStiffness(T E, T v, T tx, T **BeSt){
   
     T la = (E*pow(tx,3.0))/(12*(1-pow(v,2)));
 
@@ -641,4 +659,228 @@ void BendingStiffness(float E, float v, float tx, T **BeSt){
 
 }
 
+template<class T>
+void TrigElCoefsDKT(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem){
+    /* memory allocation */
+    wingMeshFem->l23 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->l31 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->l12 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->y12 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->y31 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->y23 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->x12 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->x31 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->x23 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->area = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->a4 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->a5 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->a6 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->b4 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->b5 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->b6 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->c4 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->c5 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->c6 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->d4 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->d5 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->d6 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->e4 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->e5 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->e6 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->C4 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->C5 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->C6 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    //
+    wingMeshFem->S4 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->S5 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+    wingMeshFem->S6 = (T*)malloc(wingMeshFem->Nelem *sizeof(T));
+
+
+    int IEN_1, IEN_2, IEN_3;    
+    //i = wingMeshFem->Nelem-1;
+    for (int i=0;i<wingMeshFem->Nelem;i++){ 
+        IEN_1 = wingMeshFem->IEN[0][i] - 1;
+        IEN_2 = wingMeshFem->IEN[1][i] - 1;
+        IEN_3 = wingMeshFem->IEN[2][i] - 1;
+        //printf("%d, %d, %d, \n",IEN_1, IEN_2, IEN_3);
+
+                //y23=y(IEN(2,:))-y(IEN(3,:));  % 2-3
+                //y31=y(IEN(3,:))-y(IEN(1,:));  % 3-1
+                //y12=y(IEN(1,:))-y(IEN(2,:));  % 1-2
+
+        wingMeshFem->y23[i] = (inDataFem->pp[1][IEN_2] - inDataFem->pp[1][IEN_3]);
+        wingMeshFem->y31[i] = (inDataFem->pp[1][IEN_3] - inDataFem->pp[1][IEN_1]);
+        wingMeshFem->y12[i] = (inDataFem->pp[1][IEN_1] - inDataFem->pp[1][IEN_2]);
+
+                //x23=x(IEN(2,:))-x(IEN(3,:));% 2-3
+                //x31=x(IEN(3,:))-x(IEN(1,:));% 3-1
+                //x12=x(IEN(1,:))-x(IEN(2,:));% 1-2
+
+        wingMeshFem->x23[i] = (inDataFem->pp[0][IEN_2] - inDataFem->pp[0][IEN_3]);
+        wingMeshFem->x31[i] = (inDataFem->pp[0][IEN_3] - inDataFem->pp[0][IEN_1]);
+        wingMeshFem->x12[i] = (inDataFem->pp[0][IEN_1] - inDataFem->pp[0][IEN_2]);
+
+        // Length of triagle sides with corresponding (s) node
+        wingMeshFem->l23[i]=sqrt(pow(wingMeshFem->x23[i],2)+pow(wingMeshFem->y23[i],2));
+        wingMeshFem->l31[i]=sqrt(pow(wingMeshFem->x31[i],2)+pow(wingMeshFem->y31[i],2));
+        wingMeshFem->l12[i]=sqrt(pow(wingMeshFem->x12[i],2)+pow(wingMeshFem->y12[i],2));
+
+        wingMeshFem->a4[i]=-wingMeshFem->x23[i]/pow(wingMeshFem->l23[i],2);
+        wingMeshFem->a5[i]=-wingMeshFem->x31[i]/pow(wingMeshFem->l31[i],2);
+        wingMeshFem->a6[i]=-wingMeshFem->x12[i]/pow(wingMeshFem->l12[i],2);
+
+        wingMeshFem->b4[i]=(3.0/4.0)*(wingMeshFem->x23[i])*(wingMeshFem->y23[i])/pow(wingMeshFem->l23[i],2);
+        wingMeshFem->b5[i]=(3.0/4.0)*(wingMeshFem->x31[i])*(wingMeshFem->y31[i])/pow(wingMeshFem->l31[i],2);
+        wingMeshFem->b6[i]=(3.0/4.0)*(wingMeshFem->x12[i])*(wingMeshFem->y12[i])/pow(wingMeshFem->l12[i],2);
+
+        wingMeshFem->c4[i]=((1.0/4.0)*pow(wingMeshFem->x23[i],2)-(1.0/2.0)*pow(wingMeshFem->y23[i],2))/pow(wingMeshFem->l23[i],2);
+        wingMeshFem->c5[i]=((1.0/4.0)*pow(wingMeshFem->x31[i],2)-(1.0/2.0)*pow(wingMeshFem->y31[i],2))/pow(wingMeshFem->l31[i],2);
+        wingMeshFem->c6[i]=((1.0/4.0)*pow(wingMeshFem->x12[i],2)-(1.0/2.0)*pow(wingMeshFem->y12[i],2))/pow(wingMeshFem->l12[i],2);
+
+        wingMeshFem->d4[i]=-wingMeshFem->y23[i]/pow(wingMeshFem->l23[i],2);
+        wingMeshFem->d5[i]=-wingMeshFem->y31[i]/pow(wingMeshFem->l31[i],2);
+        wingMeshFem->d6[i]=-wingMeshFem->y12[i]/pow(wingMeshFem->l12[i],2);
+
+        wingMeshFem->e4[i]=((1.0/4.0)*pow(wingMeshFem->y23[i],2)-(1.0/2.0)*pow(wingMeshFem->x23[i],2))/pow(wingMeshFem->l23[i],2);
+        wingMeshFem->e5[i]=((1.0/4.0)*pow(wingMeshFem->y31[i],2)-(1.0/2.0)*pow(wingMeshFem->x31[i],2))/pow(wingMeshFem->l31[i],2);
+        wingMeshFem->e6[i]=((1.0/4.0)*pow(wingMeshFem->y12[i],2)-(1.0/2.0)*pow(wingMeshFem->x12[i],2))/pow(wingMeshFem->l12[i],2);
+
+        wingMeshFem->area[i]=(1.0/2.0)*(wingMeshFem->x31[i]*wingMeshFem->y12[i]-wingMeshFem->x12[i]*wingMeshFem->y31[i]);
+
+        wingMeshFem->C4[i]=-wingMeshFem->y23[i]/wingMeshFem->l23[i];
+        wingMeshFem->C5[i]=-wingMeshFem->y31[i]/wingMeshFem->l31[i];
+        wingMeshFem->C6[i]=-wingMeshFem->y12[i]/wingMeshFem->l12[i];
+
+        wingMeshFem->S4[i]=wingMeshFem->x23[i]/wingMeshFem->l23[i];
+        wingMeshFem->S5[i]=wingMeshFem->x31[i]/wingMeshFem->l31[i];
+        wingMeshFem->S6[i]=wingMeshFem->x12[i]/wingMeshFem->l12[i];
+
+    }
+#if DEBUG_ON
+    printf("    Exiting TrigElCoefsDKT...\n\n");
+#endif
+}
+
+template<class T>
+void LNShapeFunDST(T xw[GaussIntegrPoints][3], struct triangleDKT<T> *wingMeshFem){
+    // Ng, xw are given data based on which we will fill up some matrices
+    int Ng = GaussIntegrPoints;
+
+#if DEBUG_ON    
+    printf("    Ng: %d\n", Ng);
+
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<3;j++){
+            printf("    xw [%d]:%f,",j,xw[i][j]);
+        }
+        printf("\n");
+    }
+#endif
+
+    // Initialize matrices that are Ng x 6
+    wingMeshFem->SF = (T**)malloc(Ng *sizeof(T*)); // pointer array with Ng rows
+    wingMeshFem->DxsiSF = (T**)malloc(Ng *sizeof(T*)); // pointer array with Ng rows
+    wingMeshFem->DetaSF = (T**)malloc(Ng *sizeof(T*)); // pointer array with Ng rows
+    for (int i=0;i<Ng;i++){
+        wingMeshFem->SF[i] = (T*)malloc(6 *sizeof(T));
+        wingMeshFem->DxsiSF[i] = (T*)malloc(6 *sizeof(T));
+        wingMeshFem->DetaSF[i] = (T*)malloc(6 *sizeof(T));
+    }
+
+    T xg, yg;
+    int i;
+    for (i=0; i<Ng; i++){
+        
+        xg = xw[i][0];
+        yg = xw[i][1];
+
+        wingMeshFem->SF[i][0]=(1.0 - xg-yg)*(1.0-2.0*xg-2.0*yg); //checked
+        wingMeshFem->SF[i][1]=xg*(2.0*xg-1.0);//checked
+        wingMeshFem->SF[i][2]=yg*(2.0*yg-1.0);  
+        wingMeshFem->SF[i][3]=4.0*xg*yg;
+        wingMeshFem->SF[i][4]=4.0*yg*(1.0-xg-yg);
+        wingMeshFem->SF[i][5]=4.0*xg*(1.0-xg-yg);
+        
+        // 1st derivative --> î
+        wingMeshFem->DxsiSF[i][0]=-3.0+4.0*(xg+yg);//checked
+        wingMeshFem->DxsiSF[i][1]=4.0*xg-1.0;//checked
+        wingMeshFem->DxsiSF[i][2]=0.0;//checked
+        wingMeshFem->DxsiSF[i][3]=4.0*yg;//checked                  
+        wingMeshFem->DxsiSF[i][4]=-4.0*yg;//checked
+        wingMeshFem->DxsiSF[i][5]=4.0-8.0*xg-4.0*yg;
+        
+        //1st derivative ç
+        wingMeshFem->DetaSF[i][0]=-3.0+4.0*(xg+yg);
+        wingMeshFem->DetaSF[i][1]=0.0;
+        wingMeshFem->DetaSF[i][2]=4.0*yg-1.0;
+        wingMeshFem->DetaSF[i][3]=4.0*xg;        
+        wingMeshFem->DetaSF[i][4]=4.0-4.0*xg-8.0*yg;
+        wingMeshFem->DetaSF[i][5]=-4.0*xg; 
+    }
+
+
+#if DEBUG_ON
+    for (int i=0;i<Ng;i++){
+        for (int j=0;j<6;j++){
+            //printf("SF[%d][%d]=%f, ", i,j,wingMeshFem->SF[i][j] );
+            //printf("DxsiSF[%d][%d]=%f, ", i,j,wingMeshFem->DxsiSF[i][j] );
+            printf("    DetaSF[%d][%d]=%f, ", i,j,wingMeshFem->DetaSF[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+#endif
+
+    //float *SF, *DxsiSF, *DetaSF; //[Ng x 6]
+    //float *D2xsiSF, *D2xsietaSF, *D2etaSF; // [1 x 6]
+
+    wingMeshFem->D2xsiSF = (T*)malloc(Ng *sizeof(T)); // [1 x 6]
+    wingMeshFem->D2xsietaSF = (T*)malloc(Ng *sizeof(T)); // [1 x 6]
+    wingMeshFem->D2etaSF = (T*)malloc(Ng *sizeof(T)); // [1 x 6]
+
+    // 2nd derivative--> î    %checked
+    wingMeshFem->D2xsiSF[0]=4.0;
+    wingMeshFem->D2xsiSF[1]=4.0;
+    wingMeshFem->D2xsiSF[2]=0.0;
+    wingMeshFem->D2xsiSF[3]=0.0;
+    wingMeshFem->D2xsiSF[4]=0.0;
+    wingMeshFem->D2xsiSF[5]=-8.0;
+
+    // mixed derivative--> î,ç symmetric!%checked
+    wingMeshFem->D2xsietaSF[0]=4.0;
+    wingMeshFem->D2xsietaSF[1]=0.0;
+    wingMeshFem->D2xsietaSF[2]=0.0;
+    wingMeshFem->D2xsietaSF[3]=4.0;
+    wingMeshFem->D2xsietaSF[4]=-4.0;
+    wingMeshFem->D2xsietaSF[5]=-4.0;
+    
+    // 2nd derivative ç    %checked
+    wingMeshFem->D2etaSF[0]=4.0;
+    wingMeshFem->D2etaSF[1]=0.0;
+    wingMeshFem->D2etaSF[2]=4.0;
+    wingMeshFem->D2etaSF[3]=0.0;
+    wingMeshFem->D2etaSF[4]=-8.0;
+    wingMeshFem->D2etaSF[5]=0.0;
+
+#if DEBUG_ON
+    for (int j=0;j<6;j++){
+            //printf("D2xsiSF[%d]=%f, ", j,wingMeshFem->D2xsiSF[j]);
+            //printf("D2xsietaSF[%d]=%f, ", j,wingMeshFem->D2xsietaSF[j]);
+            printf("    D2etaSF[%d]=%f, ", j,wingMeshFem->D2etaSF[j]);
+    }
+#endif
+#if DEBUG_ON
+    printf("\n    Exiting LNShapeFunDST...\n");
+#endif
+}
 
