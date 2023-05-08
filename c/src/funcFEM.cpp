@@ -6,7 +6,10 @@
     #ifndef GaussIntegrPoints
         #define GaussIntegrPoints 3 /* Gauss Integration Points */
     #endif
-    
+
+    #ifndef PRECISION_MODE_FEM
+        #define PRECISION_MODE_FEM 1
+    #endif
 
 #endif
 
@@ -15,6 +18,9 @@
 
     #include "../src/funcMat.cpp" // Functions used to facilitate martix, vector operations in c
 #endif
+
+
+
 
 
 /*=========================================================================================*/
@@ -213,10 +219,10 @@ void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem ){
     printf("\n    Entering CuFEMNum2DReadInData().\n");
     FILE *file;
     #if PRECISION_MODE_FEM == 1
-	    file = fopen("../INDATA_FEM_double.bin", "rb"); // r for read, b for binary
+	    file = fopen("../c/INDATA_FEM_double.bin", "rb"); // r for read, b for binary
     #endif
     #if PRECISION_MODE_FEM == 2
-	    file = fopen("../INDATA_FEM_single.bin", "rb"); // r for read, b for binary
+	    file = fopen("../c/INDATA_FEM_single.bin", "rb"); // r for read, b for binary
     #endif
     fread(&(inDataFem->modeFem), sizeof(int) , 1, file);
     if ((inDataFem->modeFem != PRECISION_MODE_FEM)){
@@ -1225,9 +1231,9 @@ void massHmDKT(int kk, struct triangleDKT<T> *wingMeshFem, struct femArraysDKT<T
     //    printf("\n");
     //}
 
-    T Hm_5[] = {0.0, 0.0, 0.0,
-     (20.0/27.0), 4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), -4.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk]),
-     (7.0/27.0), -2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), 2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk])};
+    T Hm_5[] = {(T)0.0, (T)0.0, (T)0.0,
+     (T)(20.0/27.0), (T)4.0*(wingMeshFem->l23[kk])/(T)27.0*(wingMeshFem->S4[kk]), (T)-4.0*(wingMeshFem->l23[kk])/(T)27.0*(wingMeshFem->C4[kk]),
+     (T)(7.0/27.0), -2.0*(wingMeshFem->l23[kk])/(T)27.0*(wingMeshFem->S4[kk]), (T)2.0*(wingMeshFem->l23[kk])/(T)27.0*(wingMeshFem->C4[kk])};
 
     T Hm_6[] = {0.0, 0.0, 0.0,
      (7.0/27.0), 2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->S4[kk]), -2.0*(wingMeshFem->l23[kk])/27.0*(wingMeshFem->C4[kk]),
@@ -1565,10 +1571,10 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN){
 
     FILE *fileOut;
     #if PRECISION_MODE_FEM == 1
-	    fileOut = fopen("../OUTDATA_FEM_double.bin", "wb"); // w for write, b for binary
+	    fileOut = fopen("../c/OUTDATA_FEM_double.bin", "wb"); // w for write, b for binary
     #endif
     #if PRECISION_MODE_FEM == 2
-	    fileOut = fopen("../OUTDATA_FEM_single.bin", "wb"); // w for write, b for binary
+	    fileOut = fopen("../c/OUTDATA_FEM_single.bin", "wb"); // w for write, b for binary
     #endif
 
     fwrite(&GEN, sizeof(int), 1, fileOut);
@@ -1590,7 +1596,7 @@ template<class T>
 void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F){
 
     FILE *fileOut;
-	fileOut = fopen("../OUTDATA_FEM_Kglob_Mglob_BCs.bin", "wb"); // w for write, b for binary
+	fileOut = fopen("../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin", "wb"); // w for write, b for binary
 
     fwrite(&rows, sizeof(int), 1, fileOut);
     fwrite(&cols, sizeof(int), 1, fileOut);

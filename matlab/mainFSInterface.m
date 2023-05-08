@@ -38,10 +38,10 @@ elseif CC==2
 end
 % Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=3;%2; %loading case
+lll=2;%2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
-P_load = 1; %[Pa] %pointing towards the Z-axis
+P_load = 1000; %[Pa] %pointing towards the Z-axis
 % in ANSYS load pointing in the negative of Z-axis is positive
 if lll==1
 %    Pxy=[5,5];%load position
@@ -84,8 +84,8 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION*************
 % COMMENT: The numbering is offered by the pdeModeler
-Bnodes = [Bound4(1), Bound3];
-% Bnodes = [Bound1, Bound2, Bound3, Bound4];
+% Bnodes = [Bound4(1), Bound3];
+Bnodes = [Bound1, Bound2, Bound3, Bound4];
 %**************************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -121,7 +121,7 @@ end
 
 
 %% CREATE MODE.bin binary file for passing data 
-modeFem = 2; %double:1, single(or mixed):2
+modeFem = 1; %double:1, single(or mixed):2
 % write to binary for communication with GPU executable
 % file1 = fopen('MODE_FEM.bin', 'wb');
 % fwrite(file1, modeFem, 'int');
@@ -216,11 +216,10 @@ end
 % error('er')
 %% RUN THE CODE
 if modeFem == 1
-    system('../c/src/./mainDKT_CPP');
+    system('../c/./mainDKT_CPP');
 elseif modeFem == 2
-%     system('../c/src/./mainDKT_CPP');
-    system('../c/./mainDKT');
-
+    system('../c/./mainDKT_CPP');
+%     system('../c/./mainDKT');
 end
 
 %% Read solution from binary file
@@ -240,38 +239,40 @@ for i = 1:rowsUsol
     end
 end
 
-% DEBUG
+% % %% DEBUG
+% % 
+fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
+rowsUsol = fread(fileID,1,'int')
+colsUsol = fread(fileID,1,'int')
 
-% % fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
-% % rowsUsol = fread(fileID,1,'int')
-% % colsUsol = fread(fileID,1,'int')
-% % 
-% % for i = 1:rowsUsol
-% %     for j = 1:colsUsol
-% %         Kglob_aug(i,j)=fread(fileID,1,precision);
-% %     end
-% % end
-% % 
-% % for i = 1:rowsUsol
-% %     for j = 1:colsUsol
-% %         Mglob_aug(i,j)=fread(fileID,1,precision);
-% %     end
-% % end
-% % 
-% % for i = 1:rowsUsol
-% %     for j = 1:1
-% %         Fglob_aug(i,j)=fread(fileID,1,precision);
-% %     end
-% % end
+for i = 1:rowsUsol
+    for j = 1:colsUsol
+        Kglob_aug2(i,j)=fread(fileID,1,precision);
+    end
+end
+
+for i = 1:rowsUsol
+    for j = 1:colsUsol
+        Mglob_aug2(i,j)=fread(fileID,1,precision);
+    end
+end
+
+for i = 1:rowsUsol
+    for j = 1:1
+        Fglob_aug2(i,j)=fread(fileID,1,precision);
+    end
+end
 % % 
 % % 
-% % U=Kglob_aug\Fglob_aug;%SOLVE SPARSE SYSTEM OF EQUATIONS
-% % 
-% % u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
-% % 
-% % w_fromC=u_fromC(1:3:end);   % vertical displacement
-% % bx_fromC=u_fromC(2:3:end);  % rotation x
-% % by_fromC=u_fromC(3:3:end);  % rotation y
+% load singleMatrix
+U=Kglob_aug2\Fglob_aug2;%SOLVE SPARSE SYSTEM OF EQUATIONS
+
+% u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+u_fromC=U(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+
+w_fromC=u_fromC(1:3:end);   % vertical displacement
+bx_fromC=u_fromC(2:3:end);  % rotation x
+by_fromC=u_fromC(3:3:end);  % rotation y
 
 % [XX,lamM,flag]=eigs(Kglob_aug,Mglob_aug,5,'sm');
 % cc=sort(diag(lamM));
@@ -279,16 +280,17 @@ end
 % freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
 % 
 % freq'
-
-% save singleMatrix Kglob_aug Fglob_aug
+GEN = size(pp,2)*3;
+% save singleMatrix Kglob_aug Fglob_aug Mglob_aug GEN
 % Kglob_aug_double = Kglob_aug;
+% Mglob_aug_double = Mglob_aug;
 % Fglob_aug_double = Fglob_aug;
-% save doubleMatrix Kglob_aug_double Fglob_aug_double
+% save doubleMatrix Kglob_aug_double Fglob_aug_double Mglob_aug_double
 
 
 
 %  VISUAL COMPARISON 
-GEN = size(pp,2)*3;
+
 
 load solMatlab
 u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
@@ -314,12 +316,12 @@ pdeplot(pp,ee,tt,'XYData',w,'colormap',viridis,'contour','on');
 colorbar;shading interp;
 xlabel('x-axis');ylabel('y-axis');
 title('(contour)','FontWeight','normal');
-
-u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
-%
-w_fromC=u_fromC(1:3:end);   % vertical displacement
-bx_fromC=u_fromC(2:3:end);  % rotation x
-by_fromC=u_fromC(3:3:end);  % rotation y
+% 
+% u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+% %
+% w_fromC=u_fromC(1:3:end);   % vertical displacement
+% bx_fromC=u_fromC(2:3:end);  % rotation x
+% by_fromC=u_fromC(3:3:end);  % rotation y
 
 % figure(2);
 subplot(2,2,2);hold on;grid on;
@@ -344,12 +346,12 @@ error('er')
 
 load singleMatrix
 load doubleMatrix
-GEN =759
+
 
 max(abs(Fglob_aug - Fglob_aug_double))
-
-%
 max(max(Kglob_aug - Kglob_aug_double))
+max(max(Mglob_aug - Mglob_aug_double))
+
 
 max(Kglob_aug(1:GEN,1:GEN) - Kglob_aug_double(1:GEN,1:GEN))
 

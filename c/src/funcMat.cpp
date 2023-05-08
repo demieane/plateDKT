@@ -1,4 +1,4 @@
-#ifndef MAIN_FEM_HEADER_FILE
+#ifndef MAIN_FEM_HEADER_FILENULLlinearSystemSolve
     #define MAIN_FEM_HEADER_FILE
 
     #include "../include/mainFem.h"
@@ -6,6 +6,9 @@
 
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <cstddef> // for NULL
 //
 template<class T>
 void allocate1Darray(int rows, T **arrIn);
@@ -382,9 +385,11 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
 
     // https://www.intel.com/content/www/us/en/docs/onemkl/code-samples-lapack/2022-1/sgesv-example-c.html
     #if PRECISION_MODE_FEM == 2
+        // This works OK for the single precision case.
         sgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
     #endif
     #if PRECISION_MODE_FEM == 1
+        // This is problematic for the double precision case. TO DO!
         dgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
     #endif
 

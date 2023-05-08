@@ -119,10 +119,10 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=3;%2; %loading case
+lll=2;%2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
-P_load = 1; %[Pa] %pointing towards the Z-axis
+P_load = 1000; %[Pa] %pointing towards the Z-axis
 % in ANSYS load pointing in the negative of Z-axis is positive
 if lll==1
 %    Pxy=[5,5];%load position
@@ -189,10 +189,10 @@ Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
-Bnodes = [Bound4(1), Bound3];
+% Bnodes = [Bound4(1), Bound3];
 % Bnodes = [Bound1, Bound2];
 % Bnodes=Bound3; %for distributed load from function ANSYS
-% Bnodes=[Bound1 Bound2 Bound3 Bound4];
+Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
 BBnodes = Bnodes.*0;

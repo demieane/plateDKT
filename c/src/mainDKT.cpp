@@ -4,7 +4,7 @@
  segmentation fault. 
 
  COMPLILE using:
- >> gcc -Wall -g3 -fsanitize=address mainDKT.cpp -lm -lblas -llapack
+ >> gcc -Wall -g3 -fsanitize=address ./src/mainDKT.cpp ./src/funcFEM.cpp ./src/funcMat.cpp -o mainDKT_CPP -lm -lblas -llapack
 
 */
 #include "../include/mainDKT.h"
@@ -24,6 +24,14 @@ int main(int argc, char **argv){
 
     printf("    RUNNING IN MODE: %d (1. DOUBLE, 2. SINGLE)", PRECISION_MODE_FEM);
 
+/*
+    mytype a= 4;
+    mytype b;
+    printf("%d, ", sizeof(a));
+    printf("%d, ", sizeof((mytype)4.0));
+    printf("%f, ", a + 4.0f);
+    //exit(4);
+*/
     clock_t tstart, tend;
     tstart = clock();
 
@@ -146,8 +154,7 @@ int main(int argc, char **argv){
 
     printf("\n\n");
     //for each triangle in the mesh
-    //for (int kk = 0;kk<wingMeshFem.Nelem;kk++){ 
-    for (int kk = 0;kk<10;kk++){    
+    for (int kk = 0;kk<wingMeshFem.Nelem;kk++){   
         massHmDKT<mytype>(kk, &wingMeshFem, &elemFemArr); // Hm, HW
         rotationMass2<mytype>(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
         //------------------------------------------------------------->>
@@ -345,6 +352,11 @@ int main(int argc, char **argv){
         printf("\n");
     }
 
+    printf("--->");
+    for (int i = 0;i<10;i++){
+        printf("%10.4f,\n",elemFemArr.Fglob[i][0]);
+    }
+
 
     printf("\n    Calculated Mg(:,kk), Kg(:,kk), Fglob(kk)");
 
@@ -489,7 +501,7 @@ int main(int argc, char **argv){
     }
 
     mytype **Usol;
-    allocate2Darray<mytype>(sizeKMglob_aug,1, &Usol);
+    allocate2Darray<mytype>(sizeKMglob_aug,1,&Usol);
 
     mytype **Fglob_aug;
     allocate2Darray<mytype>(sizeKMglob_aug,1,&Fglob_aug);
