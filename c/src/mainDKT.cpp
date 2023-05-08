@@ -104,6 +104,7 @@ int main(int argc, char **argv){
         }
         printf("\n");
     }
+
     //************************************************************************************
     //  DKT PLATE SOLVER: LOCAL MATRIX (mloc, kloc, floc)
     //************************************************************************************
@@ -130,6 +131,7 @@ int main(int argc, char **argv){
     //
     allocate2Darray<mytype>(1, 9, &(elemFemArr.Hx)); // [1 x 9]
     allocate2Darray<mytype>(1, 9, &(elemFemArr.Hy)); // [1 x 9]
+    //
     allocate1Darray<mytype>(9, &(elemFemArr.Hx_xsi)); // [1 x 9]
     allocate1Darray<mytype>(9, &(elemFemArr.Hx_eta)); // [1 x 9]
     allocate1Darray<mytype>(9, &(elemFemArr.Hy_xsi)); // [1 x 9]
@@ -142,13 +144,17 @@ int main(int argc, char **argv){
     allocate2Darray<mytype>(81, wingMeshFem.Nelem, &(elemFemArr.Mg));
     allocate2Darray<mytype>(81, wingMeshFem.Nelem, &(elemFemArr.Kg));
 
+    printf("\n\n");
     //for each triangle in the mesh
-    for (int kk = 0;kk<wingMeshFem.Nelem;kk++){
+    //for (int kk = 0;kk<wingMeshFem.Nelem;kk++){ 
+    for (int kk = 0;kk<10;kk++){    
         massHmDKT<mytype>(kk, &wingMeshFem, &elemFemArr); // Hm, HW
         rotationMass2<mytype>(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
         //------------------------------------------------------------->>
         // for each gauss point
+        //for (int ii = 0; ii<GaussIntegrPoints; ii++){
         for (int ii = 0; ii<GaussIntegrPoints; ii++){
+        //for (int ii = 0; ii<1; ii++){    
             ShapeFunDKT2<mytype>(ii, kk, &wingMeshFem, &elemFemArr);
             pseudoMassDKT<mytype>(ii, kk, &wingMeshFem, &elemFemArr); // not exactly used (only LW)
 
@@ -158,15 +164,34 @@ int main(int argc, char **argv){
                 BendingStiffness<mytype>(inDataFem.E, inDataFem.v, distrThick[kk], BeSt);
             }
             mytype **kb;
-            allocate2Darray<mytype>(9, 3, &kb);
+            allocate2Darray<mytype>(9, 3, &kb); //Bb'*BeSt2(:,:,kk)
             matMatMultiplication2<mytype>(2, 3, 9, 3, 1.0, 0.0, elemFemArr.Bb, BeSt, kb);
 
             mytype **kb1;
             allocate2Darray<mytype>(9,9,&kb1);
             mytype var1 = wingMeshFem.area[kk] * xw[ii][2];
             matMatMultiplication2<mytype>(1, 9, 3, 9, var1, 0.0, kb, elemFemArr.Bb, kb1);
+/*
+            for (int i=0;i<9;i++){
+                for (int j=0;j<9;j++){
+                    printf("%10.4f, ",kb1[i][j]/pow(10.0,5.0));
+                }
+                printf("\n");
+            }
+            printf("\n---->");
+*/
 
             matSum2<mytype>(1.0, 0.0, 9, 9, kb1, kb1, elemFemArr.kloc); // kloc = kloc + kb1
+
+/*
+            for (int i=0;i<9;i++){
+                for (int j=0;j<9;j++){
+                    printf("%10.4f, ",elemFemArr.kloc[i][j]/pow(10.0,6.0));
+                }
+                printf("\n");
+            }
+            printf("\n---->");
+*/            
 
 //==========================DE - ALLOCATE ---->
             deallocate2Darray<mytype>(9,kb);
@@ -199,17 +224,6 @@ int main(int argc, char **argv){
             }
             
             matMatMultiplication2<mytype>(2, 1, 9, 9, var0, 0.0, elemFemArr.Hx, elemFemArr.Hx, term1); //Hx'*Hx
-
-/*
-            for (int i = 0;i<9;i++){
-                for (int j = 0;j<9;j++){
-                    printf("%f, ",term1[i][j]);
-                }
-                printf("\n");
-            }
-*/            
-
-            //exit(5);
             //
             matMatMultiplication2<mytype>(2, 1, 9, 9, var0, 0.0, elemFemArr.Hy, elemFemArr.Hy, term2); //Hy'*Hy
             //
@@ -223,7 +237,7 @@ int main(int argc, char **argv){
             mytype **sum1, **sum2;
             allocate2Darray<mytype>(9,9,&sum1);
             allocate2Darray<mytype>(9,9,&sum2);
-            float varmloc = inDataFem.mass*inDataFem.h*wingMeshFem.area[kk]*xw[ii][2];
+            mytype varmloc = inDataFem.mass*inDataFem.h*wingMeshFem.area[kk]*xw[ii][2];
             if (inDataFem.LL==3){
                 varmloc = inDataFem.mass*distrThick[kk]*wingMeshFem.area[kk]*xw[ii][2];
             }
@@ -244,9 +258,20 @@ int main(int argc, char **argv){
             // mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*(mlocTEMP);
 
         }
+
+/*
+        for (int i=0;i<9;i++){
+            for (int j=0;j<9;j++){
+                printf("%10.4f, ",elemFemArr.kloc[i][j]/pow(10.0,6.0));
+            }
+            printf("\n");
+        }
+        printf("\n---->");
+*/        
+
         //------------------------------------------------------------->> for each gauss point
         // lumped mass approach for the uniform load
-        float lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
+        mytype lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
         if (inDataFem.LL == 2){
             // version - 1
             for (int i=0;i<9;i++){
@@ -287,6 +312,16 @@ int main(int argc, char **argv){
             }
         }
 
+/*
+        for (int i = 0;i<9;i++){
+            for (int j = 0;j<1;j++){
+                printf("%10.10f,",elemFemArr.floc[i][0]);
+            }
+            printf("\n");
+        }
+        printf("\n");printf("\n");
+*/
+
         // re-initialize mloc, kloc, floc, floc1
         for (int i = 0;i<9;i++){
             elemFemArr.floc[i][0] = 0;
@@ -303,16 +338,24 @@ int main(int argc, char **argv){
 
     }
 
+    for (int i = 0;i<10;i++){
+        for (int j = 0;j<10;j++){
+            printf("%10.4f,",elemFemArr.Kg[i][j]/pow(10.0,6.0));
+        }
+        printf("\n");
+    }
+
+
     printf("\n    Calculated Mg(:,kk), Kg(:,kk), Fglob(kk)");
 
     //************************************************************************************
     //  DKT PLATE SOLVER: GLOBAL MATRIX ASSEMBLY (Mglob, Kglob, Fglob)
     //************************************************************************************
-    mytype **iii, **rr, **iii_col, **rr_col;
-    allocate2Darray<mytype>(9,9,&iii);
-    allocate2Darray<mytype>(9,9,&rr);
-    allocate2Darray<mytype>(81,1,&iii_col);
-    allocate2Darray<mytype>(81,1,&rr_col);
+    int **iii, **rr, **iii_col, **rr_col;
+    allocate2Darray<int>(9,9,&iii);
+    allocate2Darray<int>(9,9,&rr);
+    allocate2Darray<int>(81,1,&iii_col);
+    allocate2Darray<int>(81,1,&rr_col);
 
     for (int i=0;i<9;i++){
         for (int j=0;j<9;j++){
@@ -330,12 +373,9 @@ int main(int argc, char **argv){
         }
     }
 
-    deallocate2Darray<mytype>(9,iii);
-    deallocate2Darray<mytype>(9,rr);
-
-    mytype **Ig, **Jg;
-    allocate2Darray<mytype>(81,wingMeshFem.Nelem,&Ig);//LM(iii(:),:);
-    allocate2Darray<mytype>(81,wingMeshFem.Nelem,&Jg);//LM(rr(:),:);
+    int **Ig, **Jg;
+    allocate2Darray<int>(81,wingMeshFem.Nelem,&Ig);//LM(iii(:),:);
+    allocate2Darray<int>(81,wingMeshFem.Nelem,&Jg);//LM(rr(:),:);
 
     int indexIg, indexJg;
     for (int i=0;i<81;i++){
@@ -346,6 +386,14 @@ int main(int argc, char **argv){
             Jg[i][j] = wingMeshFem.LM[indexJg][j]-1;
         }
     }   
+
+    printf("\n");
+    for (int i=0;i<10;i++){
+        for (int j=0;j<10;j++){
+            printf("%d, ", Jg[i][j]);
+        }
+        printf("\n");
+    }  
 
     mytype **Kglob, **Mglob;
     allocate2Darray<mytype>(wingMeshFem.GEN,wingMeshFem.GEN,&Kglob);
@@ -363,24 +411,30 @@ int main(int argc, char **argv){
 
 
     printf("Kglob \n");
-    for (int i = 0;i<15;i++){
-        for (int j = 0;j<15;j++){
-            printf("%f, ",Kglob[i][j]);
+    for (int i = wingMeshFem.GEN-11;i<wingMeshFem.GEN;i++){
+        for (int j = wingMeshFem.GEN-11;j<wingMeshFem.GEN;j++){
+            printf("%10.4f, ",Kglob[i][j]/pow(10.0,10.0));
         }
         printf("\n");
     }
 
 
     printf("Mglob \n");
-    for (int i = 0;i<15;i++){
-        for (int j = 0;j<15;j++){
-            printf("%f, ",Mglob[i][j]);
+    for (int i = wingMeshFem.GEN-11;i<wingMeshFem.GEN;i++){
+        for (int j = wingMeshFem.GEN-11;j<wingMeshFem.GEN;j++){
+            printf("%10.4f, ",Mglob[i][j]);
         }
         printf("\n");
     }
 
+    printf("Fglob \n");
+    for (int i = wingMeshFem.GEN-10;i<wingMeshFem.GEN;i++){
+        printf("%f, ",elemFemArr.Fglob[i][0]);
+    }
 
+    //exit(5);
     printf("\n    Kglob, Mglob OK... DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)\n");
+
     //************************************************************************************
     //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
     //************************************************************************************
@@ -461,8 +515,11 @@ int main(int argc, char **argv){
     //int optionSelect = 0;
     CuFEMNum2DWriteDataInBinary<mytype>(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
 
-
+    CuFEMNum2DWriteMatrix<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Mglob_aug, Fglob_aug);
     // TODO: MODAL ANALYSIS
+    
+        
+
 
 //----
 
@@ -471,6 +528,8 @@ int main(int argc, char **argv){
 
 
 
+    deallocate2Darray<int>(9,iii);
+    deallocate2Darray<int>(9,rr);
 
 
     deallocate2Darray(inDataFem.sizeBdofs,kkk);
@@ -505,10 +564,12 @@ int main(int argc, char **argv){
 
     deallocate2Darray<mytype>(wingMeshFem.GEN,Kglob);
     deallocate2Darray<mytype>(wingMeshFem.GEN,Mglob);
-    deallocate2Darray<mytype>(81,iii_col);
-    deallocate2Darray<mytype>(81,rr_col);
-    deallocate2Darray<mytype>(81,Ig);//LM(iii(:),:);
-    deallocate2Darray<mytype>(81,Jg);//LM(rr(:),:);
+    //
+    deallocate2Darray<int>(81,iii_col);
+    deallocate2Darray<int>(81,rr_col);
+
+    deallocate2Darray<int>(81,Ig);//LM(iii(:),:);
+    deallocate2Darray<int>(81,Jg);//LM(rr(:),:);
 
 
     return 0;

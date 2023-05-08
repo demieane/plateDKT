@@ -1,9 +1,12 @@
+
+
 /*This form is used for header files of your own program.
 It searches for a file named 'file' in the directory containing the current file.
 You can prepend directories to this list with the -I 
 option while compiling your source code. */
 #include "../include/mainFem.h"
 #include <time.h>
+#include <stdio.h>
 /* 
 Search file for TODO
 Search file for COMMENT
@@ -398,13 +401,16 @@ int main(int argc, char **argv){
         printf("%f,",Usol[i][0]);
     }
 
-    free(Fglob_aug);
+    
 
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
     //************************************************************************************
     //int optionSelect = 0;
     CuFEMNum2DWriteDataInBinary(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
+
+    CuFEMNum2DWriteKglobMglobBCs(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Mglob_aug, Fglob_aug);
+
 
     #if (MODAL_ANALYSIS == 1)
     //  TO DO : FIX - I GET INFINITE EIGENVALUES
@@ -426,7 +432,7 @@ int main(int argc, char **argv){
     //  DKT PLATE SOLVER: CLEAN UP AND EXIT
     //************************************************************************************
     /* TODO free pointers - after using the malloc() */
-
+    free(Fglob_aug);
     freefemArraysDKT(&wingMeshFem, &elemFemArr);
     freetriangleDKT(Ng,&wingMeshFem);
     freeInDataRecFem(&inDataFem);

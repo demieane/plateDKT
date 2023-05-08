@@ -216,14 +216,12 @@ end
 % error('er')
 %% RUN THE CODE
 if modeFem == 1
-    system('../c/src/./a.out');
+    system('../c/src/./mainDKT_CPP');
 elseif modeFem == 2
-%     system('../c/src/./a.out');
+%     system('../c/src/./mainDKT_CPP');
     system('../c/./mainDKT');
-end
-% system('../c/./mainDKT');
 
-% error('er')
+end
 
 %% Read solution from binary file
 if modeFem == 1
@@ -241,33 +239,55 @@ for i = 1:rowsUsol
         Usol(i,j)=fread(fileID,1,'single');
     end
 end
-% % 
-% % %% MODAL ANALYSIS 
-% % 
+
+% DEBUG
+
 % % fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
 % % rowsUsol = fread(fileID,1,'int')
 % % colsUsol = fread(fileID,1,'int')
 % % 
 % % for i = 1:rowsUsol
 % %     for j = 1:colsUsol
-% %         Kglob_aug(i,j)=fread(fileID,1,'single');
+% %         Kglob_aug(i,j)=fread(fileID,1,precision);
 % %     end
 % % end
 % % 
 % % for i = 1:rowsUsol
 % %     for j = 1:colsUsol
-% %         Mglob_aug(i,j)=fread(fileID,1,'single');
+% %         Mglob_aug(i,j)=fread(fileID,1,precision);
 % %     end
 % % end
 % % 
-% % [XX,lamM,flag]=eigs(Kglob_aug,Mglob_aug,5,'sm');
-% % cc=sort(diag(lamM));
-% %   
-% % freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
+% % for i = 1:rowsUsol
+% %     for j = 1:1
+% %         Fglob_aug(i,j)=fread(fileID,1,precision);
+% %     end
+% % end
 % % 
-% % freq'
+% % 
+% % U=Kglob_aug\Fglob_aug;%SOLVE SPARSE SYSTEM OF EQUATIONS
+% % 
+% % u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+% % 
+% % w_fromC=u_fromC(1:3:end);   % vertical displacement
+% % bx_fromC=u_fromC(2:3:end);  % rotation x
+% % by_fromC=u_fromC(3:3:end);  % rotation y
 
-%%  VISUAL COMPARISON 
+% [XX,lamM,flag]=eigs(Kglob_aug,Mglob_aug,5,'sm');
+% cc=sort(diag(lamM));
+%   
+% freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
+% 
+% freq'
+
+% save singleMatrix Kglob_aug Fglob_aug
+% Kglob_aug_double = Kglob_aug;
+% Fglob_aug_double = Fglob_aug;
+% save doubleMatrix Kglob_aug_double Fglob_aug_double
+
+
+
+%  VISUAL COMPARISON 
 GEN = size(pp,2)*3;
 
 load solMatlab
@@ -317,3 +337,34 @@ xlabel('x-axis');ylabel('y-axis');
 title('(contour)','FontWeight','normal');
 
 check = [max(abs(w_fromC)), max(abs(w))]
+
+
+error('er')
+%%
+
+load singleMatrix
+load doubleMatrix
+GEN =759
+
+max(abs(Fglob_aug - Fglob_aug_double))
+
+%
+max(max(Kglob_aug - Kglob_aug_double))
+
+max(Kglob_aug(1:GEN,1:GEN) - Kglob_aug_double(1:GEN,1:GEN))
+
+GEN = 759;
+max(max(Kglob_aug(GEN:end,GEN:end) - Kglob_aug_double(GEN:end,GEN:end)))
+
+max(max(Kglob_aug(GEN+1:end,1:GEN) - Kglob_aug_double(GEN+1:end,1:GEN)))
+
+max(max(Kglob_aug(1:GEN,GEN+1:end) - Kglob_aug_double(1:GEN,GEN+1:end)))
+
+
+max(max(Kglob_aug(GEN+1:end,GEN+1:end) - Kglob_aug_double(GEN+1:end,GEN+1:end)))
+
+
+
+
+
+

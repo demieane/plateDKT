@@ -1,31 +1,31 @@
 #ifndef MAIN_FEM_HEADER_FILE
-#define MAIN_FEM_HEADER_FILE
+    #define MAIN_FEM_HEADER_FILE
 
-/*Place the entire header file contents below within the #ifndef...#endif preprocessor directives */
+    /*Place the entire header file contents below within the #ifndef...#endif preprocessor directives */
 
-#include <stdio.h>  /*This form is used for system header files.*/
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <stdbool.h>
+    #include <stdio.h>  /*This form is used for system header files.*/
+    #include <stdlib.h>
+    #include <string.h>
+    #include <math.h>
+    #include <stdbool.h>
 
-//#include <clapacke.h>
-#include <cblas.h> // use -lblas 
-#include <lapack.h> // use -llapack
+    //#include <clapacke.h>
+    #include <cblas.h> // use -lblas 
+    #include <lapack.h> // use -llapack
 
-/* suppress or not execution times (custom profiler) */
+    /* suppress or not execution times (custom profiler) */
 
-#ifndef DEBUG_ON
-    #define DEBUG_ON 1 /*allow printf for debugging purposes*/
-#endif
+    #ifndef DEBUG_ON
+        #define DEBUG_ON 1 /*allow printf for debugging purposes*/
+    #endif
 
-#ifndef MODAL_ANALYSIS
-    #define MODAL_ANALYSIS 0 /* Find eigenfrequencies */
-#endif
+    #ifndef MODAL_ANALYSIS
+        #define MODAL_ANALYSIS 0 /* Find eigenfrequencies */
+    #endif
 
-#ifndef PRECISION_MODE_FEM
-    #define PRECISION_MODE_FEM 2 /* 1. DOUBLE, 2. SINGLE */
-#endif
+    #ifndef PRECISION_MODE_FEM
+        #define PRECISION_MODE_FEM 2 /* 1. DOUBLE, 2. SINGLE */
+    #endif
 
 
 /*=========================================================================================*/
@@ -197,7 +197,7 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, float **Usol, int GEN);
 //
 void modalAnalysis_sggev(int N, float **arrA, float **arrB, float *eigVals); //FAILS IN SINGULAR MGLOB
 //
-void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M);
+void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M, float **F);
 //---------------------------03/05/2023
 void shepard_interp_2d(int nd, float *xd, float *yd, float *zd,
     float *p, int ni, float *xi, float *yi, float *zi);
@@ -617,7 +617,7 @@ free(wingMeshFem->GGin2); //inverse of above
 }
 
 //============================== FEM FUNCTIONS ==================================================//
-void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M){
+void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M, float **F){
 
     FILE *fileOut;
 	fileOut = fopen("../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin", "wb"); // w for write, b for binary
@@ -634,6 +634,12 @@ void CuFEMNum2DWriteKglobMglobBCs(int rows, int cols, float **K, float **M){
     for (int i = 0; i < rows; i++){
         for (int j = 0; j < cols; j++){
             fwrite(&(M[i][j]), sizeof(float), 1, fileOut);
+        }
+    }
+
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < 1; j++){
+            fwrite(&(F[i][j]), sizeof(float), 1, fileOut);
         }
     }
 

@@ -244,6 +244,7 @@ xm=(1/3)*(x(IEN(1,:))+x(IEN(2,:))+x(IEN(3,:)));   % x barycentric coordinate
 ym=(1/3)*(y(IEN(1,:))+y(IEN(2,:))+y(IEN(3,:)));    % y barycentric coordinate
 % 
 
+
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
 d=100;
@@ -320,7 +321,7 @@ GGin2=inv(GGDKT);
 
 
 
-% error('er')
+
 % error('er')
 % for i=1:Ng;
 %     
@@ -376,7 +377,10 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
        % to the BeSt [3x3] original matrix
        kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
        
-%        kbc = (Bb'*BeSt2(:,:,kk))*BeSt2(:,:,kk)
+       
+%        kbc = Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk))*Bb
+%        
+%        kb
 %        size(kbc)
 %        kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt*Bb);
 %        mloc=mloc+m*h*Area(kk)*xw(ii,3)*(Nm'*Nm);
@@ -387,7 +391,8 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
        mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*((HW'*(LW'*LW)*HW)+txxBEM(kk)^2/12*(Hx'*Hx)+txxBEM(kk)^2/12*(Hy'*Hy));
 %        mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*((HW'*(LW'*LW)*HW));
     end
-      
+    kb
+
     kloc=kb;
     %************************** ADDITION
 %     if lll==1
@@ -398,6 +403,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     elseif lll==3 %distributed load via mapping func
         floc=Area(kk)*Fx(kk)/3*[1 0 0 1 0 0 1 0 0]';
     end
+    floc
     %***********************************
     Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
 
@@ -412,7 +418,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     end
 end
 
-% error('oo')
+% error('er')
 %% Global assembly (uses the LM)
 % The sparse function accumulate the values that have identical
 % subscripts. 
@@ -488,11 +494,15 @@ end
 %hughe [ch.9] newmark - 2nd order
 % else
     Fglob1=[Fglob; zeros(length(BBnodes),1)];
-    U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
+%     U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
+    
+    U = Kglob_dense2\Fglob1;
 % end
 
 
 telapsed = toc(tstart)
+
+% error('er')
 BBnodes=BBnodes_old;%DIMITRA
 
 %==========================================================================

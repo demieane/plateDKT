@@ -51,6 +51,9 @@ $(TARGET_EXEC): $(OBJ)
 clean: 
 	rm -f $(TARGET_EXEC) 
 	rm -f $(OBJ)
+#rm -f INDATA_FEM_single.bin INDATA_FEM_double.bin
+#rm -f OUTDATA_FEM_single.bin OUTDATA_FEM_double.bin
+#rm -f OUTDATA_FEM_Kglob_Mglob_BCs.bin
 
 # The file name of the target of the rule: #@
 # The names of all the prerequisites, with spaces between them. $^

@@ -202,7 +202,8 @@ void pseudoMassDKT(int ii, int kk, struct triangleDKT<T> *wingMeshFem, struct fe
 template<class T>
 void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN);
 //
-
+template<class T>
+void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F);
 
 /*=========================================================================================*/
 /* Definition of the functions BELOW */
@@ -1582,4 +1583,37 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN){
 
     fclose(fileOut);
     printf("\n    EXITING CuFEMNum2DWriteDataInBinary...\n\n");
+}
+
+//============================== FEM FUNCTIONS ==================================================//
+template<class T>
+void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F){
+
+    FILE *fileOut;
+	fileOut = fopen("../OUTDATA_FEM_Kglob_Mglob_BCs.bin", "wb"); // w for write, b for binary
+
+    fwrite(&rows, sizeof(int), 1, fileOut);
+    fwrite(&cols, sizeof(int), 1, fileOut);
+
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < cols; j++){
+            fwrite(&(K[i][j]), sizeof(T), 1, fileOut);
+        }
+    }
+
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < cols; j++){
+            fwrite(&(M[i][j]), sizeof(T), 1, fileOut);
+        }
+    }
+
+    for (int i = 0; i < rows; i++){
+        for (int j = 0; j < 1; j++){
+            fwrite(&(F[i][j]), sizeof(T), 1, fileOut);
+        }
+    }
+
+    fclose(fileOut);
+    printf("\n    Exiting CuFEMNum2DWriteKglobMglobBCs...\n\n");
+
 }

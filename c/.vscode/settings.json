@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "mainfem.h": "c"
+        "mainfem.h": "c",
+        "math.h": "c",
+        "stdbool.h": "c"
     }
 }
