@@ -24,6 +24,11 @@ int main(int argc, char **argv){
 
     printf("    RUNNING IN MODE: %d (1. DOUBLE, 2. SINGLE)", PRECISION_MODE_FEM);
 
+    mytype a = mypow<mytype>((mytype)2.0, (mytype)2.0);
+    printf("\n mypow = %f\n", a);
+
+    exit(5);
+
 /*
     mytype a= 4;
     mytype b;

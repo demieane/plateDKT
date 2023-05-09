@@ -11,6 +11,9 @@
 #include <cstddef> // for NULL
 //
 template<class T>
+T mypow(T base, T power);
+//
+template<class T>
 void allocate1Darray(int rows, T **arrIn);
 //
 template<class T>
@@ -36,6 +39,19 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol);
 /*=========================================================================================*/
 /* Definition of the functions BELOW */
 /*=========================================================================================*/
+
+template<class T>
+T mypow(T base, T power){
+
+    #if PRECISION_MODE_FEM == 1 //double
+        return pow(base,power);
+    #endif
+    #if PRECISION_MODE_FEM == 2 //single
+        return powf(base,power);
+    #endif
+}
+
+
 // Allocate 1-D array based on double pointer type
 template<class T>
 void allocate1Darray(int rows, T **arrIn){
@@ -389,22 +405,26 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
         sgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
     #endif
     #if PRECISION_MODE_FEM == 1
-        // This is problematic for the double precision case. TO DO!
         dgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
     #endif
 
-    if (info >= 0){
+    if (info == 0){
         printf("\n    Solution successfull");
-    } 
 
-    for (int i = 0; i < rowsA; i++) {
+        for (int i = 0; i < rowsA; i++) {
         Usol[i][0]=BB[i];
+        //printf("%10.4f,%10.4f,\n",BB[i]/pow(10.0,8.0), Usol[i][0]/pow(10.0,8.0));
+        }
+        //printf("\n    Transfered solution from B to Usol.. OK!\n");
     }
-    printf("\n    Transfered solution from B to Usol.. OK!\n");
+    else{
+        printf("\n    Solution failed in sgesv_: info=%d", info);
+    } 
 
     free(IPIV);
     free(BB);
     free(AA);
+    
 
 
 }

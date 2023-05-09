@@ -1,7 +1,7 @@
 function [BeSt]=BendingStiffness2(E,v,thick,h)
 
 % calculates bending stiffness for constant properties
-thick = thick.*0 + h;
+% thick = thick.*0 + h;
 % thick = thick.*0 + 1/1000;%min(thick);
 
 % thick = thick + 0.0005;%h;

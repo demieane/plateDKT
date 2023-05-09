@@ -119,10 +119,10 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=2;%2; %loading case
+lll=3;%2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
-P_load = 1000; %[Pa] %pointing towards the Z-axis
+P_load = 1; %[Pa] %pointing towards the Z-axis
 % in ANSYS load pointing in the negative of Z-axis is positive
 if lll==1
 %    Pxy=[5,5];%load position
@@ -190,9 +190,9 @@ Bound4=find(e(5,:)==4);
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
 % Bnodes = [Bound4(1), Bound3];
-% Bnodes = [Bound1, Bound2];
-% Bnodes=Bound3; %for distributed load from function ANSYS
-Bnodes=[Bound1 Bound2 Bound3 Bound4];
+% Bnodes = [Bound2, Bound2];
+Bnodes=Bound3; %for distributed load from function ANSYS
+% Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -437,9 +437,13 @@ Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
 % % spy(Kglob)
 Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
     
+% A large condition number means that the matrix is close to being singular. 
 Kglobfull=full(Kglob);
 Mglobfull=full(Mglob);
 
+cond(Kglobfull)
+
+% error('er')
 clear Kglob_dense Mglob_dense
 Kglob_dense = zeros(GEN,GEN);
 Mglob_dense = zeros(GEN,GEN);
@@ -493,10 +497,11 @@ end
 %     U=Kglob\Fglob; %SOLVE SPARSE SYSTEM OF EQUATIONS
 %hughe [ch.9] newmark - 2nd order
 % else
-    Fglob1=[Fglob; zeros(length(BBnodes),1)];
+Fglob1=[Fglob; zeros(length(BBnodes),1)];
 %     U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
-    
-    U = Kglob_dense2\Fglob1;
+
+U = mldivide(Kglob_dense2,Fglob1);
+% U = lapack('dgesv',Kglob_dense2, Fglob1);
 % end
 
 

@@ -38,10 +38,10 @@ elseif CC==2
 end
 % Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=2;%2; %loading case
+lll=3;%2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
-P_load = 1000; %[Pa] %pointing towards the Z-axis
+P_load = 1; %[Pa] %pointing towards the Z-axis
 % in ANSYS load pointing in the negative of Z-axis is positive
 if lll==1
 %    Pxy=[5,5];%load position
@@ -84,8 +84,8 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION*************
 % COMMENT: The numbering is offered by the pdeModeler
-% Bnodes = [Bound4(1), Bound3];
-Bnodes = [Bound1, Bound2, Bound3, Bound4];
+Bnodes = Bound3;%[Bound4(1), Bound3];
+% Bnodes = [Bound1, Bound2, Bound3, Bound4];
 %**************************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -135,7 +135,6 @@ elseif modeFem == 2
     precision = 'single';
     fileName = 'INDATA_FEM_single.bin';
 end
-
 
 % write to binary for communication with GPU executable
 file = fopen(fileName, 'wb');
@@ -235,40 +234,39 @@ colsUsol = fread(fileID,1,'int')
 
 for i = 1:rowsUsol
     for j = 1:colsUsol
-        Usol(i,j)=fread(fileID,1,'single');
+        Usol(i,j)=fread(fileID,1,precision);
     end
 end
 
-% % %% DEBUG
-% % 
-fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
-rowsUsol = fread(fileID,1,'int')
-colsUsol = fread(fileID,1,'int')
+%% DEBUG
 
-for i = 1:rowsUsol
-    for j = 1:colsUsol
-        Kglob_aug2(i,j)=fread(fileID,1,precision);
-    end
-end
+% fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
+% rowsUsol = fread(fileID,1,'int')
+% colsUsol = fread(fileID,1,'int')
+% 
+% for i = 1:rowsUsol
+%     for j = 1:colsUsol
+%         Kglob_aug2(i,j)=fread(fileID,1,precision);
+%     end
+% end
+% 
+% for i = 1:rowsUsol
+%     for j = 1:colsUsol
+%         Mglob_aug2(i,j)=fread(fileID,1,precision);
+%     end
+% end
+% 
+% for i = 1:rowsUsol
+%     for j = 1:1
+%         Fglob_aug2(i,j)=fread(fileID,1,precision);
+%     end
+% end
 
-for i = 1:rowsUsol
-    for j = 1:colsUsol
-        Mglob_aug2(i,j)=fread(fileID,1,precision);
-    end
-end
-
-for i = 1:rowsUsol
-    for j = 1:1
-        Fglob_aug2(i,j)=fread(fileID,1,precision);
-    end
-end
-% % 
-% % 
 % load singleMatrix
-U=Kglob_aug2\Fglob_aug2;%SOLVE SPARSE SYSTEM OF EQUATIONS
+% U=Kglob_aug2\Fglob_aug2;%SOLVE SPARSE SYSTEM OF EQUATIONS
+% u_fromC=U(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 
-% u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
-u_fromC=U(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 
 w_fromC=u_fromC(1:3:end);   % vertical displacement
 bx_fromC=u_fromC(2:3:end);  % rotation x
