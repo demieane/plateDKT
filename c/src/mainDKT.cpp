@@ -473,6 +473,17 @@ int main(int argc, char **argv){
 
     //----
     // TODO: MODAL ANALYSIS
+    #if (MODAL_ANALYSIS == 1)
+    //  TO DO : FIX - I GET INFINITE EIGENVALUES
+        printf("\n    Performing MODAL ANALYSIS");
+        // Generalized Nonsymmetric Eigenvalue Problems TO DO: It doesnt work as matlab
+        
+        //http://matlab.izmiran.ru/help/techdoc/ref/eig.html
+        // Real nonsymmetric A, real general B: sggev() from LAPACK
+        mytype *eigVals;
+        allocate1Darray<mytype>(5,&eigVals);
+        myeigs<mytype>(sizeKMglob_aug, Kglob_aug, Mglob_aug, eigVals);
+    #endif
     //----
 
     deallocate2Darray<int>(9,iii);

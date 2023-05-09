@@ -500,9 +500,8 @@ end
 Fglob1=[Fglob; zeros(length(BBnodes),1)];
 %     U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
 
-U = mldivide(Kglob_dense2,Fglob1);
-% U = lapack('dgesv',Kglob_dense2, Fglob1);
-% end
+U = mldivide(Kglob,Fglob1);
+
 
 
 telapsed = toc(tstart)
@@ -536,6 +535,17 @@ title('(contour)','FontWeight','normal');
 max(abs(w))/inData.a3;
 
 save solMatlab U
+
+
+[XX,lamM,flag]=eigs(Kglob,Mglob,5,'sm');
+cc=sort(diag(lamM));
+  
+freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
+
+freq'
+
+
+
 error('hh')
 %% MODAL ANALYSIS
 

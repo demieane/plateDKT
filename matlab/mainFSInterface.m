@@ -240,21 +240,21 @@ end
 
 %% DEBUG
 
-% fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
-% rowsUsol = fread(fileID,1,'int')
-% colsUsol = fread(fileID,1,'int')
-% 
-% for i = 1:rowsUsol
-%     for j = 1:colsUsol
-%         Kglob_aug2(i,j)=fread(fileID,1,precision);
-%     end
-% end
-% 
-% for i = 1:rowsUsol
-%     for j = 1:colsUsol
-%         Mglob_aug2(i,j)=fread(fileID,1,precision);
-%     end
-% end
+fileID = fopen('../c/OUTDATA_FEM_Kglob_Mglob_BCs.bin','rb')
+rowsUsol = fread(fileID,1,'int')
+colsUsol = fread(fileID,1,'int')
+
+for i = 1:rowsUsol
+    for j = 1:colsUsol
+        Kglob_aug2(i,j)=fread(fileID,1,precision);
+    end
+end
+
+for i = 1:rowsUsol
+    for j = 1:colsUsol
+        Mglob_aug2(i,j)=fread(fileID,1,precision);
+    end
+end
 % 
 % for i = 1:rowsUsol
 %     for j = 1:1
@@ -272,13 +272,14 @@ w_fromC=u_fromC(1:3:end);   % vertical displacement
 bx_fromC=u_fromC(2:3:end);  % rotation x
 by_fromC=u_fromC(3:3:end);  % rotation y
 
-% [XX,lamM,flag]=eigs(Kglob_aug,Mglob_aug,5,'sm');
-% cc=sort(diag(lamM));
-%   
-% freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
-% 
-% freq'
-GEN = size(pp,2)*3;
+
+[XX,lamM,flag]=eigs(sparse(Kglob_aug2),sparse(Mglob_aug2),5,'smallestabs');
+cc=sort(diag(lamM));
+  
+freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
+
+freq'
+
 % save singleMatrix Kglob_aug Fglob_aug Mglob_aug GEN
 % Kglob_aug_double = Kglob_aug;
 % Mglob_aug_double = Mglob_aug;
@@ -289,7 +290,7 @@ GEN = size(pp,2)*3;
 
 %  VISUAL COMPARISON 
 
-
+GEN = size(pp,2)*3;
 load solMatlab
 u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 %
