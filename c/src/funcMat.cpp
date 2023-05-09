@@ -552,7 +552,7 @@ void myeigs(int N, T **arrA, T **arrB, T *eigVals){
     #if PRECISION_MODE_FEM == 1
         dlasrt_(&ID,&N,res,&INFO,dummy1);
         for (int i = 0;i<5;i++){
-            printf("Res[i]=%f \n", res[i]);
+            printf("        Res[%d]=%f \n",i, res[i]/mypow<T>(10.0,3.0));
         }
     #endif
     
