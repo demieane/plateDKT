@@ -3,7 +3,26 @@
 
     #include "../include/mainFem.h"
 
+    #ifndef PRECISION_MODE_FEM
+        #define PRECISION_MODE_FEM 1 /* 1. DOUBLE, 2. SINGLE */
+        #if PRECISION_MODE_FEM == 1
+            typedef double mytype;
+        #endif
+    #if PRECISION_MODE_FEM == 2
+            typedef float mytype;
+        #endif
+    #endif
 
+
+#endif
+
+#include <stdio.h>
+#include <stdlib.h> //malloc
+#include <math.h> 
+
+#ifndef FUNCMAT
+    #define FUNCMAT
+    #include "../src/funcMat.cpp" // Functions used to facilitate martix, vector operations in c
 #endif
 
 //
@@ -46,8 +65,8 @@ void shepard_interp_2d(int nd, T *xd, T *yd, T *zd,
 
             z = -1;
             for ( int j = 0; j < nd; j++ ){
-                w[j] = sqrt ( pow ( (xi[i] - xd[j]), 2 )
-                            + pow ( (yi[i] - yd[j]), 2 ) );
+                w[j] = sqrt ( mypow<mytype> ( (xi[i] - xd[j]), 2.0 )
+                            + mypow<mytype> ( (yi[i] - yd[j]), 2.0 ) );
                 //printf("w[%d]=%f\n",j,w[j]);
                 //printf("%f,%f,%f,%f,%f\n",xi[i],xd[j],yi[i],yd[j],w[j]);
                 if ( w[j] == 0.0 ){
@@ -85,5 +104,5 @@ void shepard_interp_2d(int nd, T *xd, T *yd, T *zd,
     }
 
     free(w);
-    printf("    Exiting SHEPARD INTERP. OK.\n");
+    printf("    Exiting SHEPARD INTERP. OK.");
 }

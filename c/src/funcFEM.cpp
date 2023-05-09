@@ -19,7 +19,8 @@
     #include "../src/funcMat.cpp" // Functions used to facilitate martix, vector operations in c
 #endif
 
-
+#include<stdio.h>
+#include<math.h>
 
 
 
@@ -720,7 +721,7 @@ void TriGaussPoints(T xw[GaussIntegrPoints][3]){
 template<class T>
 void BendingStiffness(T E, T v, T tx, T **BeSt){
   
-    T la = (E*pow(tx,3.0))/(12*(1-pow(v,2)));
+    T la = (E*mypow<T>(tx,3.0))/(12*(1-mypow<T>(v,2)));
 
     BeSt[0][0] = la;
     BeSt[0][1] = v*la;
@@ -800,29 +801,29 @@ void TrigElCoefsDKT(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wi
         wingMeshFem->x12[i] = (inDataFem->pp[0][IEN_1] - inDataFem->pp[0][IEN_2]);
 
         // Length of triagle sides with corresponding (s) node
-        wingMeshFem->l23[i]=sqrt(pow(wingMeshFem->x23[i],2)+pow(wingMeshFem->y23[i],2.0));
-        wingMeshFem->l31[i]=sqrt(pow(wingMeshFem->x31[i],2)+pow(wingMeshFem->y31[i],2.0));
-        wingMeshFem->l12[i]=sqrt(pow(wingMeshFem->x12[i],2)+pow(wingMeshFem->y12[i],2.0));
+        wingMeshFem->l23[i]=mysqrt<T>(mypow<T>(wingMeshFem->x23[i],2.0)+mypow<T>(wingMeshFem->y23[i],2.0));
+        wingMeshFem->l31[i]=mysqrt<T>(mypow<T>(wingMeshFem->x31[i],2.0)+mypow<T>(wingMeshFem->y31[i],2.0));
+        wingMeshFem->l12[i]=mysqrt<T>(mypow<T>(wingMeshFem->x12[i],2.0)+mypow<T>(wingMeshFem->y12[i],2.0));
 
-        wingMeshFem->a4[i]=-wingMeshFem->x23[i]/pow(wingMeshFem->l23[i],2);
-        wingMeshFem->a5[i]=-wingMeshFem->x31[i]/pow(wingMeshFem->l31[i],2);
-        wingMeshFem->a6[i]=-wingMeshFem->x12[i]/pow(wingMeshFem->l12[i],2);
+        wingMeshFem->a4[i]=-wingMeshFem->x23[i]/mypow<T>(wingMeshFem->l23[i],2);
+        wingMeshFem->a5[i]=-wingMeshFem->x31[i]/mypow<T>(wingMeshFem->l31[i],2);
+        wingMeshFem->a6[i]=-wingMeshFem->x12[i]/mypow<T>(wingMeshFem->l12[i],2);
 
-        wingMeshFem->b4[i]=(3.0/4.0)*(wingMeshFem->x23[i])*(wingMeshFem->y23[i])/pow(wingMeshFem->l23[i],2.0);
-        wingMeshFem->b5[i]=(3.0/4.0)*(wingMeshFem->x31[i])*(wingMeshFem->y31[i])/pow(wingMeshFem->l31[i],2.0);
-        wingMeshFem->b6[i]=(3.0/4.0)*(wingMeshFem->x12[i])*(wingMeshFem->y12[i])/pow(wingMeshFem->l12[i],2.0);
+        wingMeshFem->b4[i]=(3.0/4.0)*(wingMeshFem->x23[i])*(wingMeshFem->y23[i])/mypow<T>(wingMeshFem->l23[i],2.0);
+        wingMeshFem->b5[i]=(3.0/4.0)*(wingMeshFem->x31[i])*(wingMeshFem->y31[i])/mypow<T>(wingMeshFem->l31[i],2.0);
+        wingMeshFem->b6[i]=(3.0/4.0)*(wingMeshFem->x12[i])*(wingMeshFem->y12[i])/mypow<T>(wingMeshFem->l12[i],2.0);
 
-        wingMeshFem->c4[i]=((1.0/4.0)*pow(wingMeshFem->x23[i],2.0)-(1.0/2.0)*pow(wingMeshFem->y23[i],2.0))/pow(wingMeshFem->l23[i],2.0);
-        wingMeshFem->c5[i]=((1.0/4.0)*pow(wingMeshFem->x31[i],2.0)-(1.0/2.0)*pow(wingMeshFem->y31[i],2.0))/pow(wingMeshFem->l31[i],2.0);
-        wingMeshFem->c6[i]=((1.0/4.0)*pow(wingMeshFem->x12[i],2.0)-(1.0/2.0)*pow(wingMeshFem->y12[i],2.0))/pow(wingMeshFem->l12[i],2.0);
+        wingMeshFem->c4[i]=((1.0/4.0)*mypow<T>(wingMeshFem->x23[i],2.0)-(1.0/2.0)*mypow<T>(wingMeshFem->y23[i],2.0))/mypow<T>(wingMeshFem->l23[i],2.0);
+        wingMeshFem->c5[i]=((1.0/4.0)*mypow<T>(wingMeshFem->x31[i],2.0)-(1.0/2.0)*mypow<T>(wingMeshFem->y31[i],2.0))/mypow<T>(wingMeshFem->l31[i],2.0);
+        wingMeshFem->c6[i]=((1.0/4.0)*mypow<T>(wingMeshFem->x12[i],2.0)-(1.0/2.0)*mypow<T>(wingMeshFem->y12[i],2.0))/mypow<T>(wingMeshFem->l12[i],2.0);
 
-        wingMeshFem->d4[i]=-wingMeshFem->y23[i]/pow(wingMeshFem->l23[i],2);
-        wingMeshFem->d5[i]=-wingMeshFem->y31[i]/pow(wingMeshFem->l31[i],2);
-        wingMeshFem->d6[i]=-wingMeshFem->y12[i]/pow(wingMeshFem->l12[i],2);
+        wingMeshFem->d4[i]=-wingMeshFem->y23[i]/mypow<T>(wingMeshFem->l23[i],2);
+        wingMeshFem->d5[i]=-wingMeshFem->y31[i]/mypow<T>(wingMeshFem->l31[i],2);
+        wingMeshFem->d6[i]=-wingMeshFem->y12[i]/mypow<T>(wingMeshFem->l12[i],2);
 
-        wingMeshFem->e4[i]=((1.0/4.0)*pow(wingMeshFem->y23[i],2.0)-(1.0/2.0)*pow(wingMeshFem->x23[i],2.0))/pow(wingMeshFem->l23[i],2.0);
-        wingMeshFem->e5[i]=((1.0/4.0)*pow(wingMeshFem->y31[i],2.0)-(1.0/2.0)*pow(wingMeshFem->x31[i],2.0))/pow(wingMeshFem->l31[i],2.0);
-        wingMeshFem->e6[i]=((1.0/4.0)*pow(wingMeshFem->y12[i],2.0)-(1.0/2.0)*pow(wingMeshFem->x12[i],2.0))/pow(wingMeshFem->l12[i],2.0);
+        wingMeshFem->e4[i]=((1.0/4.0)*mypow<T>(wingMeshFem->y23[i],2.0)-(1.0/2.0)*mypow<T>(wingMeshFem->x23[i],2.0))/mypow<T>(wingMeshFem->l23[i],2.0);
+        wingMeshFem->e5[i]=((1.0/4.0)*mypow<T>(wingMeshFem->y31[i],2.0)-(1.0/2.0)*mypow<T>(wingMeshFem->x31[i],2.0))/mypow<T>(wingMeshFem->l31[i],2.0);
+        wingMeshFem->e6[i]=((1.0/4.0)*mypow<T>(wingMeshFem->y12[i],2.0)-(1.0/2.0)*mypow<T>(wingMeshFem->x12[i],2.0))/mypow<T>(wingMeshFem->l12[i],2.0);
 
         wingMeshFem->area[i]=(1.0/2.0)*(wingMeshFem->x31[i]*wingMeshFem->y12[i]-wingMeshFem->x12[i]*wingMeshFem->y31[i]);
 
@@ -1400,15 +1401,15 @@ T l23=wingMeshFem->l23[kk];
 //size Hx [1 x 9]
 elemFemArr->Hx[0][0]=S5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4])-S6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5]);
 elemFemArr->Hx[0][1]=-(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5)-(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
-elemFemArr->Hx[0][2]=(wingMeshFem->SF[ii][0])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->SF[ii][4])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hx[0][2]=(wingMeshFem->SF[ii][0])+(0.5*mypow<T>(C5,2)-0.25*mypow<T>(S5,2))*(wingMeshFem->SF[ii][4])+(0.5*mypow<T>(C6,2)-0.25*mypow<T>(S6,2))*(wingMeshFem->SF[ii][5]);
 //
 elemFemArr->Hx[0][3]=S6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5])-S4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3]);
 elemFemArr->Hx[0][4]=-(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
-elemFemArr->Hx[0][5]=(wingMeshFem->SF[ii][1])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hx[0][5]=(wingMeshFem->SF[ii][1])+(0.5*mypow<T>(C4,2)-0.25*mypow<T>(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*mypow<T>(C6,2)-0.25*mypow<T>(S6,2))*(wingMeshFem->SF[ii][5]);
 //
 elemFemArr->Hx[0][6]=S4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3])-S5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4]);
 elemFemArr->Hx[0][7]=-(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5);
-elemFemArr->Hx[0][8]=(wingMeshFem->SF[ii][2])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->SF[ii][4]);
+elemFemArr->Hx[0][8]=(wingMeshFem->SF[ii][2])+(0.5*mypow<T>(C4,2)-0.25*mypow<T>(S4,2))*(wingMeshFem->SF[ii][3])+(0.5*mypow<T>(C5,2)-0.25*mypow<T>(S5,2))*(wingMeshFem->SF[ii][4]);
 
 /*
 #if DEBUG_ON
@@ -1422,15 +1423,15 @@ for (int i=0;i<9;i++){
 //size Hx_xsi [1 x 9]
 elemFemArr->Hx_xsi[0]=S5*3.0/(2.0*l31)*(wingMeshFem->DxsiSF[ii][4])-S6*3.0/(2.0*l12)*(wingMeshFem->DxsiSF[ii][5]);
 elemFemArr->Hx_xsi[1]=-(wingMeshFem->DxsiSF[ii][4])*(3.0/4.0*S5*C5)-(wingMeshFem->DxsiSF[ii][5])*(3.0/4.0*S6*C6);
-elemFemArr->Hx_xsi[2]=(wingMeshFem->DxsiSF[ii][0])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->DxsiSF[ii][4])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->DxsiSF[ii][5]);
+elemFemArr->Hx_xsi[2]=(wingMeshFem->DxsiSF[ii][0])+(0.5*mypow<T>(C5,2)-0.25*mypow<T>(S5,2))*(wingMeshFem->DxsiSF[ii][4])+(0.5*mypow<T>(C6,2)-0.25*mypow<T>(S6,2))*(wingMeshFem->DxsiSF[ii][5]);
 //
 elemFemArr->Hx_xsi[3]=S6*3.0/(2.0*l12)*(wingMeshFem->DxsiSF[ii][5])-S4*3.0/(2.0*l23)*(wingMeshFem->DxsiSF[ii][3]);
 elemFemArr->Hx_xsi[4]=-(wingMeshFem->DxsiSF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->DxsiSF[ii][5])*(3.0/4.0*S6*C6);
-elemFemArr->Hx_xsi[5]=(wingMeshFem->DxsiSF[ii][1])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->DxsiSF[ii][3])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->DxsiSF[ii][5]);
+elemFemArr->Hx_xsi[5]=(wingMeshFem->DxsiSF[ii][1])+(0.5*mypow<T>(C4,2)-0.25*mypow<T>(S4,2))*(wingMeshFem->DxsiSF[ii][3])+(0.5*mypow<T>(C6,2)-0.25*mypow<T>(S6,2))*(wingMeshFem->DxsiSF[ii][5]);
 //
 elemFemArr->Hx_xsi[6]=S4*3.0/(2.0*l23)*(wingMeshFem->DxsiSF[ii][3])-S5*3.0/(2.0*l31)*(wingMeshFem->DxsiSF[ii][4]);
 elemFemArr->Hx_xsi[7]=-(wingMeshFem->DxsiSF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->DxsiSF[ii][4])*(3.0/4.0*S5*C5);
-elemFemArr->Hx_xsi[8]=(wingMeshFem->DxsiSF[ii][2])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->DxsiSF[ii][3])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->DxsiSF[ii][4]);
+elemFemArr->Hx_xsi[8]=(wingMeshFem->DxsiSF[ii][2])+(0.5*mypow<T>(C4,2)-0.25*mypow<T>(S4,2))*(wingMeshFem->DxsiSF[ii][3])+(0.5*mypow<T>(C5,2)-0.25*mypow<T>(S5,2))*(wingMeshFem->DxsiSF[ii][4]);
 
 /*
 #if DEBUG_ON
@@ -1442,15 +1443,15 @@ for (int i=0;i<9;i++){
 */
 elemFemArr->Hx_eta[0]=S5*3.0/(2.0*l31)*(wingMeshFem->DetaSF[ii][4])-S6*3.0/(2.0*l12)*(wingMeshFem->DetaSF[ii][5]);
 elemFemArr->Hx_eta[1]=-(wingMeshFem->DetaSF[ii][4])*(3.0/4.0*S5*C5)-(wingMeshFem->DetaSF[ii][5])*(3.0/4.0*S6*C6);
-elemFemArr->Hx_eta[2]=(wingMeshFem->DetaSF[ii][0])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->DetaSF[ii][4])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->DetaSF[ii][5]);
+elemFemArr->Hx_eta[2]=(wingMeshFem->DetaSF[ii][0])+(0.5*mypow<T>(C5,2)-0.25*mypow<T>(S5,2))*(wingMeshFem->DetaSF[ii][4])+(0.5*mypow<T>(C6,2)-0.25*mypow<T>(S6,2))*(wingMeshFem->DetaSF[ii][5]);
 //
 elemFemArr->Hx_eta[3]=S6*3.0/(2.0*l12)*(wingMeshFem->DetaSF[ii][5])-S4*3.0/(2.0*l23)*(wingMeshFem->DetaSF[ii][3]);
 elemFemArr->Hx_eta[4]=-(wingMeshFem->DetaSF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->DetaSF[ii][5])*(3.0/4.0*S6*C6);
-elemFemArr->Hx_eta[5]=(wingMeshFem->DetaSF[ii][1])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->DetaSF[ii][3])+(0.5*pow(C6,2)-0.25*pow(S6,2))*(wingMeshFem->DetaSF[ii][5]);
+elemFemArr->Hx_eta[5]=(wingMeshFem->DetaSF[ii][1])+(0.5*mypow<T>(C4,2)-0.25*mypow<T>(S4,2))*(wingMeshFem->DetaSF[ii][3])+(0.5*mypow<T>(C6,2)-0.25*mypow<T>(S6,2))*(wingMeshFem->DetaSF[ii][5]);
 //
 elemFemArr->Hx_eta[6]=S4*3.0/(2.0*l23)*(wingMeshFem->DetaSF[ii][3])-S5*3.0/(2.0*l31)*(wingMeshFem->DetaSF[ii][4]);
 elemFemArr->Hx_eta[7]=-(wingMeshFem->DetaSF[ii][3])*(3.0/4.0*S4*C4)-(wingMeshFem->DetaSF[ii][4])*(3.0/4.0*S5*C5);
-elemFemArr->Hx_eta[8]=(wingMeshFem->DetaSF[ii][2])+(0.5*pow(C4,2)-0.25*pow(S4,2))*(wingMeshFem->DetaSF[ii][3])+(0.5*pow(C5,2)-0.25*pow(S5,2))*(wingMeshFem->DetaSF[ii][4]);
+elemFemArr->Hx_eta[8]=(wingMeshFem->DetaSF[ii][2])+(0.5*mypow<T>(C4,2)-0.25*mypow<T>(S4,2))*(wingMeshFem->DetaSF[ii][3])+(0.5*mypow<T>(C5,2)-0.25*mypow<T>(S5,2))*(wingMeshFem->DetaSF[ii][4]);
 
 /*
 #if DEBUG_ON
@@ -1461,16 +1462,16 @@ for (int i=0;i<9;i++){
 #endif
 */
 elemFemArr->Hy[0][0]=-C5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4])+C6*3.0/(2.0*l12)*(wingMeshFem->SF[ii][5]);
-elemFemArr->Hy[0][1]=-(wingMeshFem->SF[ii][0])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->SF[ii][4])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hy[0][1]=-(wingMeshFem->SF[ii][0])-(0.5*mypow<T>(S5,2)-0.25*mypow<T>(C5,2))*(wingMeshFem->SF[ii][4])-(0.5*mypow<T>(S6,2)-0.25*mypow<T>(C6,2))*(wingMeshFem->SF[ii][5]);
 elemFemArr->Hy[0][2]=(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5)+(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
 //
 elemFemArr->Hy[0][3]=-C6*3/(2*l12)*(wingMeshFem->SF[ii][5])+C4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3]);
-elemFemArr->Hy[0][4]=-(wingMeshFem->SF[ii][1])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->SF[ii][5]);
+elemFemArr->Hy[0][4]=-(wingMeshFem->SF[ii][1])-(0.5*mypow<T>(S4,2)-0.25*mypow<T>(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*mypow<T>(S6,2)-0.25*mypow<T>(C6,2))*(wingMeshFem->SF[ii][5]);
 elemFemArr->Hy[0][5]=(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->SF[ii][5])*(3.0/4.0*S6*C6);
 //
 //-C4*3/(2*l23(k))*SF(ii,4)+C5*3/(2*l31(k))*SF(ii,5);
 elemFemArr->Hy[0][6]=-C4*3.0/(2.0*l23)*(wingMeshFem->SF[ii][3])+C5*3.0/(2.0*l31)*(wingMeshFem->SF[ii][4]);
-elemFemArr->Hy[0][7]=-(wingMeshFem->SF[ii][2])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->SF[ii][4]);
+elemFemArr->Hy[0][7]=-(wingMeshFem->SF[ii][2])-(0.5*mypow<T>(S4,2)-0.25*mypow<T>(C4,2))*(wingMeshFem->SF[ii][3])-(0.5*mypow<T>(S5,2)-0.25*mypow<T>(C5,2))*(wingMeshFem->SF[ii][4]);
 elemFemArr->Hy[0][8]=(wingMeshFem->SF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->SF[ii][4])*(3.0/4.0*S5*C5);
 
 /*
@@ -1482,15 +1483,15 @@ for (int i=0;i<9;i++){
 #endif
 */
 elemFemArr->Hy_xsi[0]=-C5*3.0/(2.0*l31)*(wingMeshFem->DxsiSF[ii][4])+C6*3.0/(2.0*l12)*(wingMeshFem->DxsiSF[ii][5]);
-elemFemArr->Hy_xsi[1]=-(wingMeshFem->DxsiSF[ii][0])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->DxsiSF[ii][4])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->DxsiSF[ii][5]);
+elemFemArr->Hy_xsi[1]=-(wingMeshFem->DxsiSF[ii][0])-(0.5*mypow<T>(S5,2)-0.25*mypow<T>(C5,2))*(wingMeshFem->DxsiSF[ii][4])-(0.5*mypow<T>(S6,2)-0.25*mypow<T>(C6,2))*(wingMeshFem->DxsiSF[ii][5]);
 elemFemArr->Hy_xsi[2]=(wingMeshFem->DxsiSF[ii][4])*(3.0/4.0*S5*C5)+(wingMeshFem->DxsiSF[ii][5])*(3.0/4.0*S6*C6);
 //
 elemFemArr->Hy_xsi[3]=-C6*3.0/(2.0*l12)*(wingMeshFem->DxsiSF[ii][5])+C4*3.0/(2.0*l23)*(wingMeshFem->DxsiSF[ii][3]);
-elemFemArr->Hy_xsi[4]=-(wingMeshFem->DxsiSF[ii][1])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->DxsiSF[ii][3])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->DxsiSF[ii][5]);
+elemFemArr->Hy_xsi[4]=-(wingMeshFem->DxsiSF[ii][1])-(0.5*mypow<T>(S4,2)-0.25*mypow<T>(C4,2))*(wingMeshFem->DxsiSF[ii][3])-(0.5*mypow<T>(S6,2)-0.25*mypow<T>(C6,2))*(wingMeshFem->DxsiSF[ii][5]);
 elemFemArr->Hy_xsi[5]=(wingMeshFem->DxsiSF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->DxsiSF[ii][5])*(3.0/4.0*S6*C6);
 //
 elemFemArr->Hy_xsi[6]=-C4*3.0/(2.0*l23)*(wingMeshFem->DxsiSF[ii][3])+C5*3.0/(2.0*l31)*(wingMeshFem->DxsiSF[ii][4]);
-elemFemArr->Hy_xsi[7]=-(wingMeshFem->DxsiSF[ii][2])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->DxsiSF[ii][3])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->DxsiSF[ii][4]);
+elemFemArr->Hy_xsi[7]=-(wingMeshFem->DxsiSF[ii][2])-(0.5*mypow<T>(S4,2)-0.25*mypow<T>(C4,2))*(wingMeshFem->DxsiSF[ii][3])-(0.5*mypow<T>(S5,2)-0.25*mypow<T>(C5,2))*(wingMeshFem->DxsiSF[ii][4]);
 elemFemArr->Hy_xsi[8]=(wingMeshFem->DxsiSF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->DxsiSF[ii][4])*(3.0/4.0*S5*C5);
 
 /*
@@ -1502,15 +1503,15 @@ for (int i=0;i<9;i++){
 #endif
 */
 elemFemArr->Hy_eta[0]=-C5*3.0/(2.0*l31)*(wingMeshFem->DetaSF[ii][4])+C6*3.0/(2.0*l12)*(wingMeshFem->DetaSF[ii][5]);
-elemFemArr->Hy_eta[1]=-(wingMeshFem->DetaSF[ii][0])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->DetaSF[ii][4])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->DetaSF[ii][5]);
+elemFemArr->Hy_eta[1]=-(wingMeshFem->DetaSF[ii][0])-(0.5*mypow<T>(S5,2)-0.25*mypow<T>(C5,2))*(wingMeshFem->DetaSF[ii][4])-(0.5*mypow<T>(S6,2)-0.25*mypow<T>(C6,2))*(wingMeshFem->DetaSF[ii][5]);
 elemFemArr->Hy_eta[2]=(wingMeshFem->DetaSF[ii][4])*(3.0/4.0*S5*C5)+(wingMeshFem->DetaSF[ii][5])*(3.0/4.0*S6*C6);
 //
 elemFemArr->Hy_eta[3]=-C6*3.0/(2.0*l12)*(wingMeshFem->DetaSF[ii][5])+C4*3.0/(2.0*l23)*(wingMeshFem->DetaSF[ii][3]);
-elemFemArr->Hy_eta[4]=-(wingMeshFem->DetaSF[ii][1])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->DetaSF[ii][3])-(0.5*pow(S6,2)-0.25*pow(C6,2))*(wingMeshFem->DetaSF[ii][5]);
+elemFemArr->Hy_eta[4]=-(wingMeshFem->DetaSF[ii][1])-(0.5*mypow<T>(S4,2)-0.25*mypow<T>(C4,2))*(wingMeshFem->DetaSF[ii][3])-(0.5*mypow<T>(S6,2)-0.25*mypow<T>(C6,2))*(wingMeshFem->DetaSF[ii][5]);
 elemFemArr->Hy_eta[5]=(wingMeshFem->DetaSF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->DetaSF[ii][5])*(3.0/4.0*S6*C6);
 //
 elemFemArr->Hy_eta[6]=-C4*3.0/(2.0*l23)*(wingMeshFem->DetaSF[ii][3])+C5*3.0/(2.0*l31)*(wingMeshFem->DetaSF[ii][4]);
-elemFemArr->Hy_eta[7]=-(wingMeshFem->DetaSF[ii][2])-(0.5*pow(S4,2)-0.25*pow(C4,2))*(wingMeshFem->DetaSF[ii][3])-(0.5*pow(S5,2)-0.25*pow(C5,2))*(wingMeshFem->DetaSF[ii][4]);
+elemFemArr->Hy_eta[7]=-(wingMeshFem->DetaSF[ii][2])-(0.5*mypow<T>(S4,2)-0.25*mypow<T>(C4,2))*(wingMeshFem->DetaSF[ii][3])-(0.5*mypow<T>(S5,2)-0.25*mypow<T>(C5,2))*(wingMeshFem->DetaSF[ii][4]);
 elemFemArr->Hy_eta[8]=(wingMeshFem->DetaSF[ii][3])*(3.0/4.0*S4*C4)+(wingMeshFem->DetaSF[ii][4])*(3.0/4.0*S5*C5);
 
 /*    
@@ -1588,7 +1589,7 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN){
     }
 
     fclose(fileOut);
-    printf("\n    EXITING CuFEMNum2DWriteDataInBinary...\n\n");
+    printf("\n    EXITING CuFEMNum2DWriteDataInBinary...");
 }
 
 //============================== FEM FUNCTIONS ==================================================//
@@ -1620,6 +1621,6 @@ void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F){
     }
 
     fclose(fileOut);
-    printf("\n    Exiting CuFEMNum2DWriteKglobMglobBCs...\n\n");
+    printf("\n    Exiting CuFEMNum2DWriteKglobMglobBCs...");
 
 }

@@ -22,21 +22,8 @@
 /*=========================================================================================*/
 int main(int argc, char **argv){
 
-    printf("    RUNNING IN MODE: %d (1. DOUBLE, 2. SINGLE)", PRECISION_MODE_FEM);
+    printf("\n----\n RUNNING IN MODE: %d (1. DOUBLE, 2. SINGLE) \n----\n", PRECISION_MODE_FEM);
 
-    mytype a = mypow<mytype>((mytype)2.0, (mytype)2.0);
-    printf("\n mypow = %f\n", a);
-
-    exit(5);
-
-/*
-    mytype a= 4;
-    mytype b;
-    printf("%d, ", sizeof(a));
-    printf("%d, ", sizeof((mytype)4.0));
-    printf("%f, ", a + 4.0f);
-    //exit(4);
-*/
     clock_t tstart, tend;
     tstart = clock();
 
@@ -75,20 +62,22 @@ int main(int argc, char **argv){
         shepard_interp_2d<mytype>(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
         pparam2, ni, wingMeshFem.xm, wingMeshFem.ym, distrThick);
 
-        printf("distrThick[i], distrLoad[i]\n");
-        for (int i = 0; i<10; i++){
-            printf("%f, %f\n", distrThick[i], distrLoad[i]);
-        }
+        //printf("distrThick[i], distrLoad[i]\n");
+        //for (int i = 0; i<10; i++){
+        //    printf("%f, %f\n", distrThick[i], distrLoad[i]);
+        //}
     }
 
     mytype **BeSt = NULL;
     allocate2Darray<mytype>(3, 3, &(BeSt)); //[GEN x 1]
+    /*
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             printf("%f,",BeSt[i][j]);
         } 
         printf("\n");
     }
+    */
     if (inDataFem.LL==2 || inDataFem.LL==1){
         BendingStiffness<mytype>(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
     }
@@ -102,21 +91,6 @@ int main(int argc, char **argv){
     //int rows, cols;
     squareMatInverse2<mytype>(10, 10, wingMeshFem.GGDST, wingMeshFem.GGin);
     squareMatInverse2<mytype>(6, 6, wingMeshFem.GGDKT, wingMeshFem.GGin2);
-
-    printf("\n GGin \n");
-    for (int i=0;i<10;i++){
-        for (int j=0;j<10;j++){
-            printf("%f,",wingMeshFem.GGin[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n GGin2 \n");
-    for (int i=0;i<6;i++){
-        for (int j=0;j<6;j++){
-            printf("%f,",wingMeshFem.GGin2[i][j]);
-        }
-        printf("\n");
-    }
 
     //************************************************************************************
     //  DKT PLATE SOLVER: LOCAL MATRIX (mloc, kloc, floc)
@@ -349,7 +323,7 @@ int main(int argc, char **argv){
 
 
     }
-
+/*
     for (int i = 0;i<10;i++){
         for (int j = 0;j<10;j++){
             printf("%10.4f,",elemFemArr.Kg[i][j]/pow(10.0,6.0));
@@ -361,9 +335,9 @@ int main(int argc, char **argv){
     for (int i = 0;i<10;i++){
         printf("%10.4f,\n",elemFemArr.Fglob[i][0]);
     }
+*/
 
-
-    printf("\n    Calculated Mg(:,kk), Kg(:,kk), Fglob(kk)");
+    printf("    Calculated Mg(:,kk), Kg(:,kk), Fglob(kk)");
 
     //************************************************************************************
     //  DKT PLATE SOLVER: GLOBAL MATRIX ASSEMBLY (Mglob, Kglob, Fglob)
@@ -404,14 +378,6 @@ int main(int argc, char **argv){
         }
     }   
 
-    printf("\n");
-    for (int i=0;i<10;i++){
-        for (int j=0;j<10;j++){
-            printf("%d, ", Jg[i][j]);
-        }
-        printf("\n");
-    }  
-
     mytype **Kglob, **Mglob;
     allocate2Darray<mytype>(wingMeshFem.GEN,wingMeshFem.GEN,&Kglob);
     allocate2Darray<mytype>(wingMeshFem.GEN,wingMeshFem.GEN,&Mglob);
@@ -426,30 +392,6 @@ int main(int argc, char **argv){
         }
     }
 
-
-    printf("Kglob \n");
-    for (int i = wingMeshFem.GEN-11;i<wingMeshFem.GEN;i++){
-        for (int j = wingMeshFem.GEN-11;j<wingMeshFem.GEN;j++){
-            printf("%10.4f, ",Kglob[i][j]/pow(10.0,10.0));
-        }
-        printf("\n");
-    }
-
-
-    printf("Mglob \n");
-    for (int i = wingMeshFem.GEN-11;i<wingMeshFem.GEN;i++){
-        for (int j = wingMeshFem.GEN-11;j<wingMeshFem.GEN;j++){
-            printf("%10.4f, ",Mglob[i][j]);
-        }
-        printf("\n");
-    }
-
-    printf("Fglob \n");
-    for (int i = wingMeshFem.GEN-10;i<wingMeshFem.GEN;i++){
-        printf("%f, ",elemFemArr.Fglob[i][0]);
-    }
-
-    //exit(5);
     printf("\n    Kglob, Mglob OK... DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)\n");
 
     //************************************************************************************
@@ -521,11 +463,6 @@ int main(int argc, char **argv){
     // solve linear system of eqs. using LAPACK sgels_ function
     linearSystemSolve<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
 
-    printf("Usol[i]\n\n");
-    for (int i = 0; i<100;i++){
-        printf("%f,",Usol[i][0]);
-    }
-
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
     //************************************************************************************
@@ -533,17 +470,10 @@ int main(int argc, char **argv){
     CuFEMNum2DWriteDataInBinary<mytype>(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
 
     CuFEMNum2DWriteMatrix<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Mglob_aug, Fglob_aug);
+
+    //----
     // TODO: MODAL ANALYSIS
-    
-        
-
-
-//----
-
-
-
-
-
+    //----
 
     deallocate2Darray<int>(9,iii);
     deallocate2Darray<int>(9,rr);

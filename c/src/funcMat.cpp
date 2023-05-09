@@ -9,9 +9,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstddef> // for NULL
+#include <math.h> 
+
 //
 template<class T>
-T mypow(T base, T power);
+T mypow(T base);
+//
+template<class T>
+T mysqrt(T base, T root);
 //
 template<class T>
 void allocate1Darray(int rows, T **arrIn);
@@ -51,6 +56,16 @@ T mypow(T base, T power){
     #endif
 }
 
+template<class T>
+T mysqrt(T base){
+
+    #if PRECISION_MODE_FEM == 1 //double
+        return sqrt(base);
+    #endif
+    #if PRECISION_MODE_FEM == 2 //single
+        return sqrtf(base);
+    #endif
+}
 
 // Allocate 1-D array based on double pointer type
 template<class T>
