@@ -1,6 +1,0 @@
-Variable thickness affects the results
-
-max-w: 0.1310
-max-w: 0.0515
-
-bx -> 0.03

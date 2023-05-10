@@ -20,7 +20,7 @@ BeSt=zeros(3,3,length(thick));
 % la=(E*thick^3/(12*(1-v^2)));
 % -------------------------------------------------------------------------
 for kk = 1:length(thick)   
-    la=(E*thick(kk)^3/(12*(1-v^2))) %[1,Nelem]
+    la=(E*thick(kk)^3/(12*(1-v^2))); %[1,Nelem]
     BeSt(1,1,kk)=la;
     BeSt(2,2,kk)=la;
     BeSt(3,3,kk)=(1-v)*la/2;

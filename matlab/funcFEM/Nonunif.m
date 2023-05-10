@@ -65,32 +65,32 @@ if importFromFile.toggle
 %     prepareLoad_csv(xx,yy,tx_modified,'eurodyn_linear.csv',2); %prepare .csv file for ANSYS
     prepareLoad_csv(xx,yy,tx_modified,'eurodyn_naca0012.csv',2); %prepare .csv file for ANSYS
     
-    if debugOn
-        figure
-        subplot(2,2,[ 1 2]);
-        plot(xc_fem_data(1,:),th_fem_data(1,:),'ro');
-        hold on;grid on;
-        plot(xc_fem_data(1,:),tx_modified(1,:),'b^');
-%         plot(xc_fem_data(1,:),tx_linear(1,:),'k^-');
-        legend("original", "modified")
-        xlabel('x [m]');ylabel('y [m]');
-        title('plate thickness spanwise (from mat-file)');
-
-%         figure;
-        subplot(2,2,3);
-        hold on;grid on;
-        surf(xx,yy,fx);
-        title('bem data for fx');
-        xlabel('x-axis');
-        ylabel('y-axis');
-        zlabel('P [Pa]');view([-25 25])
-
-        subplot(2,2,4);hold on;grid on;
-        surf(xx,yy,tx_modified);
-        title('bem data for tx');
-        xlabel('x-axis');
-        ylabel('y-axis');view([-25 25])
-    end
+% %     if debugOn
+% %         figure
+% %         subplot(2,2,[ 1 2]);
+% %         plot(xc_fem_data(1,:),th_fem_data(1,:),'ro');
+% %         hold on;grid on;
+% %         plot(xc_fem_data(1,:),tx_modified(1,:),'b^');
+% % %         plot(xc_fem_data(1,:),tx_linear(1,:),'k^-');
+% %         legend("original", "modified")
+% %         xlabel('x [m]');ylabel('y [m]');
+% %         title('plate thickness spanwise (from mat-file)');
+% % 
+% % %         figure;
+% %         subplot(2,2,3);
+% %         hold on;grid on;
+% %         surf(xx,yy,fx);
+% %         title('bem data for fx');
+% %         xlabel('x-axis');
+% %         ylabel('y-axis');
+% %         zlabel('P [Pa]');view([-25 25])
+% % 
+% %         subplot(2,2,4);hold on;grid on;
+% %         surf(xx,yy,tx_modified);
+% %         title('bem data for tx');
+% %         xlabel('x-axis');
+% %         ylabel('y-axis');view([-25 25])
+% %     end
 
 end
 
@@ -120,34 +120,62 @@ fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 10.55, length(xm(:)), xm,
 txx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx_modified(:), 10.55, length(xm(:)), xm, ym);
         
 if debugOn
-    figure;hold on;grid on;
-    plot3(xm,ym,fxx,'o');
+        figure;
+        colormap(viridis);
+        subplot(2,2,[ 1 2]);
+        plot(xc_fem_data(1,:),th_fem_data(1,:),'ro');
+        hold on;grid on;
+        h1=plot(xm,txx,'b^','MarkerSize',2);
+%         plot(xc_fem_data(1,:),tx_linear(1,:),'k^-');
+        legend("original", "interpolated")
+        xlabel('x [m]');ylabel('y [m]');
+        title('plate thickness spanwise (from mat-file)');
 
-    title('NEW matlab interpolated expression for fxx');
-    xlabel('x-axis');
-    ylabel('y-axis');view([-25 25])
-    
-    figure;hold on;grid on;
-    plot3(xm,ym,txx,'o');
-    plot3(xc_fem_data(1,:),yc_fem_data(1,:),tx_modified(1,:),'rs--');
-    title('NEW matlab interpolated expression for txx');
-    xlabel('x-axis');
-    ylabel('y-axis');view([-25 25])
+%         figure;
+        subplot(2,2,3);
+        hold on;grid on;
+        surf(xx,yy,fx);
+        plot3(xm,ym,fxx,'b^', 'MarkerSize',2);
+        title('bem data for fx');
+        xlabel('x-axis');
+        ylabel('y-axis');
+        zlabel('P [Pa]');view([-25 25])
 
-    figure
-    pdeplot(p,e,t,'xydata',fxx,'zdata',fxx,'colormap','jet')
-    xlabel('x-axis');
-    xlabel('y-axis');
-    xlabel('z-axis');grid on;hold on;view([-25 25])
-    title('Forcing F(x,y)')
-    
-    figure
-    hold on;plot3(xm,ym,txx,'ks')
-    pdeplot(p,e,t,'xydata',txx,'zdata',txx,'colormap','copper')
-    xlabel('x-axis');
-    xlabel('y-axis');
-    xlabel('z-axis');grid on;hold on;view([-25 25])
-    title('thickness thick(x,y)')
+        subplot(2,2,4);hold on;grid on;
+        surf(xx,yy,tx_modified);
+        plot3(xm,ym,txx,'b^', 'MarkerSize',2);
+        title('bem data for tx');
+        xlabel('x-axis');
+        ylabel('y-axis');view([-25 25])
+
+% %     figure;hold on;grid on;
+% %     plot3(xm,ym,fxx,'o');
+% % 
+% %     title('NEW matlab interpolated expression for fxx');
+% %     xlabel('x-axis');
+% %     ylabel('y-axis');view([-25 25])
+% %     
+% %     figure;hold on;grid on;
+% %     plot3(xm,ym,txx,'o');
+% %     plot3(xc_fem_data(1,:),yc_fem_data(1,:),tx_modified(1,:),'rs--');
+% %     title('NEW matlab interpolated expression for txx');
+% %     xlabel('x-axis');
+% %     ylabel('y-axis');view([-25 25])
+% % 
+% %     figure
+% %     pdeplot(p,e,t,'xydata',fxx,'zdata',fxx,'colormap','jet')
+% %     xlabel('x-axis');
+% %     xlabel('y-axis');
+% %     xlabel('z-axis');grid on;hold on;view([-25 25])
+% %     title('Forcing F(x,y)')
+% %     
+% %     figure
+% %     hold on;plot3(xm,ym,txx,'ks')
+% %     pdeplot(p,e,t,'xydata',txx,'zdata',txx,'colormap','copper')
+% %     xlabel('x-axis');
+% %     xlabel('y-axis');
+% %     xlabel('z-axis');grid on;hold on;view([-25 25])
+% %     title('thickness thick(x,y)')
 end
 
 % error('i')
