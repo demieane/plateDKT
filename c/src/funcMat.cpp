@@ -555,7 +555,7 @@ void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals){
         #endif
         for (int i = 0;i<n_eigs;i++){
             eigVals[i]=res[i];
-            printf("        Eigvals[%d]=%f \n",i, eigVals[i]/mypow<T>(10.0,3.0));
+            printf("        Eigvals[%d]=%f \n",i, eigVals[i]);
         }
         
 

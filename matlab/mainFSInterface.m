@@ -183,8 +183,8 @@ if lll==3%distributed load & distributed thickness
     xcp=xc_fem_data;
     ycp=yc_fem_data;
     tinstance = 100;
-    fcp = DCoefpres(:,:,tinstance);
-    tcp= th_fem_data;
+    fcp = DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
+    tcp= th_fem_data.*0 + h;
     fwrite(file, length(xcp(:)),'int');
     % x-coords
     for ii = 1:length(xcp(:))
@@ -329,7 +329,7 @@ hh=pdeplot(pp,ee,tt,'XYData',w_fromC,"ZData",w_fromC,'colormap',viridis);
 colorbar;shading interp;view([25 25]);%axis equal;
 zlim([-2.5*max(max(abs(w_fromC))) 2.5*max(max(abs(w_fromC)))])
 xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
-title('C solver (single precision) [RIGHT]')
+title(['C solver (', num2str(precision),' precision) [RIGHT]'])
 subplot(2,2,4);
 hold on;grid on;
 pdeplot(pp,ee,tt,'XYData',w_fromC,'colormap',viridis,'contour','on');
