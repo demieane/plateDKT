@@ -1553,8 +1553,9 @@ void pseudoMassDKT(int ii, int kk, struct triangleDKT<T> *wingMeshFem, struct fe
 T xsi = wingMeshFem->SFm[ii][1];
 T eta = wingMeshFem->SFm[ii][2];
 
-T LWtemp[]={1.0, xsi, eta, xsi*eta, mypow<T>(xsi,2), mypow<T>(eta,2), mypow<T>(xsi,2)*eta, mypow<T>(eta,2)*xsi, mypow<T>(xsi,3), mypow<T>(eta,3)}; //[1 x 10]
-T Ltemp[]={1.0, xsi, eta, xsi*eta, mypow<T>(xsi,2), mypow<T>(eta,2)}; // [1 x 6]
+T LWtemp[]={(T)1.0, xsi, eta, xsi*eta, mypow<T>(xsi,2.0), mypow<T>(eta,2.0), 
+            mypow<T>(xsi,2.0)*eta, mypow<T>(eta,2.0)*xsi, mypow<T>(xsi,3.0), mypow<T>(eta,3.0)}; //[1 x 10]
+//T Ltemp[]={(T)1.0, xsi, eta, xsi*eta, mypow<T>(xsi,2.0), mypow<T>(eta,2.0)}; // [1 x 6]
 
 for (int i = 0; i<10; i++){
     elemFemArr->LW[0][i] = LWtemp[i];

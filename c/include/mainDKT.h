@@ -15,7 +15,7 @@
     #endif
 
     #ifndef PRECISION_MODE_FEM
-        #define PRECISION_MODE_FEM 1 /* 1. DOUBLE, 2. SINGLE */
+        #define PRECISION_MODE_FEM 2 /* 1. DOUBLE, 2. SINGLE */
         #if PRECISION_MODE_FEM == 1
             typedef double mytype;
         #endif

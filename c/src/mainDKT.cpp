@@ -481,8 +481,10 @@ int main(int argc, char **argv){
         //http://matlab.izmiran.ru/help/techdoc/ref/eig.html
         // Real nonsymmetric A, real general B: sggev() from LAPACK
         mytype *eigVals;
-        allocate1Darray<mytype>(5,&eigVals);
-        myeigs<mytype>(sizeKMglob_aug, Kglob_aug, Mglob_aug, eigVals);
+        int n_eigs = 5;
+        allocate1Darray<mytype>(n_eigs,&eigVals);
+        printf(" (w/2/pi)");
+        myeigs<mytype>(sizeKMglob_aug, Kglob_aug, Mglob_aug, n_eigs, eigVals);
     #endif
     //----
 

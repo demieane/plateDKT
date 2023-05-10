@@ -40,7 +40,7 @@ template<class T>
 void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol);
 //
 template<class T>
-void myeigs(int N, T **arrA, T **arrB, T *eigVals);
+void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals);
 //
 
 // from funcBLAS.c
@@ -448,7 +448,7 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
 }
 
 template<class T>
-void myeigs(int N, T **arrA, T **arrB, T *eigVals){
+void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals){
 
     /* 
     INFO 
@@ -517,12 +517,9 @@ void myeigs(int N, T **arrA, T **arrB, T *eigVals){
     allocate1Darray<T>(sizeWork, &WORK);
 
     int INFO = 0;
-    size_t dummy1;
-    size_t dummy2;
+    size_t dummy1 = 0;
+    size_t dummy2 = 0;
 
-    T *WR, *WI;
-    allocate1Darray<T>(N, &WR);
-    allocate1Darray<T>(N, &WI);
     /* 
     ?GGEV: a simple driver that computes all the generalized eigenvalues of (A, B), 
     and optionally the left or right eigenvectors (or both);
@@ -530,36 +527,55 @@ void myeigs(int N, T **arrA, T **arrB, T *eigVals){
     #if PRECISION_MODE_FEM == 1
         dggev_(&JOBVL, &JOBVR, &N, AA, &LDA, BB, &LDB, ALPHAR,
             ALPHAI, BETA, VL[0], &LDVL, VR[0], &LDVR, WORK, &sizeWork, &INFO, dummy1, dummy2);
-
-        //dgeev_(&JOBVL, &JOBVR, &N, AA, &LDA, WR, WI, VL[0], &LDVL, VR[0], &LDVR, WORK, &sizeWork, &INFO,
-        //    dummy1,dummy2);
+    #endif
+    #if PRECISION_MODE_FEM == 2
+        sggev_(&JOBVL, &JOBVR, &N, AA, &LDA, BB, &LDB, ALPHAR,
+            ALPHAI, BETA, VL[0], &LDVL, VR[0], &LDVR, WORK, &sizeWork, &INFO, dummy1, dummy2);
     #endif
 
-    printf(", INFO: %d, \n", INFO);
+    if (INFO == 0) 
+    {
+        printf(", INFO: %d. \n", INFO);
+        /* PROCESSING TO FIND THE SMALLEST EIGENVALUES */
 
-    /* PROCESSING TO FIND THE SMALLEST EIGENVALUES */
-
-    T *res = (T*)malloc((N) *sizeof(T));
-    T kernel, r1, r2;
-    for (int i = 0;i<N;i++){
-        r1 = ALPHAR[i]/ BETA[i];
-        r2 = ALPHAI[i]/ BETA[i];
-        kernel = mypow<T>(r1,2.0)+mypow<T>(r2,2.0);
-        res[i] = mysqrt<T>(kernel); ///BETA[i]; //real eigenvalues
-        //printf("r1=%10.4f, r2=%f \n", r1, r2);
-    }
-    char ID = 'I';
-    #if PRECISION_MODE_FEM == 1
-        dlasrt_(&ID,&N,res,&INFO,dummy1);
-        for (int i = 0;i<5;i++){
-            printf("        Res[%d]=%f \n",i, res[i]/mypow<T>(10.0,3.0));
+        T *res = (T*)malloc((N) *sizeof(T));
+        T kernel, r1, r2;
+        for (int i = 0;i<N;i++){
+            r1 = ALPHAR[i]/ BETA[i];
+            r2 = ALPHAI[i]/ BETA[i];
+            kernel = mysqrt<T>(mypow<T>(r1,2.0)+mypow<T>(r2,2.0));
+            res[i] = mysqrt<T>(kernel)/2.0/M_PI;
         }
-    #endif
+        char ID = 'I';
+        #if PRECISION_MODE_FEM == 1
+            dlasrt_(&ID,&N,res,&INFO,dummy1);
+        #endif
+        #if PRECISION_MODE_FEM == 2
+            slasrt_(&ID,&N,res,&INFO,dummy1);
+        #endif
+        for (int i = 0;i<n_eigs;i++){
+            eigVals[i]=res[i];
+            printf("        Eigvals[%d]=%f \n",i, eigVals[i]/mypow<T>(10.0,3.0));
+        }
+        
+
+        free(res);
+    }
+    else 
+    {
+        printf("\n INFO: %d, \n", INFO);
+    }
+    
+    
     
     free(AA);
     free(BB);
-    //free(WR);
-    //free(WI);
+    free(WORK);
+    free(ALPHAR);
+    free(ALPHAI);
     free(BETA);
+    
+    deallocate2Darray<T>(LDVL, VL);
+    deallocate2Darray<T>(LDVR, VR);
 
 }
