@@ -1,4 +1,4 @@
-function [Fglob1] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t,wf)
+function [Fglob1] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 

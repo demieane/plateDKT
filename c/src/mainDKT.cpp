@@ -488,6 +488,50 @@ int main(int argc, char **argv){
     #endif
     //----
 
+    #if (DYNAMIC_ANALYSIS == 1)
+
+        if (inDataFem.LL == 3){
+            printf("\n    Starting DYNAMIC ANALYSIS.\n");
+            mytype **Cdamp; // Rayleigh damping
+            allocate2Darray<mytype>(sizeKMglob_aug,sizeKMglob_aug,&Cdamp);
+
+            mytype a = 0, b=0;
+            RayleighDampingCoefs<mytype>(&a, &b); // TO DO (based on eigenfrequencies)
+            printf("    a=%f, b=%f", a, b);
+
+            matSum2(a, b, sizeKMglob_aug, sizeKMglob_aug, Mglob_aug, Kglob_aug, Cdamp); //C = a*Mglob+b*Kglob;
+
+            printf("\nCdamp: \n");
+            for (int i=0;i<10;i++){
+                for (int j=0;j<10;j++){
+                    printf("%10.4f,", Cdamp[i][j]/mypow<mytype>(10.0,3.0));
+                }
+                printf("\n");
+            }
+            
+            mytype t = 0.0;
+            mytype dt = inDataFem.dt;
+            mytype Tp = 2*M_PI/inDataFem.omega3; // period of motion
+            int NtimeSteps = ceil((inDataFem.Nper*Tp)/dt)+1;
+            printf("NtimeSteps=%d ", NtimeSteps);
+            for (int d = 0; d< NtimeSteps ; d++){
+                t = t + d*dt; // t in [sec]
+
+
+
+
+            }
+
+
+        }
+        else{
+            printf("    Attempting DYNAMIC ANALYSIS with uniform or point load. Please support time\n"
+                    "dependent forcing data");
+        }     
+
+    #endif
+
+
     deallocate2Darray<int>(9,iii);
     deallocate2Darray<int>(9,rr);
 

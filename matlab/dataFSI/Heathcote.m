@@ -1,5 +1,12 @@
 %% POST-PROCESSING;
 
+% solutionNewmark  = solution;
+% save newmark solutionNewmark
+% solutionImplicitEuler  = solution;
+% save implicitEuler solutionImplicitEuler
+% solutionCrankNicolson  = solution;
+% save crankNicolson solutionCrankNicolson
+
 % load FEM_sol2
 % BnodesTIP =find(e(5,:)==3) 
 BnodesTIP =find(e(5,:)==1) 
@@ -14,12 +21,23 @@ BBnodesTIP=sort(BBnodesTIP);
 % Bdofs3=ID(3,BBnodesTIP);%by
 NODE = 1;%round(length(BBnodesTIP));
 
+load newmark;
+load implicitEuler;
+load crankNicolson;
+
 figure;
 hold on;grid on;
 for ii = 2:length(t)
-    w = solution.w(:,ii);
-    plot(t(ii)/inData.T3,w(BBnodesTIP(NODE)),'bo');
+    wNewmark = solutionNewmark.w(:,ii);
+    h1=plot(t(ii)/inData.T3,wNewmark(BBnodesTIP(NODE)),'bo', 'MarkerSize',2);
+    %
+    wImplicitEuler = solutionImplicitEuler.w(:,ii);
+    h2=plot(t(ii)/inData.T3,wImplicitEuler(BBnodesTIP(NODE)),'r^', 'MarkerSize',2);
+    %
+    wCrankNicolson = solutionCrankNicolson.w(:,ii);
+    h3=plot(t(ii)/inData.T3,wCrankNicolson(BBnodesTIP(NODE)),'ks', 'MarkerSize',2);
 end
+legend([h1 h2 h3], 'newmark', 'implicit euler','crank-nicolson')
 xlabel('t [s]');ylabel('w tip')
 
 figure;hold on;

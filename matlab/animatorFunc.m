@@ -42,6 +42,7 @@ set(hax,'ZLim',[-max(max(abs(solution.w))) max(max(abs(solution.w)))]);
 
 hBCs = plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
 hPlate2=surf(xx,yy,F(xx,yy));
+colormap(viridis);
 % colorbar;shading interp;
 % hPlate=plot3(pp(1,:),pp(2,:),w,'o','MarkerSize',3);
 view([-25 25]);

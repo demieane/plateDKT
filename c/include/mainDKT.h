@@ -14,6 +14,10 @@
         #define MODAL_ANALYSIS 1 /* Find eigenfrequencies */
     #endif
 
+    #ifndef DYNAMIC_ANALYSIS
+        #define DYNAMIC_ANALYSIS 1 /* Time-varying load */
+    #endif
+
     #ifndef PRECISION_MODE_FEM
         #define PRECISION_MODE_FEM 1 /* 1. DOUBLE, 2. SINGLE */
         #if PRECISION_MODE_FEM == 1

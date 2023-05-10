@@ -76,6 +76,9 @@ struct InDataRecFem{
     // ONLY FOR DISTRIBUTED PROPERTIES LOAD/THICKNESS <--BELOW
     int sizexcp;
     T *xcp = NULL, *ycp = NULL, *fcp = NULL, *tcp = NULL;
+    T omega3;
+    T dt;
+    T Nper;
 };
 
 template<class T>
@@ -211,6 +214,14 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN);
 //
 template<class T>
 void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F);
+//
+//-----------------added in 10/05/2023
+template<class T>
+void RayleighDampingCoefs(T *a, T *b); // TO DO
+//
+template<class T>
+void createRHS(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem, T *distrLoad, T **Fglob_aug); // TO DO: Consider using it separately in the previous loop 
+
 
 /*=========================================================================================*/
 /* Definition of the functions BELOW */
@@ -332,6 +343,10 @@ void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem ){
             fread(&(inDataFem->tcp[i]),sizeof(T),1,file);
         }
     }
+    /* DYNAMIC ANALYSIS */
+    fread(&(inDataFem->omega3), sizeof(T) , 1, file);
+    fread(&(inDataFem->dt), sizeof(T) , 1, file);
+    fread(&(inDataFem->Nper), sizeof(T) , 1, file);
     fclose(file);
 
 #if DEBUG_ON
@@ -1625,3 +1640,23 @@ void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F){
     printf("\n    Exiting CuFEMNum2DWriteKglobMglobBCs...");
 
 }
+
+//======================DYNAMIC ANALYSIS==============================/
+
+template<class T>
+void RayleighDampingCoefs(T *a, T *b){
+    
+    *a = 0.0584;
+    *b = 6.9372/mypow<T>(10.0,4.0);
+
+
+}
+
+template<class T>
+void createRHS(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem,
+                 T *distrLoad, T **Fglob_aug){
+                    
+
+
+
+} // TO DO: Consider using it separately in the previous loop 

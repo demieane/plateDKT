@@ -1,11 +1,20 @@
 TO DO:
 
+0. Find an alternative mesh generator (adaptive mesh in .c)?
+1. shepard_interp_2d in cuda already available?
+
 1. FEM in single or double precision? Prepare a version that has both on switch [DONE]
 2. Eigen-analysis using lapack functions [DONE]
 3. Very simple CUDA version of the FEM code (only the necessary stuff) [PENDING..]
 4. Free structures [DONE]
 
 5. Time integration (give an animation back to Matlab)
-
+    [] Rayleigh damping function (in the end)
+    [] Fglob re-calculate
+    [] Crank-nicolson time integration func
+    [] The time-varying forcing data need to be supplemented for each time step, 
+        to work with an example I can either provide the distributed load at each time instance
+        or add ficticiously a cos(wt) amplitude for testing. 
+    [] solution structure & solution retriever func
 
 

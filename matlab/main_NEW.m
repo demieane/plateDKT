@@ -22,7 +22,7 @@ close all;
 clc;
 
 MODAL_ANALYSIS = 1;
-DYNAMIC_ANALYSIS = 0;
+DYNAMIC_ANALYSIS = 1;
 
 tstart = tic;   
 
@@ -394,21 +394,19 @@ Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
 
 % COMMENT: The boundary conditions are enforced as extra equations
 % in the sense of constraints in the present version
-BBnodes_old=BBnodes; %DIMITRA
-BBnodes=Bdofs;%DIMITRA
 
-kkk=zeros(length(BBnodes),GEN);
-mmm=zeros(length(BBnodes),GEN);
+kkk=zeros(length(Bdofs),GEN);
+mmm=zeros(length(Bdofs),GEN);
 Dofs=length(pp)*3;
 
 % Totbound=reshape(BBound',1,4*size(BBound,2));
 %***************************ADDITION***************************************
-for j=1:length(BBnodes)
+for j=1:length(Bdofs)
     kkk(j,:)=[zeros(1,Bdofs(j)-1) 1 zeros(1,Dofs-Bdofs(j))];
 end
 %**************************************************************************
-Kglob=[Kglob kkk'; kkk zeros(length(BBnodes))];
-Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];
+Kglob=[Kglob kkk'; kkk zeros(length(Bdofs))];
+Mglob=[Mglob mmm'; mmm zeros(length(Bdofs))];
 
 % Kglob_dense2=[Kglob_dense kkk'; kkk zeros(length(BBnodes))];
 % Kglob_dense2(GEN+1:end,1:27)
@@ -419,13 +417,13 @@ if lll==1
     Fglob(ID(1,PNODE))=P_load;
 end
 
-Fglob1=[Fglob; zeros(length(BBnodes),1)];
+Fglob1=[Fglob; zeros(length(Bdofs),1)];
 
 U = mldivide(Kglob,Fglob1); %or backslash
 
 telapsed = toc(tstart);
 
-BBnodes=BBnodes_old;%DIMITRA
+% BBnodes=BBnodes_old;%DIMITRA
 
 %==========================================================================
 %                            POST-PROCESSOR
@@ -454,7 +452,6 @@ colorbar;shading interp;
 xlabel('x-axis');ylabel('y-axis');
 title('(contour)','FontWeight','normal');
 
-
 max(abs(w))/inData.a3;
 
 save solMatlab U
@@ -468,17 +465,22 @@ if MODAL_ANALYSIS == 1
     freq'
 end
 
+% error('er')
+
+%% TIME-MARCHING
 if DYNAMIC_ANALYSIS == 1
 
-    %% TIME-MARCHING
+    newmark = 0;
+    implicitEuler = 0;
+    crankNicolson = 1;
+   
     T=2*pi/inData.omega3;%sec
     % wf=2*pi/T; %rad/s
     ddt=inData.dt;%T/100; %time-step
     t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
-
-    newmark = 1;
-    implicitEuler = 0;
-    crankNisolson =0 ; %like newmark
+    
+    Ntimesteps = ceil((inData.Nper)*T/ddt)+1
+    length(t)
 
     d=1; %starting point
 
@@ -491,11 +493,11 @@ if DYNAMIC_ANALYSIS == 1
     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
     % a
     % b
+    Cfull=full(C);Cfull(1:10,1:10)
 
     % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 
-    error('er')
-    [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d),99);
+    [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
     Fm = [Fglob_t; zeros(sizeM,1)];
     if d==1
         G = zeros(length(Fm),length(t));
@@ -508,17 +510,17 @@ if DYNAMIC_ANALYSIS == 1
             'w_dot',[], 'bx_dot',[], 'by_dot', [],...
             'uu', [], 'uu_dot',[]);    
 
+    error('er')
     if newmark
         qdot2=zeros(sizeM,length(t)); %acceleration 
         beta = 0.25;
         gamma = 0.5;
-        [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d),99);
+        [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
 
         %initialization    
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
         BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
         qdot2(:,1)=AA\BB;
-
     end
 
     if newmark
@@ -528,7 +530,7 @@ if DYNAMIC_ANALYSIS == 1
             % Update load vector
             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
     %         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
-            [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d+1),99);
+            [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
 
             pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
@@ -555,11 +557,11 @@ if DYNAMIC_ANALYSIS == 1
             d
             % Update load vector
             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-            [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d+1),99);
+            [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
 
-            theta = implicitEuler*(1) + crankNisolson*(1/2);
+            theta = implicitEuler*(1) + crankNicolson*(1/2);
             u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
@@ -569,7 +571,6 @@ if DYNAMIC_ANALYSIS == 1
     %
     end
 
-    BBnodes=BBnodes_old;%DIMITRA
 
     hmax = max(max(abs(solution.w)))
 
@@ -588,7 +589,7 @@ if DYNAMIC_ANALYSIS == 1
     xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
     %     title('w displacement','FontWeight','normal');
     subplot(1,3,3);hold on;grid on;
-    pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
+    pdeplot(pp,ee,tt,'XYData',w,'colormap',viridis,'contour','on');
     colorbar;shading interp;
     xlabel('x-axis');ylabel('y-axis');
     title('(contour)','FontWeight','normal');
@@ -598,7 +599,7 @@ if DYNAMIC_ANALYSIS == 1
     % save FEM_sol_h15_r_h2
     save FEM_sol_h182_r_h2
 
-    error('er')
+%     error('er')
     % save FEM_sol_h05_r_h1
 
 

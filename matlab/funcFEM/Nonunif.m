@@ -61,9 +61,9 @@ if importFromFile.toggle
 %     tx_modified = th_fem_data;
 
 
-    prepareLoad_csv(xx,yy,fx,'h182_r.csv',1); %prepare .csv file for ANSYS
+    prepareLoad_csv(xx,yy,fx,'load_fx.csv',1); %prepare .csv file for ANSYS
 %     prepareLoad_csv(xx,yy,tx_modified,'eurodyn_linear.csv',2); %prepare .csv file for ANSYS
-    prepareLoad_csv(xx,yy,tx_modified,'eurodyn_naca0012.csv',2); %prepare .csv file for ANSYS
+    prepareLoad_csv(xx,yy,tx_modified,'sections_tx.csv',2); %prepare .csv file for ANSYS
     
 % %     if debugOn
 % %         figure

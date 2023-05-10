@@ -204,6 +204,9 @@ if lll==3%distributed load & distributed thickness
         fwrite(file, tcp(ii),precision);
     end
 end
+fwrite(file, inData.omega3, precision);
+fwrite(file, inData.dt, precision);
+fwrite(file, inData.Nper, precision);
 fclose(file);
 
 if modeFem == 1
@@ -212,7 +215,7 @@ elseif modeFem == 2
     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
 end
 
-% error('er')
+error('er')
 %% RUN THE CODE
 if modeFem == 1
     system('../c/./mainDKT_CPP');
