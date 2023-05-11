@@ -1,4 +1,4 @@
-function [Fglob1] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes)
+function [Fglob1] = createFglob(lll,GEN,Nelem,P_load,Fx,Area,LM,BBnodes)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -47,11 +47,11 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
 %     kloc=kb;
     %************************** ADDITION
 %         floc=P*HW'*floc1;
-%     if lll==2 % uniform load
-%         floc=Area(kk)*P_load/3*[1 0 0 1 0 0 1 0 0]';% lumped mass approach for the uniform load
-%     elseif lll==3 %distributed load via mapping func
+    if lll==2 % uniform load
+        floc=Area(kk)*P_load/3*[1 0 0 1 0 0 1 0 0]';% lumped mass approach for the uniform load
+    elseif lll==3 %distributed load via mapping func
         floc=Area(kk)*Fx_new(kk)/3*[1 0 0 1 0 0 1 0 0]';
-%     end
+    end
     %***********************************
 %     Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
 % 
@@ -63,6 +63,8 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     %***********************************
 end
 
-    Fglob1=[Fglob; zeros(length(BBnodes),1)];
+
+Fglob1=[Fglob; zeros(length(BBnodes),1)];
+
 end
 

@@ -497,7 +497,7 @@ if DYNAMIC_ANALYSIS == 1
 
     % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 
-    [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
+    [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
     Fm = [Fglob_t; zeros(sizeM,1)];
     if d==1
         G = zeros(length(Fm),length(t));
@@ -510,12 +510,12 @@ if DYNAMIC_ANALYSIS == 1
             'w_dot',[], 'bx_dot',[], 'by_dot', [],...
             'uu', [], 'uu_dot',[]);    
 
-    error('er')
+%     error('er')
     if newmark
         qdot2=zeros(sizeM,length(t)); %acceleration 
         beta = 0.25;
         gamma = 0.5;
-        [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
+        [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
 
         %initialization    
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
@@ -530,7 +530,7 @@ if DYNAMIC_ANALYSIS == 1
             % Update load vector
             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
     %         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
-            [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
 
             pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
@@ -557,7 +557,7 @@ if DYNAMIC_ANALYSIS == 1
             d
             % Update load vector
             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-            [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
 

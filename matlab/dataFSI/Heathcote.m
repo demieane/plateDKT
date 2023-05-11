@@ -36,14 +36,18 @@ for ii = 2:length(t)
     %
     wCrankNicolson = solutionCrankNicolson.w(:,ii);
     h3=plot(t(ii)/inData.T3,wCrankNicolson(BBnodesTIP(NODE)),'ks', 'MarkerSize',2);
+    %
+    w = solution.w(:,ii);
+    h0=plot(t(ii)/inData.T3,w(BBnodesTIP(NODE)),'go-', 'MarkerSize',2);
 end
-legend([h1 h2 h3], 'newmark', 'implicit euler','crank-nicolson')
+legend([h0 h1 h2 h3],'solution', 'newmark', 'implicit euler','crank-nicolson')
 xlabel('t [s]');ylabel('w tip')
 
-figure;hold on;
+figure;
+hold on; grid on;
 plot3(pp(1,BBnodesTIP),pp(2,BBnodesTIP),w(BBnodesTIP),'ks','MarkerSize',3);
 plot3(pp(1,BBnodesTIP(NODE)),pp(2,BBnodesTIP(NODE)),w(BBnodesTIP(NODE)),'ro','MarkerSize',10);
-hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
+hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap',viridis);
 colorbar;shading interp;view([25 25]);%axis equal;
 
 
