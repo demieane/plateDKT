@@ -220,8 +220,10 @@ template<class T>
 void RayleighDampingCoefs(T *a, T *b); // TO DO
 //
 template<class T>
-void createRHS(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem, T *distrLoad, T **Fglob_aug); // TO DO: Consider using it separately in the previous loop 
-
+void createRHS(int sizeKMglob_aug, struct InDataRecFem<T> *inDataFem, 
+                struct triangleDKT<T> *wingMeshFem,
+                struct femArraysDKT<T> *elemFemArr,
+                 T *distrLoad, T **G, int d, int tstep);
 
 /*=========================================================================================*/
 /* Definition of the functions BELOW */
@@ -1646,17 +1648,80 @@ void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F){
 template<class T>
 void RayleighDampingCoefs(T *a, T *b){
     
-    *a = 0.0584;
-    *b = 6.9372/mypow<T>(10.0,4.0);
+    *a = 1.6351;
+    *b = 2.4987/mypow<T>(10.0,5.0);
 
 
 }
 
 template<class T>
-void createRHS(struct InDataRecFem<T> *inDataFem, struct triangleDKT<T> *wingMeshFem,
-                 T *distrLoad, T **Fglob_aug){
-                    
+void createRHS(int sizeKMglob_aug, struct InDataRecFem<T> *inDataFem, 
+                struct triangleDKT<T> *wingMeshFem,
+                struct femArraysDKT<T> *elemFemArr,
+                 T *distrLoad, T **G, int d, int tstep){
+
+    T lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
+    T q;
+    T w3 = inDataFem->omega3;
+    T t = d*inDataFem->dt;
+    int cntFglob;
+
+    if (inDataFem->LL == 2){
+        q = (inDataFem->P_load)*cos(w3*t);
+    }
+
+    for (int i = 0;i<wingMeshFem->GEN;i++){
+        elemFemArr->Fglob[i][0] = 0;
+    }
+
+    if (d==99){
+        printf("t=%f\n", t);
+        printf("cos(w3*t)=%f\n", cos(w3*t));
+
+    }
+
+    //printf("\n cos(w3*t)=%f \n",cos(w3*t));
+    for (int kk = 0;kk<wingMeshFem->Nelem;kk++){
+
+        if (inDataFem->LL == 3){
+            q = distrLoad[kk]*cos(w3*t);
+        }
+        else{
+            printf("Problem with load case! Inside createFglob\n");
+            exit(55);
+        }
+
+        //overwrites
+        for (int i=0;i<9;i++){
+            elemFemArr->floc[i][0] = wingMeshFem->area[kk]*q/3.0*lumpedMass[i];
+        }
+        // version - 2 (EQUIVALENT) floc=P*HW'*floc1;
+        //matMatMultiplication2(2, 10, 9, inDataFem.P_load, 1.0, 0.0, elemFemArr.HW, elemFemArr.floc1, elemFemArr.floc); //HW'*floc1
 
 
+        for (int q=0;q<9;q++){
+            cntFglob = wingMeshFem->LM[q][kk]-1;
+            elemFemArr->Fglob[cntFglob][0] = elemFemArr->Fglob[cntFglob][0] + elemFemArr->floc[q][0];
+            //Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
+        }
 
-} // TO DO: Consider using it separately in the previous loop 
+
+        for (int i = 0;i<9;i++){
+            elemFemArr->floc[i][0] = 0;
+        }
+        /*
+        for (int i = 0;i<10;i++){
+            //printf("%f, ",elemFemArr.floc1[i][0] );
+            elemFemArr->floc1[i][0] = 0;
+        }
+        */
+
+    }
+
+    for (int i=0;i<wingMeshFem->GEN;i++){
+        G[i][tstep]=elemFemArr->Fglob[i][0];
+    }
+    
+}
+    
+  

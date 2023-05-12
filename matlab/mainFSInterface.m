@@ -184,7 +184,8 @@ if lll==3%distributed load & distributed thickness
     ycp=yc_fem_data;
     tinstance = 100;
     fcp = DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
-    tcp= th_fem_data.*0 + h;
+%     tcp= th_fem_data.*0 + h;
+    tcp= th_fem_data;
     fwrite(file, length(xcp(:)),'int');
     % x-coords
     for ii = 1:length(xcp(:))

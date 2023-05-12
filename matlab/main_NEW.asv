@@ -22,6 +22,7 @@ close all;
 clc;
 
 MODAL_ANALYSIS = 1;
+DYNAMIC_ANALYSIS = 0;
 
 tstart = tic;   
 
@@ -46,6 +47,8 @@ debugOn=1;
 %
 % t (triangles)
 %==========================================================================
+addpath('funcFEM');
+addpath('dataFSI');
 addpath('mesh');
 addpath('mesh/heathcote');
 
@@ -241,7 +244,7 @@ Ng=3; %TO-DO
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
 d=100;
 %  thick=h*ones(1,Nelem);
-[loadFem,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, debugOn, importFromFile,...
+[loadFem,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
     fluid_dens, Uvel, h, d);
 % error('er')
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
@@ -266,14 +269,14 @@ GGin2=inv(GGDKT);
 
 %************************************** DISTRIBUTED LOAD VIA MAPPING*******
 if lll==3
-    [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, debugOn, importFromFile,...
+    [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,...
         fluid_dens, Uvel,h,  d);
 %     Fx = -Fx; %for ansys
-    if debugOn
-        hold on;grid on;
-        plot3(pp(1,BBnodes),pp(2,BBnodes),pp(2,BBnodes).*0,'ks');
-        xlabel('x-axis');
-    end
+%     if debugOn
+%         hold on;grid on;
+%         plot3(pp(1,BBnodes),pp(2,BBnodes),pp(2,BBnodes).*0,'ks');
+%         xlabel('x-axis');
+%     end
 end
 %**************************************************************************
 
@@ -348,7 +351,7 @@ end
 % subscripts. 
 % S(i(k),j(k)) = v(k)
 
-disp('===================ASSEMBLY==============================')
+% disp('===================ASSEMBLY==============================')
 iii=1:9; %Elnodes Number of element nodes
 iii=repmat(iii',1,9);
 
@@ -360,6 +363,7 @@ Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
 % % spy(Kglob)
 Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
     
+% error('er')
 % A large condition number means that the matrix is close to being singular. 
 % Kglobfull=full(Kglob);
 % Mglobfull=full(Mglob);
@@ -390,43 +394,38 @@ Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
 
 % COMMENT: The boundary conditions are enforced as extra equations
 % in the sense of constraints in the present version
-BBnodes_old=BBnodes; %DIMITRA
-BBnodes=Bdofs;%DIMITRA
 
-kkk=zeros(length(BBnodes),GEN);
-mmm=zeros(length(BBnodes),GEN);
+kkk=zeros(length(Bdofs),GEN);
+mmm=zeros(length(Bdofs),GEN);
 Dofs=length(pp)*3;
 
 % Totbound=reshape(BBound',1,4*size(BBound,2));
 %***************************ADDITION***************************************
-for j=1:length(BBnodes)
+for j=1:length(Bdofs)
     kkk(j,:)=[zeros(1,Bdofs(j)-1) 1 zeros(1,Dofs-Bdofs(j))];
 end
 %**************************************************************************
-Kglob=[Kglob kkk'; kkk zeros(length(BBnodes))];
-Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];
+Kglob=[Kglob kkk'; kkk zeros(length(Bdofs))];
+Mglob=[Mglob mmm'; mmm zeros(length(Bdofs))];
 
-Kglob_dense2=[Kglob_dense kkk'; kkk zeros(length(BBnodes))];
-Kglob_dense2(GEN+1:end,1:27)
-Kglob_dense2(1:27,GEN+1:end)
-% error('er')
+% Kglob_dense2=[Kglob_dense kkk'; kkk zeros(length(BBnodes))];
+% Kglob_dense2(GEN+1:end,1:27)
+% Kglob_dense2(1:27,GEN+1:end)
 
 %FORCING AND SOLUTION
 if lll==1
-%     Fglob=zeros(length(Kglob),1);
-    Fglob1(ID(1,PNODE))=P_load;
-else
-%     U=Kglob\Fglob; %SOLVE SPARSE SYSTEM OF EQUATIONS
-%hughe [ch.9] newmark - 2nd order
-% else
-    Fglob1=[Fglob; zeros(length(BBnodes),1)];
+    Fglob(ID(1,PNODE))=P_load;
 end
-%     U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
-U = mldivide(Kglob,Fglob1);
+
+Fglob1=[Fglob; zeros(length(Bdofs),1)];
+
+Fglob1(1:15)'
+
+U = mldivide(Kglob,Fglob1); %or backslash
 
 telapsed = toc(tstart);
 
-BBnodes=BBnodes_old;%DIMITRA
+% BBnodes=BBnodes_old;%DIMITRA
 
 %==========================================================================
 %                            POST-PROCESSOR
@@ -440,13 +439,17 @@ by=u(3:3:end);  % rotation y
 figure;
 subplot(1,3,[1 2]);hold on;grid on;
 plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
-hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
-colorbar;shading interp;view([25 25]);%axis equal;
+hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w);
+colorbar;
+shading interp;
+colormap(viridis);
+view([25 25]);%axis equal;
 zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
 xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
 %     title('w displacement','FontWeight','normal');
+title(['Static solution: lll=',num2str(lll)]); 
 subplot(1,3,3);hold on;grid on;
-pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
+pdeplot(pp,ee,tt,'XYData',w,'colormap',viridis,'contour','on');
 colorbar;shading interp;
 xlabel('x-axis');ylabel('y-axis');
 title('(contour)','FontWeight','normal');
@@ -464,148 +467,167 @@ if MODAL_ANALYSIS == 1
     freq'
 end
 
-
+% error('er')
 
 %% TIME-MARCHING
-T=2*pi/inData.omega3;%sec
-% wf=2*pi/T; %rad/s
-ddt=inData.dt;%T/100; %time-step
-t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
+if DYNAMIC_ANALYSIS == 1
 
-newmark = 1;
-implicitEuler = 0;
-crankNisolson =0 ; %like newmark
-
-d=1; %starting point
-
-sizeM=size(Mglob,1);
-
-q=zeros(sizeM,length(t)); %displacement unknown vector (previous U)
-qdot=zeros(sizeM,length(t)); %velocity
-C = 0.*Mglob;
-% 
-[ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
-% a
-% b
-
-% C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
-
-error('er')
-[Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d),99);
-Fm = [Fglob_t; zeros(sizeM,1)];
-if d==1
-    G = zeros(length(Fm),length(t));
-end
-G(:,d) = Fm;
-
-u=[qdot;q];
-
-solution = struct( 'w',[], 'bx',[], 'by', [],...
-        'w_dot',[], 'bx_dot',[], 'by_dot', [],...
-        'uu', [], 'uu_dot',[]);    
+    newmark = 0;
+    implicitEuler = 0;
+    crankNicolson = 1;
    
-if newmark
-    qdot2=zeros(sizeM,length(t)); %acceleration 
-    beta = 0.25;
-    gamma = 0.5;
-    [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d),99);
-
-    %initialization    
-    AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
-    BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
-    qdot2(:,1)=AA\BB;
+    T=2*pi/inData.omega3;%sec
+    % wf=2*pi/T; %rad/s
+    ddt=inData.dt;%T/100; %time-step
+    t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
     
-end
-       
-if newmark
-    for d = 1:length(t)-1
+    Ntimesteps = ceil((inData.Nper)*T/ddt)+1
+    length(t)
 
-        d
-        % Update load vector
-        [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-%         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
-        [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d+1),99);
+    d=1; %starting point
 
-        pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
-        pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
+    sizeM=size(Mglob,1);
 
-        AA = Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
-        BB=Fglob_t - C*pr_vel- Kglob*pr_disp;
-        qdot2(:,d+1) = AA\BB; 
+    q=zeros(sizeM,length(t)); %displacement unknown vector (previous U)
+    qdot=zeros(sizeM,length(t)); %velocity
+    C = 0.*Mglob;
+    % 
+    [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
+    % a
+    % b
+    Cfull=full(C);
+    Cfull(1:10,1:10)
 
-        q(:,d+1) = pr_disp+ddt^2*beta*qdot2(:,d+1);
-        qdot(:,d+1) = pr_vel + gamma*ddt*qdot2(:,d+1);
-        %
-        u(:,d+1)=[qdot(:,d+1);q(:,d+1)];
-        [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
+    % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 
+    %=======================d = 100
+    d = 1;
+    [Fx100,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
+        importFromFile,fluid_dens, Uvel, h, 100);
+    
+    omega3 = inData.omega3;
+    Fx100 = Fx100.*cos(omega3*t(d));
+    %==============================
+    
+%     Fx100(1:10)'
+    [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx100,Area,LM,Bdofs);
+    Fm = [Fglob_t; zeros(sizeM,1)];
+    
+    Fglob_t(1:10)'
+%     LM(1:3,1:10)
+%     error('e')
+    if d==1
+        G = zeros(length(Fm),length(t));
     end
-%    
-%    
-else
-%
-%
-% Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
-% Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-    for d = 1:length(t)-1
-        d
-        % Update load vector
-        [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-        [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d+1),99);
-        Fm = [Fglob_t; zeros(sizeM,1)];
-        G(:,d+1) = Fm;
+    G(:,d) = Fm;
 
-        theta = implicitEuler*(1) + crankNisolson*(1/2);
-        u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
+    u=[qdot;q];
 
-        [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
+    solution = struct( 'w',[], 'bx',[], 'by', [],...
+            'w_dot',[], 'bx_dot',[], 'by_dot', [],...
+            'uu', [], 'uu_dot',[]);    
+
+    error('er')
+    if newmark
+        qdot2=zeros(sizeM,length(t)); %acceleration 
+        beta = 0.25;
+        gamma = 0.5;
+        [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
+
+        %initialization    
+        AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
+        BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
+        qdot2(:,1)=AA\BB;
     end
-%
-%
-%
+
+    if newmark
+        for d = 1:length(t)-1
+
+            d
+            % Update load vector
+            [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
+    %         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
+
+            pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
+            pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
+
+            AA = Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
+            BB=Fglob_t - C*pr_vel- Kglob*pr_disp;
+            qdot2(:,d+1) = AA\BB; 
+
+            q(:,d+1) = pr_disp+ddt^2*beta*qdot2(:,d+1);
+            qdot(:,d+1) = pr_vel + gamma*ddt*qdot2(:,d+1);
+            %
+            u(:,d+1)=[qdot(:,d+1);q(:,d+1)];
+            [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
+
+        end
+    %    
+    %    
+    else
+    %
+    %
+    % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
+    % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
+        for d = 1:length(t)-1
+            d
+            % Update load vector
+            [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
+            Fm = [Fglob_t; zeros(sizeM,1)];
+            G(:,d+1) = Fm;
+
+            theta = implicitEuler*(1) + crankNicolson*(1/2);
+            u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
+
+            [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
+        end
+    %
+    %
+    %
+    end
+
+
+    hmax = max(max(abs(solution.w)))
+
+    (inData.a3 + hmax)/inData.a3
+
+    chord
+
+    w = solution.w(:,d);
+
+    figure;
+    subplot(1,3,[1 2]);hold on;grid on;
+    plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
+    hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
+    colorbar;shading interp;view([25 25]);%axis equal;
+    % zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
+    xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
+    %     title('w displacement','FontWeight','normal');
+    subplot(1,3,3);hold on;grid on;
+    pdeplot(pp,ee,tt,'XYData',w,'colormap',viridis,'contour','on');
+    colorbar;shading interp;
+    xlabel('x-axis');ylabel('y-axis');
+    title('(contour)','FontWeight','normal');
+
+    % save FEM_newmark
+
+    % save FEM_sol_h15_r_h2
+    save FEM_sol_h182_r_h2
+
+%     error('er')
+    % save FEM_sol_h05_r_h1
+
+
+    if debugOn
+        Name = 'dynamicFEM_h182_r';
+        animatorFunc(solution,length(t),ddt,pp,ee,tt,BBnodes,Name,inData)
+    end
+
 end
 
-BBnodes=BBnodes_old;%DIMITRA
-
-hmax = max(max(abs(solution.w)))
-
-(inData.a3 + hmax)/inData.a3
-
-chord
-
-w = solution.w(:,d);
-
-figure;
-subplot(1,3,[1 2]);hold on;grid on;
-plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
-hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
-colorbar;shading interp;view([25 25]);%axis equal;
-% zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
-xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
-%     title('w displacement','FontWeight','normal');
-subplot(1,3,3);hold on;grid on;
-pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
-colorbar;shading interp;
-xlabel('x-axis');ylabel('y-axis');
-title('(contour)','FontWeight','normal');
-
-% save FEM_newmark
-   
-% save FEM_sol_h15_r_h2
-save FEM_sol_h182_r_h2
-
-error('er')
-% save FEM_sol_h05_r_h1
-
-
-if debugOn
-    Name = 'dynamicFEM_h182_r';
-    animatorFunc(solution,length(t),ddt,pp,ee,tt,BBnodes,Name,inData)
-end
-
-
-
-error('See below for comparisons with static case (analytic solution) ')
+error('See below for comparisons with static case (analytic solution) & modal analysis!!!')
 
 
 % =========================================================================
@@ -666,7 +688,7 @@ DEVpercent=(MAx-MAxAnal)/MAxAnal*100
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % [XX,lam,flag]=eigs(Kglob,15,'sm');
 % [XX,lam,flag]=eigs(Kglob,15,'sm');
 % [XX,lam,flag]=eigs(Kglob,15,'sm');

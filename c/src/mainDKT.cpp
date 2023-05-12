@@ -339,6 +339,13 @@ int main(int argc, char **argv){
 
     printf("    Calculated Mg(:,kk), Kg(:,kk), Fglob(kk)");
 
+/*
+    printf("    Fglob(kk)");
+    for (int i=0;i<10;i++){
+        printf("\n%f, ", elemFemArr.Fglob[i][0]);
+    }
+*/    
+
     //************************************************************************************
     //  DKT PLATE SOLVER: GLOBAL MATRIX ASSEMBLY (Mglob, Kglob, Fglob)
     //************************************************************************************
@@ -499,7 +506,7 @@ int main(int argc, char **argv){
             RayleighDampingCoefs<mytype>(&a, &b); // TO DO (based on eigenfrequencies)
             printf("    a=%f, b=%f", a, b);
 
-            matSum2(a, b, sizeKMglob_aug, sizeKMglob_aug, Mglob_aug, Kglob_aug, Cdamp); //C = a*Mglob+b*Kglob;
+            matSum2<mytype>(a, b, sizeKMglob_aug, sizeKMglob_aug, Mglob_aug, Kglob_aug, Cdamp); //C = a*Mglob+b*Kglob;
 
             printf("\nCdamp: \n");
             for (int i=0;i<10;i++){
@@ -508,15 +515,43 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
-            
+            /* G(:,d) for the current time step */
+            mytype **G;
+            allocate2Darray<mytype>(sizeKMglob_aug, 2, &G); //[G(:,d), G(:,d+1)]
+            int d = 0;
+            int clnG = 0;//column of G rhs vector
+            createRHS<mytype>(sizeKMglob_aug, &inDataFem, &wingMeshFem, &elemFemArr,
+                             distrLoad, G, d, clnG);///G(:,d)
+
+            for (int i=0;i<10;i++){
+                printf("%f, ",G[i][0]);
+            }
+
             mytype t = 0.0;
             mytype dt = inDataFem.dt;
             mytype Tp = 2*M_PI/inDataFem.omega3; // period of motion
             int NtimeSteps = ceil((inDataFem.Nper*Tp)/dt)+1;
             printf("NtimeSteps=%d ", NtimeSteps);
-            for (int d = 0; d< NtimeSteps ; d++){
-                t = t + d*dt; // t in [sec]
 
+            mytype **u_t; // u(:,d)
+            allocate2Darray(sizeKMglob_aug,NtimeSteps,&u_t);
+            mytype theta = 0.5; //Crank-Nicolson
+
+            printf("\n G(:,2)=");
+            for (int d = 1; d< NtimeSteps ; d++){  
+                t = t + dt; // t in [sec]
+                createRHS<mytype>(sizeKMglob_aug, &inDataFem, &wingMeshFem, &elemFemArr,
+                            distrLoad, G, d, 1);//G(:,d+1)
+
+                //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
+
+                if (d == 99){
+                    printf("t=%f\n", t);
+                    for (int i=0;i<10;i++){
+                    printf("%f, ",G[i][1]);
+                }
+                }
+                
 
 
 

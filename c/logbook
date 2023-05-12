@@ -10,9 +10,9 @@ TO DO:
 
 5. Time integration (give an animation back to Matlab)
     [] Rayleigh damping function (in the end)
-    [] Fglob re-calculate
+    [x] Fglob re-calculate
     [] Crank-nicolson time integration func
-    [] The time-varying forcing data need to be supplemented for each time step, 
+    [x] The time-varying forcing data need to be supplemented for each time step, 
         to work with an example I can either provide the distributed load at each time instance
         or add ficticiously a cos(wt) amplitude for testing. 
     [] solution structure & solution retriever func

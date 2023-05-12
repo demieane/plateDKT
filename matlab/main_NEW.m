@@ -22,7 +22,7 @@ close all;
 clc;
 
 MODAL_ANALYSIS = 1;
-DYNAMIC_ANALYSIS = 1;
+DYNAMIC_ANALYSIS = 0;
 
 tstart = tic;   
 
@@ -419,6 +419,8 @@ end
 
 Fglob1=[Fglob; zeros(length(Bdofs),1)];
 
+Fglob1(1:15)'
+
 U = mldivide(Kglob,Fglob1); %or backslash
 
 telapsed = toc(tstart);
@@ -493,12 +495,28 @@ if DYNAMIC_ANALYSIS == 1
     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
     % a
     % b
-    Cfull=full(C);Cfull(1:10,1:10)
+    Cfull=full(C);
+    Cfull(1:10,1:10)
 
     % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 
-    [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
+    %=======================d = 100
+    d = 100;
+    [Fx100,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
+        importFromFile,fluid_dens, Uvel, h, 100);
+    
+    omega3 = inData.omega3;
+    Fx100 = Fx100.*cos(omega3*t(d));
+    %==============================
+    
+%     Fx100(1:10)'
+    [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx100,Area,LM,Bdofs);
     Fm = [Fglob_t; zeros(sizeM,1)];
+    
+    Fglob_t(1:10)'
+    error('er')
+%     LM(1:3,1:10)
+%     error('e')
     if d==1
         G = zeros(length(Fm),length(t));
     end
@@ -510,7 +528,7 @@ if DYNAMIC_ANALYSIS == 1
             'w_dot',[], 'bx_dot',[], 'by_dot', [],...
             'uu', [], 'uu_dot',[]);    
 
-%     error('er')
+    error('er')
     if newmark
         qdot2=zeros(sizeM,length(t)); %acceleration 
         beta = 0.25;

@@ -7,7 +7,7 @@ Fglob=zeros(GEN,1);
 % Fx_new = Fx.*sin(wf*t);
 Fx_new = Fx;
 
-for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
+for kk=1:1%Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
   
 % %% Mass matrix
 %     [ Hm,HW] = massHmDKT(kk,l23,l31,l12,C4,C5,C6,S4,S5,S6,GGin);
@@ -59,7 +59,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
 %     Kg(:,kk)=[kloc(:,1);kloc(:,2);kloc(:,3);kloc(:,4);kloc(:,5);kloc(:,6);kloc(:,7);kloc(:,8);kloc(:,9)];
     %************************** ADDITION
     for q=1:9
-%         LM(q,kk)
+        LM(q,kk)
          Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
     end 
     %***********************************
@@ -67,7 +67,6 @@ end
 
 
 Fglob1=[Fglob; zeros(length(BBnodes),1)];
-
 
 end
 

@@ -59,7 +59,7 @@ $(TARGET_EXEC): $(OBJ)
 clean: 
 	rm -f $(TARGET_EXEC) 
 	rm -f $(OBJ)
-	rm -f $(BIN_DIR)
+#	rm -f $(BIN_DIR)
 
 # The file name of the target of the rule: #@
 # The names of all the prerequisites, with spaces between them. $^
