@@ -17,26 +17,26 @@ B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
 AA =  A - theta*dt*B;
 BB =  A + (1 - theta)*dt*B;
 
-AAmat = full(AA(1:10,1:10))
+AAmat = full(AA(1:10,1:10));
 
-BBmat = full(BB(1:10,1:10))
+BBmat = full(BB(1:10,1:10));
 
 % 
 
 
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
-Qmat = Q(1:15)'
+% Qmat = Q(1:15)'
 
 
 
 utemp2 = BB*u(:,d-1) + Q;
-utemp2mat = utemp2(1:10)'
+utemp2mat = utemp2(1:10)';
 
 u(:,d) = AA\(BB*u(:,d-1) + Q);
-
-u(1:10,d)'
-
-error('debug');
+% 
+% u(1:10,d)'
+% 
+% error('debug');
 uNEW = u(:,d);
 
 end
