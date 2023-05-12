@@ -43,7 +43,7 @@ template<class T>
 void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals);
 //
 template<class T>
-void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u); // TIME INTEGRATION WITH CRANK-NICOLSON
+void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u_t); // TIME INTEGRATION WITH CRANK-NICOLSON
 
 // from funcBLAS.c
 /*=========================================================================================*/
@@ -583,14 +583,11 @@ void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals){
 }
 
 template<class T>
-void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u){
+void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u_t){
 
-
-    T alphaVar = (1 - theta)*dt;
-    T betaVar = (theta)*dt;
+    //Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
     T **Q;
     allocate2Darray<T>(rowsColsG,1,&Q);
-
     T **G1, **G2;
     allocate2Darray<T>(rowsColsG,1,&G1);
     allocate2Darray<T>(rowsColsG,1,&G2);
@@ -599,18 +596,69 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
         G2[i][0] = G[i][1];
     }
 
-
-    //Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
+    T alphaVar = (1.0 - theta)*dt;
+    T betaVar = (theta)*dt;
     matSum2<T>(alphaVar, betaVar, rowsColsG, 1, G1, G2, Q);
-    
+
+    printf("\nQ=");
+    for (int i = 0;i<15;i++){
+        printf("%f, ", Q[i][0]/pow(10.0,-4.0));
+    }
+
 
     //u(:,d) = AA\(BB*u(:,d-1) + Q);
+    T **u_previous;
+    T **utemp1, **utemp2;
+    T **Usol;
+
+    allocate2Darray<T>(rowsColsG,1,&u_previous);
+    allocate2Darray<T>(rowsColsG,1,&utemp1);
+    allocate2Darray<T>(rowsColsG,1,&utemp2);
+    allocate2Darray<T>(rowsColsG,1,&Usol);
+
+    //printf("u_previous=");
+    for (int i = 0;i<rowsColsG;i++){
+        u_previous[i][0] = u_t[i][d-1];
+        //printf("%f, ", u_previous[i][0]);
+    }
+    //printf("\n");
+
+    int optionCalc = 1;
+    matMatMultiplication2(optionCalc, rowsColsG, rowsColsG, 1, 1.0, 1.0, BB, u_previous, utemp1);
+    //
+    matSum2<T>(1.0, 1.0, rowsColsG, 1, utemp1, Q, utemp2);
+
+    printf("\nutemp2=");
+    for (int i = 0;i<10;i++){
+        printf("%f, ", utemp2[i][0]/pow(10.0,-4.0));
+    }
+    //
+
+    linearSystemSolve(rowsColsG, rowsColsG, AA, utemp2, Usol);
+    
+    for (int i = 0;i<rowsColsG;i++){
+        u_t[i][d]=Usol[i][0];
+        //printf("%f,",u_t[i][d]);
+    }
+    //printf("\n    Retrieving Usol at time step\n");
+
+    printf("\nu_t[i][d]=");
+    for (int i = 0;i<10;i++){
+        printf("%f, ", u_t[i][d]);
+    }
 
     //uNEW = u(:,d);
 
     deallocate2Darray<T>(rowsColsG,G1);
     deallocate2Darray<T>(rowsColsG,G2);
     deallocate2Darray<T>(rowsColsG,Q);
+    //
+    deallocate2Darray<T>(rowsColsG,u_previous);
+    deallocate2Darray<T>(rowsColsG,utemp1);
+    deallocate2Darray<T>(rowsColsG,utemp2);
+    //
+    deallocate2Darray<T>(rowsColsG,Usol);
+
 
 
 }

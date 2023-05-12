@@ -524,9 +524,7 @@ int main(int argc, char **argv){
             int NtimeSteps = ceil((inDataFem.Nper*Tp)/dt)+1;
             printf("NtimeSteps=%d ", NtimeSteps);
 
-            mytype **u_t; // u(:,d)
-            allocate2Darray(sizeKMglob_aug,NtimeSteps,&u_t);
-            mytype theta = 0.5; //Crank-Nicolson
+          
 
             /* =============== CRANK-NICOLSON ====================
             sizeM=size(Mglob,1);
@@ -558,6 +556,10 @@ int main(int argc, char **argv){
             for (int i=0;i<10;i++){
                 printf("%f, ",G[i][0]);
             }
+
+            mytype **u_t; // u(:,d)
+            allocate2Darray(sz2,NtimeSteps,&u_t);
+            mytype theta = 0.5; //Crank-Nicolson
 
             allocate2Darray<mytype>(sz2,sz2,&Atemp);
             allocate2Darray<mytype>(sz2,sz2,&Btemp);
@@ -630,29 +632,51 @@ int main(int argc, char **argv){
 
             //exit(55);
 
-            printf("\n G(:,2)=");
-            for (int d = 1; d< NtimeSteps ; d++){  
+            //for (int d = 1; d< NtimeSteps ; d++){  
+            for (int d = 1; d< 4 ; d++){      
                 t = t + dt; // t in [sec]
+                clnG = 1;//column of G rhs vector
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
-                            distrLoad, G, d, 1);//G(:,d+1)
+                            distrLoad, G, d, clnG);//G(:,d+1)
 
-                timeIntegration((d+1), dt, theta, sz2, G, AA, BB, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
+                printf("\nG[i][0]=");
+                for (int i=0;i<20;i++){
+                    printf("%10.4f, ",G[i][0]);
+                }
+                printf("\nG[i][1]=");
+                for (int i=0;i<20;i++){
+                    printf("%10.4f, ",G[i][1]);
+                }
 
+                //exit(55);
+                timeIntegration(d, dt, theta, sz2, G, AA, BB, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
 
-                exit(55);
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
+                /*
                 if (d == 99){
                     printf("t=%f\n", t);
                     for (int i=0;i<10;i++){
-                    printf("%f, ",G[i][1]);
+                        printf("%f, ",G[i][1]);
+                    }
                 }
-                }
-                
+                */
 
+                for (int i=0;i<sz2;i++){
+                    G[i][0]=G[i][1];
+                }
 
 
             }
+
+            printf("\n\n");
+            for (int i = 0;i<10;i++){
+                for (int j=0;j<4;j++){
+                    printf("%f, ",u_t[i][j]);
+                }
+                printf("\n");
+            }
+            
 
 
 

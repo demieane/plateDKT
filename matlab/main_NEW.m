@@ -571,7 +571,7 @@ if DYNAMIC_ANALYSIS == 1
     %
     % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
     % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-        for d = 1:length(t)-1
+        for d = 1:5%length(t)-1
             d
             % Update load vector
 %             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
@@ -586,6 +586,7 @@ if DYNAMIC_ANALYSIS == 1
             theta = implicitEuler*(1) + crankNicolson*(1/2);
             u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
+%             error('Testing');
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
         end
     %
@@ -593,7 +594,7 @@ if DYNAMIC_ANALYSIS == 1
     %
     end
 
-
+error('er')
     hmax = max(max(abs(solution.w)))
 
     (inData.a3 + hmax)/inData.a3
