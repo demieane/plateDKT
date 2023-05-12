@@ -537,6 +537,96 @@ int main(int argc, char **argv){
             allocate2Darray(sizeKMglob_aug,NtimeSteps,&u_t);
             mytype theta = 0.5; //Crank-Nicolson
 
+            /* =============== CRANK-NICOLSON ====================
+            sizeM=size(Mglob,1);
+
+            A = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
+            B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
+
+            %lamda (1: implicit Euler, 1/2: Crank - Nicolson)
+
+            AA =  A - theta*dt*B;
+            BB =  A + (1 - theta)*dt*B;
+
+            MAT = [a, b; 
+                   c, d]
+            ======================================================*/
+            mytype **Atemp, **Btemp, **AA, **BB;
+            mytype **Ieye;
+            int sz1 = sizeKMglob_aug;
+            int sz2 = 2*sz1;
+            
+            allocate2Darray(sz2,sz2,&Atemp);
+            allocate2Darray(sz2,sz2,&Btemp);
+            allocate2Darray(sz2,sz2,&AA);
+            allocate2Darray(sz2,sz2,&BB);
+            //
+            allocate2Darray(sz1,sz1,&Ieye);
+            
+            // a: part of matrix
+            for (int i = 0;i<sz1;i++){
+                for (int j = 0;j<sz1;j++){
+                    Atemp[i][j] = Mglob_aug[i][j];
+                    Btemp[i][j] = -Cdamp[i][j];
+                    if (i == j){ //diagonal
+                        Ieye[i][j] = 1.0;
+                    }
+                }
+            }
+            printf("\npart a OK\n");
+
+            // b: part of matrix
+            for (int i = 0;i<sz1;i++){
+                for (int j = sz1;j<sz2;j++){
+                    Btemp[i][j] = -Kglob_aug[i][j];
+                }
+            }
+            printf("\npart b OK\n");
+
+            // c: part of matrix
+            for (int i = 0;i<sz1;i++){
+                for (int j = 0;j<sz1;j++){
+                    Btemp[i+sz1][j] = -Ieye[i][j];
+                }
+            }
+            printf("\npart c OK\n");
+
+            // d: part of matrix
+            for (int i = 0;i<sz1;i++){  
+                for (int j = 0;j<sz1;j++){
+                    Atemp[i+sz1][j+sz1] = Ieye[i][j];
+                }
+            }
+            printf("part d OK\n");
+
+            //AA =  A - theta*dt*B;
+            
+            mytype alphaVar = 1.0;
+            mytype betaVar = -theta*dt;
+            matSum2(alphaVar, betaVar, sz2, sz2, Atemp, Btemp, AA);
+
+            //BB =  A + (1 - theta)*dt*B;
+            alphaVar = 1.0;
+            betaVar = (1.0-theta)*dt;
+            matSum2(alphaVar, betaVar, sz2, sz2, Atemp, Btemp, BB);
+
+            printf("\nAA[i][j]=\n");
+            for (int i = 0;i<10;i++){  
+                for (int j = 0;j<10;j++){
+                    printf("%f,",AA[i][j]);
+                }
+                printf("\n");
+            }
+            printf("\nBB[i][j]=\n");
+            for (int i = 0;i<10;i++){  
+                for (int j = 0;j<10;j++){
+                    printf("%f,",BB[i][j]);
+                }
+                printf("\n");
+            }
+
+            //exit(55);
+
             printf("\n G(:,2)=");
             for (int d = 1; d< NtimeSteps ; d++){  
                 t = t + dt; // t in [sec]

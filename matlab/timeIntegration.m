@@ -17,6 +17,13 @@ B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
 AA =  A - theta*dt*B;
 BB =  A + (1 - theta)*dt*B;
 
+full(AA(1:10,1:10))
+
+full(BB(1:10,1:10))
+
+error('debug');
+
+
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
 
 u(:,d) = AA\(BB*u(:,d-1) + Q);

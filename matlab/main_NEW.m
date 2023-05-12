@@ -22,7 +22,7 @@ close all;
 clc;
 
 MODAL_ANALYSIS = 1;
-DYNAMIC_ANALYSIS = 0;
+DYNAMIC_ANALYSIS = 1;
 
 tstart = tic;   
 
@@ -501,7 +501,7 @@ if DYNAMIC_ANALYSIS == 1
     % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 
     %=======================d = 100
-    d = 100;
+%     d = 100;
     [Fx100,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
         importFromFile,fluid_dens, Uvel, h, 100);
     
@@ -514,7 +514,7 @@ if DYNAMIC_ANALYSIS == 1
     Fm = [Fglob_t; zeros(sizeM,1)];
     
     Fglob_t(1:10)'
-    error('er')
+%     error('er')
 %     LM(1:3,1:10)
 %     error('e')
     if d==1
@@ -528,7 +528,7 @@ if DYNAMIC_ANALYSIS == 1
             'w_dot',[], 'bx_dot',[], 'by_dot', [],...
             'uu', [], 'uu_dot',[]);    
 
-    error('er')
+%     error('er')
     if newmark
         qdot2=zeros(sizeM,length(t)); %acceleration 
         beta = 0.25;
@@ -574,8 +574,12 @@ if DYNAMIC_ANALYSIS == 1
         for d = 1:length(t)-1
             d
             % Update load vector
-            [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
+%             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
+            omega3 = inData.omega3;
+            Fx100 = Fx100.*cos(omega3*t(d));
+            
+%             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx100,Area,LM,Bdofs);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
 
