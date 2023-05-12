@@ -498,6 +498,7 @@ if DYNAMIC_ANALYSIS == 1
     Cfull=full(C);
     Cfull(1:10,1:10)
 
+    
     % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 
     %=======================d = 100
@@ -521,6 +522,8 @@ if DYNAMIC_ANALYSIS == 1
         G = zeros(length(Fm),length(t));
     end
     G(:,d) = Fm;
+    
+%     error('er')
 
     u=[qdot;q];
 
@@ -571,12 +574,12 @@ if DYNAMIC_ANALYSIS == 1
     %
     % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
     % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-        for d = 1:5%length(t)-1
+        for d = 1:2%length(t)-1
             d
             % Update load vector
 %             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
             omega3 = inData.omega3;
-            Fx100 = Fx100.*cos(omega3*t(d));
+            Fx100 = Fx100.*cos(omega3*t(d+1));
             
 %             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx100,Area,LM,Bdofs);
@@ -586,7 +589,7 @@ if DYNAMIC_ANALYSIS == 1
             theta = implicitEuler*(1) + crankNicolson*(1/2);
             u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
-%             error('Testing');
+            error('Testing');
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
         end
     %

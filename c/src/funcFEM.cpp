@@ -223,7 +223,7 @@ template<class T>
 void createRHS(struct InDataRecFem<T> *inDataFem, 
                 struct triangleDKT<T> *wingMeshFem,
                 struct femArraysDKT<T> *elemFemArr,
-                 T *distrLoad, T **G, int d, int tstep);
+                 T *distrLoad, T **G, int d);
 
 /*=========================================================================================*/
 /* Definition of the functions BELOW */
@@ -1658,7 +1658,7 @@ template<class T>
 void createRHS(struct InDataRecFem<T> *inDataFem, 
                 struct triangleDKT<T> *wingMeshFem,
                 struct femArraysDKT<T> *elemFemArr,
-                 T *distrLoad, T **G, int d, int tstep){
+                 T *distrLoad, T **G, int d){
 
     T lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
     T q;
@@ -1719,7 +1719,7 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
     }
 
     for (int i=0;i<wingMeshFem->GEN;i++){
-        G[i][tstep]=elemFemArr->Fglob[i][0];
+        G[i][d]=elemFemArr->Fglob[i][0];
     }
     
 }

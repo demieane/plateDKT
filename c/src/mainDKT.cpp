@@ -499,9 +499,10 @@ int main(int argc, char **argv){
 
         if (inDataFem.LL == 3){
             printf("\n    Starting DYNAMIC ANALYSIS.\n");
+
+            //========================================DAMPING MATRIX=================================
             mytype **Cdamp; // Rayleigh damping
             allocate2Darray<mytype>(sizeKMglob_aug,sizeKMglob_aug,&Cdamp);
-
 
             mytype a = 0, b=0;
             RayleighDampingCoefs<mytype>(&a, &b); // TO DO (based on eigenfrequencies)
@@ -516,15 +517,14 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
-            
-
+            printf("\nCdamp(end,end)=%10.4f\n", Cdamp[sizeKMglob_aug-1][sizeKMglob_aug-1]/mypow<mytype>(10.0,3.0));
+            //========================================DAMPING MATRIX=================================
+            int d = 0;
             mytype t = 0.0;
             mytype dt = inDataFem.dt;
             mytype Tp = 2*M_PI/inDataFem.omega3; // period of motion
             int NtimeSteps = ceil((inDataFem.Nper*Tp)/dt)+1;
             printf("NtimeSteps=%d ", NtimeSteps);
-
-          
 
             /* =============== CRANK-NICOLSON ====================
             sizeM=size(Mglob,1);
@@ -547,14 +547,14 @@ int main(int argc, char **argv){
 
             /* G(:,d) for the current time step */
             mytype **G;
-            allocate2Darray<mytype>(sz2, 2, &G); //[G(:,d), G(:,d+1)]
-            int d = 0;
-            int clnG = 0;//column of G rhs vector
+            allocate2Darray<mytype>(sz2, NtimeSteps, &G); //[G(:,d), G(:,d+1)]
+            
             createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
-                             distrLoad, G, d, clnG);///G(:,d)
+                             distrLoad, G, d=0); //G(:,d)
 
+            printf("\nG(1:10,d=0)=\n");
             for (int i=0;i<10;i++){
-                printf("%f, ",G[i][0]);
+                printf("%10.4f, ",G[i][d]);
             }
 
             mytype **u_t; // u(:,d)
@@ -618,54 +618,36 @@ int main(int argc, char **argv){
             printf("\nAA[i][j]=\n");
             for (int i = 0;i<10;i++){  
                 for (int j = 0;j<10;j++){
-                    printf("%f,",AA[i][j]);
+                    printf("%10.4f,",AA[i][j]);
                 }
                 printf("\n");
             }
             printf("\nBB[i][j]=\n");
             for (int i = 0;i<10;i++){  
                 for (int j = 0;j<10;j++){
-                    printf("%f,",BB[i][j]);
+                    printf("%10.4f,",BB[i][j]);
                 }
                 printf("\n");
             }
 
-            //exit(55);
+            
 
             //for (int d = 1; d< NtimeSteps ; d++){  
-            for (int d = 1; d< 4 ; d++){      
+            for (int d = 0; d< 2 ; d++){      
                 t = t + dt; // t in [sec]
-                clnG = 1;//column of G rhs vector
+
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
-                            distrLoad, G, d, clnG);//G(:,d+1)
+                            distrLoad, G, d+1);//G(:,d+1)
 
-                printf("\nG[i][0]=");
-                for (int i=0;i<20;i++){
-                    printf("%10.4f, ",G[i][0]);
-                }
-                printf("\nG[i][1]=");
-                for (int i=0;i<20;i++){
-                    printf("%10.4f, ",G[i][1]);
+                printf("\nG[i][d+1]=");
+                for (int i=0;i<10;i++){
+                    printf("%10.4f, ",G[i][d+1]);
                 }
 
-                //exit(55);
-                timeIntegration(d, dt, theta, sz2, G, AA, BB, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
-
+                
+                timeIntegration((d+1), dt, theta, sz2, G, AA, BB, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
+                 
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
-
-                /*
-                if (d == 99){
-                    printf("t=%f\n", t);
-                    for (int i=0;i<10;i++){
-                        printf("%f, ",G[i][1]);
-                    }
-                }
-                */
-
-                for (int i=0;i<sz2;i++){
-                    G[i][0]=G[i][1];
-                }
-
 
             }
 

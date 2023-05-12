@@ -588,24 +588,24 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
     //Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
     T **Q;
     allocate2Darray<T>(rowsColsG,1,&Q);
-    T **G1, **G2;
-    allocate2Darray<T>(rowsColsG,1,&G1);
-    allocate2Darray<T>(rowsColsG,1,&G2);
+    T **Gdminus1, **Gd;
+    allocate2Darray<T>(rowsColsG,1,&Gdminus1);
+    allocate2Darray<T>(rowsColsG,1,&Gd);
     for (int i = 0;i<rowsColsG;i++){
-        G1[i][0] = G[i][0];
-        G2[i][0] = G[i][1];
+        Gdminus1[i][0] = G[i][d-1];
+        Gd[i][0] = G[i][d];
     }
 
     T alphaVar = (1.0 - theta)*dt;
     T betaVar = (theta)*dt;
-    matSum2<T>(alphaVar, betaVar, rowsColsG, 1, G1, G2, Q);
+    matSum2<T>(alphaVar, betaVar, rowsColsG, 1, Gdminus1, Gd, Q);
 
     printf("\nQ=");
-    for (int i = 0;i<15;i++){
-        printf("%f, ", Q[i][0]/pow(10.0,-4.0));
+    for (int i = 0;i<10;i++){
+        printf("%10.4f, ", Q[i][0]/pow(10.0,-4.0));
     }
 
-
+    
     //u(:,d) = AA\(BB*u(:,d-1) + Q);
     T **u_previous;
     T **utemp1, **utemp2;
@@ -630,10 +630,10 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
 
     printf("\nutemp2=");
     for (int i = 0;i<10;i++){
-        printf("%f, ", utemp2[i][0]/pow(10.0,-4.0));
+        printf("%10.4f, ", utemp2[i][0]/pow(10.0,-4.0));
     }
     //
-
+    
     linearSystemSolve(rowsColsG, rowsColsG, AA, utemp2, Usol);
     
     for (int i = 0;i<rowsColsG;i++){
@@ -646,11 +646,11 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
     for (int i = 0;i<10;i++){
         printf("%f, ", u_t[i][d]);
     }
-
+    //exit(55);
     //uNEW = u(:,d);
 
-    deallocate2Darray<T>(rowsColsG,G1);
-    deallocate2Darray<T>(rowsColsG,G2);
+    deallocate2Darray<T>(rowsColsG,Gdminus1);
+    deallocate2Darray<T>(rowsColsG,Gd);
     deallocate2Darray<T>(rowsColsG,Q);
     //
     deallocate2Darray<T>(rowsColsG,u_previous);

@@ -21,18 +21,22 @@ AAmat = full(AA(1:10,1:10))
 
 BBmat = full(BB(1:10,1:10))
 
-% error('debug');
+% 
 
 
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
 Qmat = Q(1:15)'
 
+
+
 utemp2 = BB*u(:,d-1) + Q;
 utemp2mat = utemp2(1:10)'
 
 u(:,d) = AA\(BB*u(:,d-1) + Q);
+
 u(1:10,d)'
 
+error('debug');
 uNEW = u(:,d);
 
 end
