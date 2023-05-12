@@ -42,6 +42,8 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol);
 template<class T>
 void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals);
 //
+template<class T>
+void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u); // TIME INTEGRATION WITH CRANK-NICOLSON
 
 // from funcBLAS.c
 /*=========================================================================================*/
@@ -577,5 +579,34 @@ void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals){
     
     deallocate2Darray<T>(LDVL, VL);
     deallocate2Darray<T>(LDVR, VR);
+
+}
+
+template<class T>
+void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u){
+
+
+    T alphaVar = (1 - theta)*dt;
+    T betaVar = (theta)*dt;
+    T **Q;
+    allocate2Darray(rowsColsG,rowsColsG,&Q);
+
+    T **G1, **G2;
+    allocate2Darray(rowsColsG,1,&G1);
+    allocate2Darray(rowsColsG,1,&G2);
+    for (int i = 0;i<rowsColsG;i++){
+        G1[i][0] = G[i][0];
+        G2[i][0] = G[i][1];
+    }
+
+    
+    //Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
+    matSum2(alphaVar, betaVar, rowsColsG, 1, G1, G2, Q);
+    
+
+    //u(:,d) = AA\(BB*u(:,d-1) + Q);
+
+    //uNEW = u(:,d);
+
 
 }

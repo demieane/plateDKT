@@ -220,7 +220,7 @@ template<class T>
 void RayleighDampingCoefs(T *a, T *b); // TO DO
 //
 template<class T>
-void createRHS(int sizeKMglob_aug, struct InDataRecFem<T> *inDataFem, 
+void createRHS(struct InDataRecFem<T> *inDataFem, 
                 struct triangleDKT<T> *wingMeshFem,
                 struct femArraysDKT<T> *elemFemArr,
                  T *distrLoad, T **G, int d, int tstep);
@@ -1655,7 +1655,7 @@ void RayleighDampingCoefs(T *a, T *b){
 }
 
 template<class T>
-void createRHS(int sizeKMglob_aug, struct InDataRecFem<T> *inDataFem, 
+void createRHS(struct InDataRecFem<T> *inDataFem, 
                 struct triangleDKT<T> *wingMeshFem,
                 struct femArraysDKT<T> *elemFemArr,
                  T *distrLoad, T **G, int d, int tstep){

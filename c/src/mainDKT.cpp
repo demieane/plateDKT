@@ -515,17 +515,7 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
-            /* G(:,d) for the current time step */
-            mytype **G;
-            allocate2Darray<mytype>(sizeKMglob_aug, 2, &G); //[G(:,d), G(:,d+1)]
-            int d = 0;
-            int clnG = 0;//column of G rhs vector
-            createRHS<mytype>(sizeKMglob_aug, &inDataFem, &wingMeshFem, &elemFemArr,
-                             distrLoad, G, d, clnG);///G(:,d)
-
-            for (int i=0;i<10;i++){
-                printf("%f, ",G[i][0]);
-            }
+            
 
             mytype t = 0.0;
             mytype dt = inDataFem.dt;
@@ -555,7 +545,19 @@ int main(int argc, char **argv){
             mytype **Ieye;
             int sz1 = sizeKMglob_aug;
             int sz2 = 2*sz1;
-            
+
+            /* G(:,d) for the current time step */
+            mytype **G;
+            allocate2Darray<mytype>(sz2, 2, &G); //[G(:,d), G(:,d+1)]
+            int d = 0;
+            int clnG = 0;//column of G rhs vector
+            createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
+                             distrLoad, G, d, clnG);///G(:,d)
+
+            for (int i=0;i<10;i++){
+                printf("%f, ",G[i][0]);
+            }
+
             allocate2Darray(sz2,sz2,&Atemp);
             allocate2Darray(sz2,sz2,&Btemp);
             allocate2Darray(sz2,sz2,&AA);
@@ -630,9 +632,13 @@ int main(int argc, char **argv){
             printf("\n G(:,2)=");
             for (int d = 1; d< NtimeSteps ; d++){  
                 t = t + dt; // t in [sec]
-                createRHS<mytype>(sizeKMglob_aug, &inDataFem, &wingMeshFem, &elemFemArr,
+                createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                             distrLoad, G, d, 1);//G(:,d+1)
 
+                timeIntegration((d+1), dt, theta, sz2, G, AA, BB, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
+
+                
+                exit(55);
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
                 if (d == 99){

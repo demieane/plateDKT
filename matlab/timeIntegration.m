@@ -21,7 +21,7 @@ full(AA(1:10,1:10))
 
 full(BB(1:10,1:10))
 
-error('debug');
+% error('debug');
 
 
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
