@@ -589,24 +589,28 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
     T alphaVar = (1 - theta)*dt;
     T betaVar = (theta)*dt;
     T **Q;
-    allocate2Darray(rowsColsG,rowsColsG,&Q);
+    allocate2Darray<T>(rowsColsG,1,&Q);
 
     T **G1, **G2;
-    allocate2Darray(rowsColsG,1,&G1);
-    allocate2Darray(rowsColsG,1,&G2);
+    allocate2Darray<T>(rowsColsG,1,&G1);
+    allocate2Darray<T>(rowsColsG,1,&G2);
     for (int i = 0;i<rowsColsG;i++){
         G1[i][0] = G[i][0];
         G2[i][0] = G[i][1];
     }
 
-    
+
     //Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
-    matSum2(alphaVar, betaVar, rowsColsG, 1, G1, G2, Q);
+    matSum2<T>(alphaVar, betaVar, rowsColsG, 1, G1, G2, Q);
     
 
     //u(:,d) = AA\(BB*u(:,d-1) + Q);
 
     //uNEW = u(:,d);
+
+    deallocate2Darray<T>(rowsColsG,G1);
+    deallocate2Darray<T>(rowsColsG,G2);
+    deallocate2Darray<T>(rowsColsG,Q);
 
 
 }

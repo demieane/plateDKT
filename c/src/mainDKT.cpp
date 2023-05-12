@@ -502,6 +502,7 @@ int main(int argc, char **argv){
             mytype **Cdamp; // Rayleigh damping
             allocate2Darray<mytype>(sizeKMglob_aug,sizeKMglob_aug,&Cdamp);
 
+
             mytype a = 0, b=0;
             RayleighDampingCoefs<mytype>(&a, &b); // TO DO (based on eigenfrequencies)
             printf("    a=%f, b=%f", a, b);
@@ -558,12 +559,12 @@ int main(int argc, char **argv){
                 printf("%f, ",G[i][0]);
             }
 
-            allocate2Darray(sz2,sz2,&Atemp);
-            allocate2Darray(sz2,sz2,&Btemp);
-            allocate2Darray(sz2,sz2,&AA);
-            allocate2Darray(sz2,sz2,&BB);
+            allocate2Darray<mytype>(sz2,sz2,&Atemp);
+            allocate2Darray<mytype>(sz2,sz2,&Btemp);
+            allocate2Darray<mytype>(sz2,sz2,&AA);
+            allocate2Darray<mytype>(sz2,sz2,&BB);
             //
-            allocate2Darray(sz1,sz1,&Ieye);
+            allocate2Darray<mytype>(sz1,sz1,&Ieye);
             
             // a: part of matrix
             for (int i = 0;i<sz1;i++){
@@ -637,7 +638,7 @@ int main(int argc, char **argv){
 
                 timeIntegration((d+1), dt, theta, sz2, G, AA, BB, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
 
-                
+
                 exit(55);
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
@@ -652,6 +653,19 @@ int main(int argc, char **argv){
 
 
             }
+
+
+
+
+            deallocate2Darray<mytype>(sizeKMglob_aug,Cdamp);
+            deallocate2Darray<mytype>(sizeKMglob_aug,u_t);
+            deallocate2Darray<mytype>(sz2,Atemp);
+            deallocate2Darray<mytype>(sz2,Btemp);
+            deallocate2Darray<mytype>(sz2,AA);
+            deallocate2Darray<mytype>(sz2,BB);
+            //
+            deallocate2Darray<mytype>(sz1,Ieye);
+            deallocate2Darray<mytype>(sz2, G); //[G(:,d), G(:,d+1)]
 
 
         }
