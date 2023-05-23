@@ -575,6 +575,10 @@ int main(int argc, char **argv){
             /* G(:,d) for the current time step */
             mytype **G;
             allocate2Darray<mytype>(sz2, NtimeSteps, &G); //[G(:,d), G(:,d+1)]
+
+            printf("sz1 = %d, sz2 = %d\n",sz1,sz2);
+
+            
             
             createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                              distrLoad, G, d=0); //G(:,d)
@@ -703,12 +707,12 @@ int main(int argc, char **argv){
             }
 
             printf("\n\nu=\n");
-            //for (int i = sz1;i<sz1+10;i++){
+            for (int i = 0;i<10;i++){
                 for (int j=0;j<10;j++){
-                    printf("    %10.4f, ",u_t[99][j]);
+                    printf("    %10.4f, ",u_t[i][j]);
                 }
-                //printf("\n");
-            //}
+                printf("\n");
+            }
 
             deallocate2Darray<mytype>(sizeKMglob_aug,Cdamp);
             deallocate2Darray<mytype>(sizeKMglob_aug,u_t);

@@ -599,7 +599,7 @@ if DYNAMIC_ANALYSIS == 1
     
     
     G(1:10,1:10)
-    u(100,1:10)
+    u(1:10,1:10)
     
     solution.w(1,1:10)
     

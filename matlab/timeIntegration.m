@@ -59,8 +59,10 @@ BBmat = full(BB(1:10,1:10));
 
 
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
-% utemp2 = BB*u(:,d-1) + Q;
+utemp2 = BB*u(:,d-1) + Q;
 
+% utemp2=utemp2(783:783+10)'
+utemp2=utemp2(1:10)'
 
 % % uprevious = u(1:10,d-1)'
 % % Qmat = Q(1:10)'
@@ -83,7 +85,7 @@ Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
 % error('er')
 u(:,d) = AA\(BB*u(:,d-1) + Q);
 % 
-% u(1:10,d)'
+ufinal=u(1:10,d)'
 % 
 % error('debug');
 uNEW = u(:,d);

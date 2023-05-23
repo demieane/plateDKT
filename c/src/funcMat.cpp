@@ -649,10 +649,11 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
     //    printf("%f, ", utemp1[i][0]);
     //}
 
-    //printf("\nutemp2=");
-    //for (int i = 0;i<10;i++){
-    //    printf("%10.4f, ", utemp2[i][0]/pow(10.0,-4.0));
-    //}
+    printf("\nutemp2=");
+    //for (int i = 782;i<782+10;i++){
+    for (int i = 0;i<10;i++){    
+        printf("%f, ", utemp2[i][0]/pow(10.0,-4.0));
+    }
     //
 
     //printf("\nrowsColsG=%d\n", rowsColsG);
@@ -680,15 +681,14 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
 
     linearSystemSolve(rowsColsG, rowsColsG, AA, utemp2, Usol);
 
-/*
-    printf("Usol\n");
+    printf("\nUsol= ");
     for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 1; j++){
-            printf("%f", Usol[i][j]);
-        } 
-        printf("\n");
+        //for (int j = 0; j < 1; j++){
+            printf("%f, ", Usol[i][0]);
+        //} 
+        //printf("\n");
     }
-*/
+
 
     for (int i = 0;i<rowsColsG;i++){
         u_t[i][d]=Usol[i][0];
