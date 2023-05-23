@@ -18,7 +18,6 @@ AA =  A - theta*dt*B;
 BB =  A + (1 - theta)*dt*B;
 
 AAmat = full(AA(1:10,1:10))
-
 BBmat = full(BB(1:10,1:10))
 
 % % % fileID = fopen('../c/OUTDATA_FEM_DEBUG.bin','rb')
@@ -60,14 +59,14 @@ BBmat = full(BB(1:10,1:10))
 
 
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
-Qmat = Q(1:15)'
-
-size(AA)
-
-% error('er')
-
 utemp2 = BB*u(:,d-1) + Q;
-utemp2mat = utemp2(1:10)'
+
+
+% % uprevious = u(1:10,d-1)'
+% % Qmat = Q(1:10)'
+% % utemp1mat = BB*u(:,d-1);
+% % utemp1=utemp1mat(1:10)'
+% % utemp2mat = utemp2(1:10)'
 
 % AA = full(AA);
 

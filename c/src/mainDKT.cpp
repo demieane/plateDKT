@@ -677,39 +677,34 @@ int main(int argc, char **argv){
             //exit(55);
 
             //for (int d = 1; d< NtimeSteps ; d++){  
-            for (int d = 0; d< 2 ; d++){   
-                printf("\nd (time) = %d\n",d);   
+            for (int d = 0; d< 10 ; d++){   
+                //printf("\n    d (time) = %d\n",d);   
                 t = t + dt; // t in [sec]
 
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                             distrLoad, G, d+1);//G(:,d+1)
 
-                printf("\nG[i][d+1]=");
-                for (int i=0;i<10;i++){
-                    printf("%f, ",(G[i][d]-G[i][d+1])*pow(10.0,5.0));
-                }
-                printf("\nG[i][d]=");
-                for (int i=0;i<10;i++){
-                    printf("%10.4f, ",G[i][d]);
-                }
-
                 timeIntegration((d+1), dt, theta, sz2, G, AA, BB, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
-                 
+
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
             }
-
-            printf("\n\n");
+/*
+            printf("\n\nG=\n");
             for (int i = 0;i<10;i++){
-                for (int j=0;j<4;j++){
-                    printf("%f, ",u_t[i][j]);
+                for (int j=0;j<10;j++){
+                    printf("    %10.4f, ",G[i][j]);
                 }
                 printf("\n");
             }
-            
-
-
-
+*/
+            printf("\n\nu=\n");
+            for (int i = 0;i<10;i++){
+                for (int j=0;j<10;j++){
+                    printf("    %10.4f, ",u_t[i][j]);
+                }
+                printf("\n");
+            }
 
             deallocate2Darray<mytype>(sizeKMglob_aug,Cdamp);
             deallocate2Darray<mytype>(sizeKMglob_aug,u_t);

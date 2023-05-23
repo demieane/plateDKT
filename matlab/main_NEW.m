@@ -570,7 +570,7 @@ if DYNAMIC_ANALYSIS == 1
 %     error('er')
     % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
     % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-        for d = 1:2%length(t)-1
+        for d = 1:10%length(t)-1
             d
             % Update load vector
 % %             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
@@ -591,6 +591,10 @@ if DYNAMIC_ANALYSIS == 1
     %
     %
     end
+    
+    
+    G(1:10,1:10)
+    u(1:10,1:10)
 
 error('er')
     hmax = max(max(abs(solution.w)))
