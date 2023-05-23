@@ -41,7 +41,7 @@ ylabel('$\alpha_{tip}/\alpha_{root}$', 'interpreter','latex');
 % % hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
 % % colorbar;shading interp;view([25 25]);%axis equal;
 
-% error('er')
+error('er')
 load('FEM_sol_h05_r_h2');
 % subplot(1,2,1);
 hold on;grid on;

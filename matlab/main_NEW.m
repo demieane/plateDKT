@@ -269,7 +269,7 @@ GGin2=inv(GGDKT);
 
 %************************************** DISTRIBUTED LOAD VIA MAPPING*******
 if lll==3
-    [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,...
+    [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,...
         fluid_dens, Uvel,h,  d);
 %     Fx = -Fx; %for ansys
 %     if debugOn
@@ -330,7 +330,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     if lll==2 % uniform load
         floc=Area(kk)*P_load/3*[1 0 0 1 0 0 1 0 0]';% lumped mass approach for the uniform load
     elseif lll==3 %distributed load via mapping func
-        floc=Area(kk)*Fx(kk)/3*[1 0 0 1 0 0 1 0 0]';
+        floc=Area(kk)*FxDYN(kk)/3*[1 0 0 1 0 0 1 0 0]';
     end
     %***********************************
     Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
@@ -470,10 +470,6 @@ end
 % error('er')
 
 %% TIME-MARCHING
-d_fromStatic = d;
-% 
-[FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
-    importFromFile,fluid_dens, Uvel, h, d_fromStatic);
 
 if DYNAMIC_ANALYSIS == 1
 
@@ -485,6 +481,9 @@ if DYNAMIC_ANALYSIS == 1
     % wf=2*pi/T; %rad/s
     ddt=inData.dt;%T/100; %time-step
     t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
+    
+%     figure
+%     plot(t/inData.T3,sin(inData.omega3.*t),'k--');
     
     Ntimesteps = ceil((inData.Nper)*T/ddt)+1
     length(t)
@@ -498,17 +497,22 @@ if DYNAMIC_ANALYSIS == 1
     C = 0.*Mglob;
     % 
     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
-    % a
-    % b
-    Cfull=full(C);
-    Cfull(1:10,1:10);
+    a
+    b
+%     Cfull=full(C);
+%     Cfull(1:10,1:10);
 
     
     % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 % %     [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
 % %             importFromFile,fluid_dens, Uvel, h, d);
 % %     [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
-    [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, FxDYN*cos(inData.omega3*t(d)),Area,LM,Bdofs);
+%     [Fglob_t] = createFglob(lll,GEN, Nelem, P_load, FxDYN*cos(inData.omega3*t(d)),Area,LM,Bdofs);
+
+    [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
+        importFromFile,fluid_dens, Uvel, h, d);
+    FxDYN = FxDYN.*sin(inData.omega3*t(d)); %DUMMY SCENARIO FOR DEBUGGING
+    [Fglob_t] = createFglob(lll,GEN, Nelem, P_load, FxDYN, Area,LM,Bdofs);
     Fm = [Fglob_t; zeros(sizeM,1)];
     size(Fm)
 
@@ -530,7 +534,7 @@ if DYNAMIC_ANALYSIS == 1
         qdot2=zeros(sizeM,length(t)); %acceleration 
         beta = 0.25;
         gamma = 0.5;
-        [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
+        [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,FxDYN,Area,LM,Bdofs);
 
         %initialization    
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
@@ -543,9 +547,9 @@ if DYNAMIC_ANALYSIS == 1
 
             d
             % Update load vector
-            [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
+            [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
     %         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
-            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,FxDYN,Area,LM,Bdofs);
 
             pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
@@ -567,22 +571,23 @@ if DYNAMIC_ANALYSIS == 1
     %
     %
     
+    
 %     error('er')
     % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
     % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
         for d = 1:10%length(t)-1
             d
             % Update load vector
-% %             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-% %             
+            [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
+            FxDYN = FxDYN.*sin(inData.omega3*t(d)); %DUMMY SCENARIO FOR DEBUGGING
 % %             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
-            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, FxDYN*cos(inData.omega3*t(d+1)),Area,LM,Bdofs);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, FxDYN, Area,LM,Bdofs);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
 
             theta = implicitEuler*(1) + crankNicolson*(1/2);
             u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
-            usol=u(1:10,d+1)'
+%             usol=u(1:10,d+1)'
 
 %             error('Testing');
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
@@ -594,7 +599,14 @@ if DYNAMIC_ANALYSIS == 1
     
     
     G(1:10,1:10)
-    u(1:10,1:10)
+    u(100,1:10)
+    
+    solution.w(1,1:10)
+    
+    save FEM_sol_h182_r_h2
+
+    
+%     save FEM_sol_h182_r_h2
 
 error('er')
     hmax = max(max(abs(solution.w)))

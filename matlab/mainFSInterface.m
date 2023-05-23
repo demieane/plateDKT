@@ -219,29 +219,27 @@ end
 error('er')
 
 
-fileID = fopen('../c/OUTDATA_FEM_DEBUG.bin','rb')
-rowsUsol = fread(fileID,1,'int')
-colsUsol = fread(fileID,1,'int')
-
-for i = 1:rowsUsol
-    for j = 1:colsUsol
-        AA(i,j)=fread(fileID,1,precision);
-    end
-end
-
-rowsUsol1 = fread(fileID,1,'int')
-colsUsol1 = fread(fileID,1,'int')
-
-for i = 1:rowsUsol1
-    for j = 1:colsUsol1
-        utemp2(i,j)=fread(fileID,1,precision);
-    end
-end
-
-usolDEBUG = AA\utemp2;
-usolDEBUG(1:10)'
-
-
+% % % % % % fileID = fopen('../c/OUTDATA_FEM_DEBUG.bin','rb')
+% % % % % % rowsUsol = fread(fileID,1,'int')
+% % % % % % colsUsol = fread(fileID,1,'int')
+% % % % % % 
+% % % % % % for i = 1:rowsUsol
+% % % % % %     for j = 1:colsUsol
+% % % % % %         AA(i,j)=fread(fileID,1,precision);
+% % % % % %     end
+% % % % % % end
+% % % % % % 
+% % % % % % rowsUsol1 = fread(fileID,1,'int')
+% % % % % % colsUsol1 = fread(fileID,1,'int')
+% % % % % % 
+% % % % % % for i = 1:rowsUsol1
+% % % % % %     for j = 1:colsUsol1
+% % % % % %         utemp2(i,j)=fread(fileID,1,precision);
+% % % % % %     end
+% % % % % % end
+% % % % % % 
+% % % % % % usolDEBUG = AA\utemp2;
+% % % % % % usolDEBUG(1:10)'
 
 
 %% RUN THE CODE
@@ -253,6 +251,9 @@ elseif modeFem == 2
 end
 
 %% Read solution from binary file
+modeFem = 1;
+precision = 'double';
+
 if modeFem == 1
     fileID = fopen('../c/OUTDATA_FEM_double.bin','rb')
 elseif modeFem == 2
@@ -263,11 +264,33 @@ GEN_fromC = fread(fileID,1,'int')
 rowsUsol = fread(fileID,1,'int')
 colsUsol = fread(fileID,1,'int')
 
+sizeM = rowsUsol/2;
+
 for i = 1:rowsUsol
     for j = 1:colsUsol
         Usol(i,j)=fread(fileID,1,precision);
     end
 end
+
+
+load('FEM_sol_h182_r_h2');
+
+max(abs(Usol(1:sizeM,1:end-1) - u(1:sizeM,2:end) ))
+
+
+
+uu_dot = u(1:GEN,:);
+
+uu_dot99 = Usol(1:GEN_fromC,:); 
+
+uu99 = Usol(sizeM-1:sizeM+GEN_fromC,:);
+uu99(1,1:10)
+
+solution.w(1,1:10)
+
+w99=uu99(1:3:end,:);   % vertical displacement
+
+
 
 %% DEBUG
 
@@ -297,11 +320,13 @@ end
 % U=Kglob_aug2\Fglob_aug2;%SOLVE SPARSE SYSTEM OF EQUATIONS
 % u_fromC=U(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 
-u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+u_fromC=Usol(1:GEN_fromC,:); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 
-w_fromC=u_fromC(1:3:end);   % vertical displacement
-bx_fromC=u_fromC(2:3:end);  % rotation x
-by_fromC=u_fromC(3:3:end);  % rotation y
+w_fromC=u_fromC(1:3:end,:);   % vertical displacement
+bx_fromC=u_fromC(2:3:end,:);  % rotation x
+by_fromC=u_fromC(3:3:end,:);  % rotation y
+
+save solFromC w_fromC
 
 
 [XX,lamM,flag]=eigs(sparse(Kglob_aug2),sparse(Mglob_aug2),5,'smallestabs');

@@ -435,7 +435,7 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
     #endif
 
     if (info == 0){
-        printf("\n    Solution successfull");
+        //printf("\n    Solution successfull");
 
         for (int i = 0; i < rowsA; i++) {
         Usol[i][0]=BB[i];

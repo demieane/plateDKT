@@ -1600,6 +1600,8 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN){
     fwrite(&rows, sizeof(int), 1, fileOut);
     fwrite(&cols, sizeof(int), 1, fileOut);
 
+    printf("rows = %d, cols=%d\n",rows,cols);
+
     for (int i = 0; i < rows; i++){
         for (int j = 0; j < cols; j++){
             fwrite(&(Usol[i][j]), sizeof(T), 1, fileOut);
@@ -1667,24 +1669,22 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
     int cntFglob;
 
     if (inDataFem->LL == 2){
-        q = (inDataFem->P_load)*cos(w3*t);
+        q = (inDataFem->P_load)*sin(w3*t);
     }
 
     for (int i = 0;i<wingMeshFem->GEN;i++){
         elemFemArr->Fglob[i][0] = 0;
     }
 
-    if (d==99){
-        printf("t=%f\n", t);
-        printf("cos(w3*t)=%f\n", cos(w3*t));
-
-    }
-
     //printf("\n cos(w3*t)=%f \n",cos(w3*t));
     for (int kk = 0;kk<wingMeshFem->Nelem;kk++){
 
         if (inDataFem->LL == 3){
-            q = distrLoad[kk]*cos(w3*t);
+            q = distrLoad[kk]*sin(w3*t);
+            if (kk == 0){
+                printf("\nd = %d, sin(w3t)%f,\n",d, sin(w3*t));
+            }
+            
         }
         else{
             printf("Problem with load case! Inside createFglob\n");

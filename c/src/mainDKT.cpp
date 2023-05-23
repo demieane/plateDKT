@@ -579,10 +579,10 @@ int main(int argc, char **argv){
             createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                              distrLoad, G, d=0); //G(:,d)
 
-            printf("\nG(1:10,d=0)=\n");
-            for (int i=0;i<10;i++){
-                printf("%10.4f, ",G[i][d]);
-            }
+            //printf("\nG(1:10,d=0)=\n");
+            //for (int i=0;i<10;i++){
+            //    printf("%10.4f, ",G[i][d]);
+            //}
 
             mytype **u_t; // u(:,d)
             allocate2Darray(sz2,NtimeSteps,&u_t);
@@ -595,6 +595,7 @@ int main(int argc, char **argv){
             //
             allocate2Darray<mytype>(sz1,sz1,&Ieye);
             
+            /*
             printf("\n----\n");
             printf("Mglob_aug[i][j]\n");
             for (int i = 0;i<5;i++){
@@ -604,7 +605,7 @@ int main(int argc, char **argv){
                 printf("\n");
             }
             printf("----\n");
-
+            */
 
             // a: part of matrix
             for (int i = 0;i<sz1;i++){
@@ -616,7 +617,7 @@ int main(int argc, char **argv){
                     }  
                 }
             }
-            printf("\npart a OK\n");
+            //printf("\npart a OK\n");
 
             // b: part of matrix
             for (int i = 0;i<sz1;i++){
@@ -624,7 +625,7 @@ int main(int argc, char **argv){
                     Btemp[i][j+sz1] = -Kglob_aug[i][j];
                 }
             }
-            printf("\npart b OK\n");
+            //printf("\npart b OK\n");
 
             // c: part of matrix
             for (int i = 0;i<sz1;i++){
@@ -632,7 +633,7 @@ int main(int argc, char **argv){
                     Btemp[i+sz1][j] = Ieye[i][j];
                 }
             }
-            printf("\npart c OK\n");
+            //printf("\npart c OK\n");
 
             // d: part of matrix
             for (int i = 0;i<sz1;i++){  
@@ -640,7 +641,7 @@ int main(int argc, char **argv){
                     Atemp[i+sz1][j+sz1] = Ieye[i][j];
                 }
             }
-            printf("part d OK\n");
+            //printf("part d OK\n");
 
             //writeMatrixInBinary<mytype>(sz2, sz2, Atemp);
     
@@ -659,6 +660,7 @@ int main(int argc, char **argv){
             betaVar = (1.0-theta)*dt;
             matSum2(alphaVar, betaVar, sz2, sz2, Atemp, Btemp, BB);
 
+/*
             printf("\nAA[i][j]=\n");
             for (int i = 0;i<10;i++){  
                 for (int j = 0;j<10;j++){
@@ -673,7 +675,7 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
-
+*/
             //exit(55);
 
             //for (int d = 1; d< NtimeSteps ; d++){  
@@ -689,22 +691,24 @@ int main(int argc, char **argv){
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
             }
-/*
+
+            CuFEMNum2DWriteDataInBinary<mytype>(sz2, NtimeSteps, u_t, wingMeshFem.GEN);
+
             printf("\n\nG=\n");
             for (int i = 0;i<10;i++){
                 for (int j=0;j<10;j++){
-                    printf("    %10.4f, ",G[i][j]);
+                    printf("    %f, ",G[i][j]);
                 }
                 printf("\n");
             }
-*/
+
             printf("\n\nu=\n");
-            for (int i = 0;i<10;i++){
+            //for (int i = sz1;i<sz1+10;i++){
                 for (int j=0;j<10;j++){
-                    printf("    %10.4f, ",u_t[i][j]);
+                    printf("    %10.4f, ",u_t[99][j]);
                 }
-                printf("\n");
-            }
+                //printf("\n");
+            //}
 
             deallocate2Darray<mytype>(sizeKMglob_aug,Cdamp);
             deallocate2Darray<mytype>(sizeKMglob_aug,u_t);

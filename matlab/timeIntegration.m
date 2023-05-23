@@ -17,8 +17,8 @@ B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
 AA =  A - theta*dt*B;
 BB =  A + (1 - theta)*dt*B;
 
-AAmat = full(AA(1:10,1:10))
-BBmat = full(BB(1:10,1:10))
+AAmat = full(AA(1:10,1:10));
+BBmat = full(BB(1:10,1:10));
 
 % % % fileID = fopen('../c/OUTDATA_FEM_DEBUG.bin','rb')
 % % % rowsUsol = fread(fileID,1,'int')
@@ -59,7 +59,7 @@ BBmat = full(BB(1:10,1:10))
 
 
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
-utemp2 = BB*u(:,d-1) + Q;
+% utemp2 = BB*u(:,d-1) + Q;
 
 
 % % uprevious = u(1:10,d-1)'
