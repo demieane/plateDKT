@@ -339,6 +339,9 @@ int main(int argc, char **argv){
 
     printf("    Calculated Mg(:,kk), Kg(:,kk), Fglob(kk)");
 
+
+
+
 /*
     printf("    Fglob(kk)");
     for (int i=0;i<10;i++){
@@ -401,6 +404,7 @@ int main(int argc, char **argv){
 
     printf("\n    Kglob, Mglob OK... DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)\n");
 
+
     //************************************************************************************
     //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
     //************************************************************************************
@@ -441,6 +445,29 @@ int main(int argc, char **argv){
         }
     }
 
+
+
+    printf("\n----\n");
+    printf("Mglob_aug[i][j]\n");
+    for (int i = 0;i<5;i++){
+        for (int j = 0;j<5;j++){
+            printf("%10.4f, ",Mglob_aug[i][j]/pow(10.0,-3.0));
+        }
+        printf("\n");
+    }
+    printf("----\n");
+
+    printf("\n----\n");
+    printf("Kglob_aug[i][j]\n");
+    for (int i = 0;i<5;i++){
+        for (int j = 0;j<5;j++){
+            printf("%10.4f, ",Kglob_aug[i][j]/pow(10.0,6.0));
+        }
+        printf("\n");
+    }
+    printf("----\n");
+
+    //exit(55);
     //************************************************************************************
     //  DKT PLATE SOLVER: SOLUTION OPTIONS (1. EIGEN, 2. STATIC, 3. DYNAMIC)
     //************************************************************************************
@@ -568,6 +595,17 @@ int main(int argc, char **argv){
             //
             allocate2Darray<mytype>(sz1,sz1,&Ieye);
             
+            printf("\n----\n");
+            printf("Mglob_aug[i][j]\n");
+            for (int i = 0;i<5;i++){
+                for (int j = 0;j<5;j++){
+                    printf("%f, ",Mglob_aug[i][j]);
+                }
+                printf("\n");
+            }
+            printf("----\n");
+
+
             // a: part of matrix
             for (int i = 0;i<sz1;i++){
                 for (int j = 0;j<sz1;j++){
@@ -575,15 +613,15 @@ int main(int argc, char **argv){
                     Btemp[i][j] = -Cdamp[i][j];
                     if (i == j){ //diagonal
                         Ieye[i][j] = 1.0;
-                    }
+                    }  
                 }
             }
             printf("\npart a OK\n");
 
             // b: part of matrix
             for (int i = 0;i<sz1;i++){
-                for (int j = sz1;j<sz2;j++){
-                    Btemp[i][j] = -Kglob_aug[i][j];
+                for (int j = 0;j<sz1;j++){
+                    Btemp[i][j+sz1] = -Kglob_aug[i][j];
                 }
             }
             printf("\npart b OK\n");
@@ -591,7 +629,7 @@ int main(int argc, char **argv){
             // c: part of matrix
             for (int i = 0;i<sz1;i++){
                 for (int j = 0;j<sz1;j++){
-                    Btemp[i+sz1][j] = -Ieye[i][j];
+                    Btemp[i+sz1][j] = Ieye[i][j];
                 }
             }
             printf("\npart c OK\n");
@@ -603,6 +641,12 @@ int main(int argc, char **argv){
                 }
             }
             printf("part d OK\n");
+
+            //writeMatrixInBinary<mytype>(sz2, sz2, Atemp);
+    
+            //writeMatrixInBinary<mytype>(sz2, sz2, Btemp);
+
+            //exit(55);
 
             //AA =  A - theta*dt*B;
             
@@ -630,10 +674,11 @@ int main(int argc, char **argv){
                 printf("\n");
             }
 
-            
+            //exit(55);
 
             //for (int d = 1; d< NtimeSteps ; d++){  
-            for (int d = 0; d< 2 ; d++){      
+            for (int d = 0; d< 2 ; d++){   
+                printf("\nd (time) = %d\n",d);   
                 t = t + dt; // t in [sec]
 
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
@@ -641,10 +686,13 @@ int main(int argc, char **argv){
 
                 printf("\nG[i][d+1]=");
                 for (int i=0;i<10;i++){
-                    printf("%10.4f, ",G[i][d+1]);
+                    printf("%f, ",(G[i][d]-G[i][d+1])*pow(10.0,5.0));
+                }
+                printf("\nG[i][d]=");
+                for (int i=0;i<10;i++){
+                    printf("%10.4f, ",G[i][d]);
                 }
 
-                
                 timeIntegration((d+1), dt, theta, sz2, G, AA, BB, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
                  
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]

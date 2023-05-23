@@ -44,11 +44,17 @@ void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals);
 //
 template<class T>
 void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u_t); // TIME INTEGRATION WITH CRANK-NICOLSON
-
+//
+template<class T>
+void writeMatrixInBinary(int rowsA, int colsA, T **arrA);
+//
 // from funcBLAS.c
 /*=========================================================================================*/
 /* Definition of the functions BELOW */
 /*=========================================================================================*/
+
+
+
 
 template<class T>
 T mypow(T base, T power){
@@ -633,9 +639,41 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
         printf("%10.4f, ", utemp2[i][0]/pow(10.0,-4.0));
     }
     //
+
+    printf("\nrowsColsG=%d\n", rowsColsG);
     
+    printf("AA\n");
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++){
+            printf("%f", AA[i][j]);
+        } 
+        printf("\n");
+    }
+
+    printf("Usol\n");
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 1; j++){
+            printf("%f", Usol[i][j]);
+        } 
+        printf("\n");
+    }
+
+    //writeMatrixInBinary<T>(rowsColsG, rowsColsG, AA);
+    
+    //writeMatrixInBinary<T>(rowsColsG, 1, utemp2);
+
     linearSystemSolve(rowsColsG, rowsColsG, AA, utemp2, Usol);
-    
+
+/*
+    printf("Usol\n");
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 1; j++){
+            printf("%f", Usol[i][j]);
+        } 
+        printf("\n");
+    }
+*/
+
     for (int i = 0;i<rowsColsG;i++){
         u_t[i][d]=Usol[i][0];
         //printf("%f,",u_t[i][d]);
@@ -660,5 +698,29 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
     deallocate2Darray<T>(rowsColsG,Usol);
 
 
+
+}
+
+
+template<class T>
+void writeMatrixInBinary(int rowsA, int colsA, T **arrA){
+
+    //If the file exists it just overwrites it (delete DEBUG file
+    //prior to each execution)
+
+    FILE *fileOut;
+	fileOut = fopen("../c/OUTDATA_FEM_DEBUG.bin", "ab"); // w for write, b for binary
+
+    fwrite(&rowsA, sizeof(int), 1, fileOut);
+    fwrite(&colsA, sizeof(int), 1, fileOut);
+
+    for (int i = 0; i < rowsA; i++){
+        for (int j = 0; j < colsA; j++){
+            fwrite(&(arrA[i][j]), sizeof(T), 1, fileOut);
+        }
+    }
+
+    fclose(fileOut);
+    printf("\n    Exiting writeMatrixInBinary...");
 
 }

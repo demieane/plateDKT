@@ -184,8 +184,8 @@ if lll==3%distributed load & distributed thickness
     ycp=yc_fem_data;
     tinstance = 100;
     fcp = DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
-%     tcp= th_fem_data.*0 + h;
-    tcp= th_fem_data;
+    tcp= th_fem_data.*0 + h;
+%     tcp= th_fem_data;
     fwrite(file, length(xcp(:)),'int');
     % x-coords
     for ii = 1:length(xcp(:))
@@ -217,6 +217,33 @@ elseif modeFem == 2
 end
 
 error('er')
+
+
+fileID = fopen('../c/OUTDATA_FEM_DEBUG.bin','rb')
+rowsUsol = fread(fileID,1,'int')
+colsUsol = fread(fileID,1,'int')
+
+for i = 1:rowsUsol
+    for j = 1:colsUsol
+        AA(i,j)=fread(fileID,1,precision);
+    end
+end
+
+rowsUsol1 = fread(fileID,1,'int')
+colsUsol1 = fread(fileID,1,'int')
+
+for i = 1:rowsUsol1
+    for j = 1:colsUsol1
+        utemp2(i,j)=fread(fileID,1,precision);
+    end
+end
+
+usolDEBUG = AA\utemp2;
+usolDEBUG(1:10)'
+
+
+
+
 %% RUN THE CODE
 if modeFem == 1
     system('../c/./mainDKT_CPP');

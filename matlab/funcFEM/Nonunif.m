@@ -41,7 +41,7 @@ if importFromFile.toggle
 %     tx_modified = 0.15*chord.*(xc_fem_data-chord/2).^2+tx;
 
 %     tx_modified=th_fem_data;%0.15*chord.*(xc_fem_data-chord/2).^2+th_fem_data;
-    tx_modified= th_fem_data; %2.5*chord.*(xc_fem_data-chord/2).^2+th_fem_data;
+    tx_modified= th_fem_data.*0 + h ; %2.5*chord.*(xc_fem_data-chord/2).^2+th_fem_data;
 %     tx_linear = 0.025*(xc_fem_data-chord/2) + 0.015;
 %     tx_linear = 0.5*(xc_fem_data-chord/2) + 0.015;
  
