@@ -605,6 +605,11 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
     for (int i = 0;i<10;i++){
         printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
     }
+    printf("\nQ=");
+    int sz1 = rowsColsG/2;
+    for (int i = sz1-4;i<sz1+10;i++){
+        printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
+    }
 
 /*
     T **Gdminus1, **Gd;
@@ -642,6 +647,7 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
     for (int i = 0; i<rowsColsG; i++){
         product[i][0] = 0.0;
         for (int j = 0; j<rowsColsG; j++){  
+            //product[i][0] = product[i][0] + BB[j][i]*u_t[j][d-1];
             product[i][0] = product[i][0] + BB[i][j]*u_t[j][d-1];
         }
     }
@@ -711,13 +717,13 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
         u_t[i][d]=Usol[i][0];
     }
 
-    //writeMatrixInBinary<T>(rowsColsG, rowsColsG, AA);
+    writeMatrixInBinary<T>(rowsColsG, rowsColsG, AA);
     
-    //writeMatrixInBinary<T>(rowsColsG, 1, utemp2);
+    writeMatrixInBinary<T>(rowsColsG, 1, product);
 
-    //writeMatrixInBinary<T>(rowsColsG, 1, Usol);
+    writeMatrixInBinary<T>(rowsColsG, 1, Usol);
 
-    //exit(55);
+    exit(55);
 
     
     //printf("\n    Retrieving Usol at time step\n");

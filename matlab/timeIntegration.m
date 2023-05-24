@@ -19,10 +19,15 @@ BB =  A + (1 - theta)*dt*B;
 % sizeBB = size(BB);
 
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
-Qtemp = Q(1:10)
+Qtemp = Q(1:10)'
+Qtemp1 = Q(sizeM-4:sizeM+10)'
 
 u(:,d) = AA\(BB*u(:,d-1) + Q);
 utemp2 = (BB*u(:,d-1) + Q);
+
+utemp1  = BB*u(:,d-1);
+
+utemp11 = utemp1(1:10)'
 utemp22 = utemp2(1:10)'
 % uprevious = u(1:10,d-1);
 
