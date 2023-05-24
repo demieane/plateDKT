@@ -50,8 +50,8 @@ int main(int argc, char **argv){
         int nd = inDataFem.sizexcp;
         int ni = wingMeshFem.Nelem; //size(xm)
 
-        mytype p1 = 10.55;
-        mytype p2 = 10.55;
+        mytype p1 = 20.55;
+        mytype p2 = 20.55;
         mytype *pparam1, *pparam2;
         pparam1 = &p1;  
         pparam2 = &p2; 
@@ -531,8 +531,12 @@ int main(int argc, char **argv){
             mytype **Cdamp; // Rayleigh damping
             allocate2Darray<mytype>(sizeKMglob_aug,sizeKMglob_aug,&Cdamp);
 
-            mytype a =0, b=0;
+            mytype a=0, b=0;
+
+            
+            
             RayleighDampingCoefs<mytype>(&a, &b); // TO DO (based on eigenfrequencies)
+            
             printf("    a=%f, b=%f", a, b);
 
             matSum2<mytype>(a, b, sizeKMglob_aug, sizeKMglob_aug, Mglob_aug, Kglob_aug, Cdamp); //C = a*Mglob+b*Kglob;
@@ -546,6 +550,8 @@ int main(int argc, char **argv){
             }
             printf("\nCdamp(end,end)=%10.4f\n", Cdamp[sizeKMglob_aug-1][sizeKMglob_aug-1]/mypow<mytype>(10.0,3.0));
             //========================================DAMPING MATRIX=================================
+
+            
             
             int d = 0;
             mytype t = 0.0;
@@ -558,12 +564,12 @@ int main(int argc, char **argv){
             sizeM=size(Mglob,1);
 
             A = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
-            B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
+            B = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
 
             %lamda (1: implicit Euler, 1/2: Crank - Nicolson)
 
-            AA =  A - theta*dt*B;
-            BB =  A + (1 - theta)*dt*B;
+            AA =  A + theta*dt*B;
+            BB =  A - (1 - theta)*dt*B;
 
             MAT = [a, b; 
                    c, d]
@@ -585,8 +591,6 @@ int main(int argc, char **argv){
                 }
             }
 
-            
-            
             createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                              distrLoad, G, d=0); //G(:,d)
 
@@ -622,7 +626,7 @@ int main(int argc, char **argv){
             for (int i = 0;i<sz1;i++){
                 for (int j = 0;j<sz1;j++){
                     Atemp[i][j] = Mglob_aug[i][j];
-                    Btemp[i][j] = -0*Cdamp[i][j];
+                    Btemp[i][j] = -Cdamp[i][j];
                     if (i == j){ //diagonal
                         Ieye[i][j] = 1.0;
                     }  
@@ -695,8 +699,8 @@ int main(int argc, char **argv){
 */
             //exit(55);
 
-            for (int d = 1; d< NtimeSteps ; d++){  
-            //for (int d = 0; d< 10 ; d++){   
+            //for (int d = 1; d< NtimeSteps ; d++){  
+            for (int d = 0; d< 2 ; d++){   
                 //printf("\n    d (time) = %d\n",d);   
                 t = t + dt; // t in [sec]
 
@@ -723,15 +727,15 @@ int main(int argc, char **argv){
             printf("\n\nu=\n");
             for (int i = 0;i<10;i++){
                 for (int j=0;j<10;j++){
-                    printf("    %10.4f, ",u_t[i][j]);
+                    printf("    %10.6f, ",u_t[i][j]);
                 }
                 printf("\n");
             }
 
             printf("\n\nu(sz1-1:sz1+10,1:10)=\n");
-            for (int i = sz1-4;i<sz1 + 10;i++){
-                for (int j=0;j<10;j++){
-                    printf("    %10.8f, ",u_t[i][j]);
+            for (int i = sz1-4;i<sz1+10;i++){
+                for (int j=0;j<4;j++){
+                    printf("    %10.6f, ",u_t[i][j]);
                 }
                 printf("\n");
             }

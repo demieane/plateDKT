@@ -3,6 +3,8 @@ function [Fglob1] = createFglob(lll,GEN,Nelem,P_load,Fx,Area,LM,BBnodes)
 %   Detailed explanation goes here
 
 Fglob=zeros(GEN,1);
+% GEN
+% Nelem
 
 % Fx_new = Fx.*sin(wf*t);
 Fx_new = Fx;
@@ -67,7 +69,7 @@ end
 
 
 Fglob1=[Fglob; zeros(length(BBnodes),1)];
-
+% size(Fglob1)
 
 end
 

@@ -1662,18 +1662,19 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
                 struct femArraysDKT<T> *elemFemArr,
                  T *distrLoad, T **G, int d){
 
+    // Make sure it is initialized with zeros.
+    for (int i = 0;i<wingMeshFem->GEN;i++){
+        elemFemArr->Fglob[i][0] = 0;
+    }
+
     T lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
-    T q;
+    T q = 0.0;
     T w3 = inDataFem->omega3;
     T t = d*inDataFem->dt;
     int cntFglob;
 
     if (inDataFem->LL == 2){
         q = (inDataFem->P_load)*sin(w3*t);
-    }
-
-    for (int i = 0;i<wingMeshFem->GEN;i++){
-        elemFemArr->Fglob[i][0] = 0;
     }
 
     //printf("\n cos(w3*t)=%f \n",cos(w3*t));
@@ -1697,7 +1698,6 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
         }
         // version - 2 (EQUIVALENT) floc=P*HW'*floc1;
         //matMatMultiplication2(2, 10, 9, inDataFem.P_load, 1.0, 0.0, elemFemArr.HW, elemFemArr.floc1, elemFemArr.floc); //HW'*floc1
-
 
         for (int q=0;q<9;q++){
             cntFglob = wingMeshFem->LM[q][kk]-1;

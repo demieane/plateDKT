@@ -22,7 +22,7 @@ close all;
 clc;
 
 MODAL_ANALYSIS = 1;
-DYNAMIC_ANALYSIS = 0;
+DYNAMIC_ANALYSIS = 1;
 
 tstart = tic;   
 
@@ -472,6 +472,8 @@ end
 %% TIME-MARCHING
 
 if DYNAMIC_ANALYSIS == 1
+    
+    
 
     newmark = 0;
     implicitEuler = 0;
@@ -496,9 +498,9 @@ if DYNAMIC_ANALYSIS == 1
     qdot=zeros(sizeM,length(t)); %velocity
     C = 0.*Mglob;
     % 
-%     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
-%     a
-%     b
+    [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
+    a
+    b
 %     Cfull=full(C);
 %     Cfull(1:10,1:10);
 
@@ -512,24 +514,20 @@ if DYNAMIC_ANALYSIS == 1
     [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
         importFromFile,fluid_dens, Uvel, h, d);
     FxDYN = FxDYN.*sin(inData.omega3*t(d)); %DUMMY SCENARIO FOR DEBUGGING
-    [Fglob_t] = createFglob(lll,GEN, Nelem, P_load, FxDYN, Area,LM,Bdofs);
+    [Fglob_t] = createFglob(lll,GEN, Nelem, P_load, FxDYN, Area,LM, Bdofs);
     Fm = [Fglob_t; zeros(sizeM,1)];
-    size(Fm)
 
     if d==1
         G = zeros(length(Fm),length(t));
     end
     G(:,d) = Fm;
     
-%     error('er')
-
-    u=[qdot;q];
+    u=[qdot;q]; % BEWAREEEE
 
     solution = struct( 'w',[], 'bx',[], 'by', [],...
             'w_dot',[], 'bx_dot',[], 'by_dot', [],...
             'uu', [], 'uu_dot',[]);    
 
-%     error('er')
     if newmark
         qdot2=zeros(sizeM,length(t)); %acceleration 
         beta = 0.25;
@@ -540,9 +538,7 @@ if DYNAMIC_ANALYSIS == 1
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
         BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
         qdot2(:,1)=AA\BB;
-    end
-
-    if newmark
+    
         for d = 1:length(t)-1
 
             d
@@ -567,55 +563,41 @@ if DYNAMIC_ANALYSIS == 1
         end
     %    
     %    
-    else
+    end
     %
     %
     
-    
-%     error('er')
+    if implicitEuler || crankNicolson 
     % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
     % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-        for d = 1:length(t)-1
+        for d = 1:10%length(t)-1
             d
             % Update load vector
             [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-            FxDYN = FxDYN.*sin(inData.omega3*t(d)); %DUMMY SCENARIO FOR DEBUGGING
+            FxDYN = FxDYN.*sin(inData.omega3*t(d+1)); %DUMMY SCENARIO FOR DEBUGGING
 % %             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
-            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, FxDYN, Area,LM,Bdofs);
+            [Fglob_t] = createFglob(lll, GEN, Nelem, P_load, FxDYN, Area, LM, Bdofs);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
 
             theta = implicitEuler*(1) + crankNicolson*(1/2);
             u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
-%             usol=u(1:10,d+1)'
 
 %             error('Testing');
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
         end
-    %
-    %
-    %
     end
+
+%     hmax = max(max(abs(solution.w)))
+%     (inData.a3 + hmax)/inData.a3
+%     chord
+
+    u(1:10,1:10)
+    u(sizeM-3:sizeM+10,1:10)
     
     
-%     G(1:10,1:10)
-%     u(1:10,1:10)
-%     
-%     u(sizeM-3:sizeM+10,1:10)
-%     
-%     solution.w(1,1:10)
-%     
-%     save FEM_sol_h182_r_h2
-
     
-%     save FEM_sol_h182_r_h2
-
-% error('er')
-    hmax = max(max(abs(solution.w)))
-
-    (inData.a3 + hmax)/inData.a3
-
-    chord
+    error('er')
 
     w = solution.w(:,d);
 
@@ -636,10 +618,7 @@ if DYNAMIC_ANALYSIS == 1
     % save FEM_newmark
 
     % save FEM_sol_h15_r_h2
-    save FEM_sol_h182_r_h2
-
-%     error('er')
-    % save FEM_sol_h05_r_h1
+    save FEM_sol_h182_r_h2_NEW
 
     debugOn=0;
     if debugOn
