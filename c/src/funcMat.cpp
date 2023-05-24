@@ -640,9 +640,14 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
     //}
 
     int optionCalc = 2; //without transpose
-    matMatMultiplication2(optionCalc, rowsColsG, rowsColsG, 1, 1.0, 0.0, BB, u_previous, utemp1);
+    matMatMultiplication2<T>(optionCalc, rowsColsG, rowsColsG, 1, 1.0, 0.0, BB, u_previous, utemp1);
     //
     matSum2<T>(1.0, 1.0, rowsColsG, 1, utemp1, Q, utemp2);
+
+    //writeMatrixInBinary<T>(rowsColsG, 1, Q);
+    //writeMatrixInBinary<T>(rowsColsG, 1, utemp2);
+    
+    //exit(88);
 
     //printf("\nutemp1=");
     //for (int i = 0;i<10;i++){
@@ -675,25 +680,32 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
         printf("\n");
     }
 */
-    //writeMatrixInBinary<T>(rowsColsG, rowsColsG, AA);
     
-    //writeMatrixInBinary<T>(rowsColsG, 1, utemp2);
 
-    linearSystemSolve(rowsColsG, rowsColsG, AA, utemp2, Usol);
+    linearSystemSolve<T>(rowsColsG, rowsColsG, AA, utemp2, Usol);
 
-    printf("\nUsol= ");
+    for (int i = 0;i<rowsColsG;i++){
+        u_t[i][d]=Usol[i][0];
+    }
+
+    printf("\nUsol= \n");
     for (int i = 0; i < 10; i++) {
         //for (int j = 0; j < 1; j++){
-            printf("%f, ", Usol[i][0]);
+            printf("%10.15f, \n", Usol[i][0]);
         //} 
         //printf("\n");
     }
 
 
-    for (int i = 0;i<rowsColsG;i++){
-        u_t[i][d]=Usol[i][0];
-        //printf("%f,",u_t[i][d]);
-    }
+    //writeMatrixInBinary<T>(rowsColsG, rowsColsG, AA);
+    
+    //writeMatrixInBinary<T>(rowsColsG, 1, utemp2);
+
+    //writeMatrixInBinary<T>(rowsColsG, 1, Usol);
+
+    //exit(55);
+
+    
     //printf("\n    Retrieving Usol at time step\n");
 
     //printf("\nu_t[i][d]=");

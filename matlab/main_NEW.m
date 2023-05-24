@@ -22,7 +22,7 @@ close all;
 clc;
 
 MODAL_ANALYSIS = 1;
-DYNAMIC_ANALYSIS = 1;
+DYNAMIC_ANALYSIS = 0;
 
 tstart = tic;   
 
@@ -496,9 +496,9 @@ if DYNAMIC_ANALYSIS == 1
     qdot=zeros(sizeM,length(t)); %velocity
     C = 0.*Mglob;
     % 
-    [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
-    a
-    b
+%     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
+%     a
+%     b
 %     Cfull=full(C);
 %     Cfull(1:10,1:10);
 
@@ -575,7 +575,7 @@ if DYNAMIC_ANALYSIS == 1
 %     error('er')
     % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
     % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-        for d = 1:10%length(t)-1
+        for d = 1:length(t)-1
             d
             % Update load vector
             [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
@@ -598,17 +598,19 @@ if DYNAMIC_ANALYSIS == 1
     end
     
     
-    G(1:10,1:10)
-    u(1:10,1:10)
-    
-    solution.w(1,1:10)
-    
-    save FEM_sol_h182_r_h2
+%     G(1:10,1:10)
+%     u(1:10,1:10)
+%     
+%     u(sizeM-3:sizeM+10,1:10)
+%     
+%     solution.w(1,1:10)
+%     
+%     save FEM_sol_h182_r_h2
 
     
 %     save FEM_sol_h182_r_h2
 
-error('er')
+% error('er')
     hmax = max(max(abs(solution.w)))
 
     (inData.a3 + hmax)/inData.a3

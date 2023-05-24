@@ -32,7 +32,7 @@ load implicitEuler;
 load crankNicolson;
 
 load FEM_sol_h182_r_h2;
-load solFromC;
+% load solFromC;
 
 figure;
 hold on;grid on;
@@ -49,7 +49,7 @@ for ii = 2:length(t)
     w = solution.w(:,ii);
     h0=plot(t(ii)/inData.T3,w(BBnodesTIP(NODE)),'go-', 'MarkerSize',2);
     %
-    w99 = w_fromC(:,ii);
+    w_fromC = -w99(:,ii);
     h99=plot(t(ii)/inData.T3,w_fromC(BBnodesTIP(NODE)),'m^-', 'MarkerSize',2);
 end
 legend([h0 h1 h2 h3 h99],'solution', 'newmark', 'implicit euler','crank-nicolson','c')

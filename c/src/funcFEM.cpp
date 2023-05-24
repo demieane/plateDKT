@@ -1650,8 +1650,8 @@ void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F){
 template<class T>
 void RayleighDampingCoefs(T *a, T *b){
     
-    *a = 0.1663;
-    *b = 2.4730*mypow<T>(10.0,-4.0);
+    *a = 0.166328454612080;
+    *b = 2.473011484105673*mypow<T>(10.0,-4.0);
 
 
 }

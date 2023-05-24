@@ -15,7 +15,7 @@
     #endif
 
     #ifndef DYNAMIC_ANALYSIS
-        #define DYNAMIC_ANALYSIS 1 /* Time-varying load */
+        #define DYNAMIC_ANALYSIS 0 /* Time-varying load */
     #endif
 
     #ifndef PRECISION_MODE_FEM
