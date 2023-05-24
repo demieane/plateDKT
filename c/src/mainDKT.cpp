@@ -645,10 +645,21 @@ int main(int argc, char **argv){
             // c: part of matrix
             for (int i = 0;i<sz1;i++){
                 for (int j = 0;j<sz1;j++){
-                    Btemp[i+sz1][j] = Ieye[i][j];
+                    if (i == j){
+                        Btemp[i+sz1][j] = 1.0;
+                    }
+                    // = Ieye[i][j];
                 }
             }
             //printf("\npart c OK\n");
+
+            printf("\nBtemp\n");
+            for (int i = sz1; i < sz1+10; i++) {
+                for (int j = 0; j < 10; j++){
+                    printf(" %f, ", Btemp[i][j]);
+                } 
+                printf("\n");
+            }
 
             // d: part of matrix
             for (int i = 0;i<sz1;i++){  

@@ -431,17 +431,17 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
         sgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
     #endif
     #if PRECISION_MODE_FEM == 1
-        dgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
+        dgesv_(&rowsA, &nrhs, &(AA[0]), &LDA, IPIV , &(BB[0]), &LDB, &info); //INTEL DOCS
     #endif
 
     if (info == 0){
         //printf("\n    Solution successfull");
 
         for (int i = 0; i < rowsA; i++) {
-        Usol[i][0]=BB[i];
-        //printf("%10.4f,%10.4f,\n",BB[i]/pow(10.0,8.0), Usol[i][0]/pow(10.0,8.0));
+            Usol[i][0]=BB[i];
+            //printf("%10.4f,%10.4f,\n",BB[i]/pow(10.0,8.0), Usol[i][0]/pow(10.0,8.0));
         }
-        //printf("\n    Transfered solution from B to Usol.. OK!\n");
+            //printf("\n    Transfered solution from B to Usol.. OK!\n");
     }
     else{
         printf("\n    Solution failed in sgesv_: info=%d", info);
@@ -592,6 +592,7 @@ template<class T>
 void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u_t){
 
     printf("\nrowsColsG = %d\n", rowsColsG);
+    int sz1 = rowsColsG/2;
     //==================================================================
     //Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
     T **Q;
@@ -606,7 +607,7 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
         printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
     }
     printf("\nQ=");
-    int sz1 = rowsColsG/2;
+    
     for (int i = sz1-4;i<sz1+10;i++){
         printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
     }
@@ -643,12 +644,14 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
     T **product;
     allocate2Darray<T>(rowsColsG,1,&product);
 
+    int i,j;
     // i: row, j: column
-    for (int i = 0; i<rowsColsG; i++){
+    for (i = 0; i<rowsColsG; i++){
         product[i][0] = 0.0;
-        for (int j = 0; j<rowsColsG; j++){  
-            //product[i][0] = product[i][0] + BB[j][i]*u_t[j][d-1];
-            product[i][0] = product[i][0] + BB[i][j]*u_t[j][d-1];
+        for (j = 0; j<rowsColsG; j++){      
+            //printf("i= %d,j=%d",i,j);
+            product[i][0] = product[i][0] + BB[j][i]*u_t[j][d-1];
+            //product[i][0] = product[i][0] + BB[i][j]*u_t[j][d-1];
         }
     }
 
@@ -691,15 +694,15 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
 
     //printf("\nrowsColsG=%d\n", rowsColsG);
 
-/*
-    printf("AA\n");
-    for (int i = 0; i < 10; i++) {
+
+    printf("\nBB\n");
+    for (int i = sz1; i < sz1+10; i++) {
         for (int j = 0; j < 10; j++){
-            printf("%f", AA[i][j]);
+            printf(" %f, ", BB[i][j]);
         } 
         printf("\n");
     }
-
+/*
     printf("BB\n");
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++){
@@ -717,13 +720,13 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB,
         u_t[i][d]=Usol[i][0];
     }
 
-    writeMatrixInBinary<T>(rowsColsG, rowsColsG, AA);
+    //writeMatrixInBinary<T>(rowsColsG, rowsColsG, AA);
     
-    writeMatrixInBinary<T>(rowsColsG, 1, product);
+    //writeMatrixInBinary<T>(rowsColsG, 1, product);
 
-    writeMatrixInBinary<T>(rowsColsG, 1, Usol);
+    //writeMatrixInBinary<T>(rowsColsG, 1, Usol);
 
-    exit(55);
+    //exit(55);
 
     
     //printf("\n    Retrieving Usol at time step\n");

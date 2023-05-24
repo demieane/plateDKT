@@ -16,6 +16,12 @@ B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
 AA =  A - theta*dt*B;
 BB =  A + (1 - theta)*dt*B;
 
+sizeM
+full(BB(sizeM+1:sizeM+10,1:10))
+
+
+error('r')
+
 % sizeBB = size(BB);
 
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
