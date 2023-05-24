@@ -570,7 +570,7 @@ if DYNAMIC_ANALYSIS == 1
     if implicitEuler || crankNicolson 
     % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
     % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-        for d = 1:10%length(t)-1
+        for d = 1:length(t)-1
             d
             % Update load vector
             [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
@@ -597,7 +597,7 @@ if DYNAMIC_ANALYSIS == 1
     
     
     
-    error('er')
+%     error('er')
 
     w = solution.w(:,d);
 
