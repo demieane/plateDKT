@@ -569,7 +569,7 @@ int main(int argc, char **argv){
     #endif
     //----
 
-    exit(55);
+    //exit(55);
 
     #if (DYNAMIC_ANALYSIS == 1)
         // select method for time integration
