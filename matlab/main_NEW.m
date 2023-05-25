@@ -475,9 +475,9 @@ end
 if DYNAMIC_ANALYSIS == 1
     d=1; %starting point
     %select method for time integration
-    newmark = 0;
+    newmark = 1;
     implicitEuler = 0;
-    crankNicolson = 1;
+    crankNicolson = 0;
     % set up time discretization parameters
     T=2*pi/inData.omega3;%sec
     % wf=2*pi/T; %rad/s
@@ -558,7 +558,7 @@ if DYNAMIC_ANALYSIS == 1
     if implicitEuler || crankNicolson 
     % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
     % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-        for d = 1:2%length(t)-1
+        for d = 1:length(t)-1
             d
             % Update load vector
             [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);

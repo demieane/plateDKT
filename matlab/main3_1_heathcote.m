@@ -422,9 +422,9 @@ T=2*pi/inData.omega3;%sec
 ddt=inData.dt;%T/100; %time-step
 t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
 
-newmark = 0;
+newmark = 1;
 implicitEuler = 0;
-crankNisolson =1 ; %like newmark
+crankNisolson = 0; %like newmark
 
 d=1; %starting point
 

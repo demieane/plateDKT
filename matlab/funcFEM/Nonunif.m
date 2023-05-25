@@ -19,8 +19,8 @@ if importFromFile.toggle
     xx=xc_fem_data;%/0.33*2;
     yy=yc_fem_data;
 
-    dummy = 100;
-    fx=100+0.*DCoefpres(:,:,dummy)*(0.5*fluid_dens*Uvel^2);%*chord*span; %dimensionalize data [N]
+%     dummy = 100;
+    fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2);%*chord*span; %dimensionalize data [N]
     
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2);%*chord*span; %dimensionalize data [N]
 
@@ -36,7 +36,7 @@ if importFromFile.toggle
     dheave=w3*a3*cos(w3*d*dt+phase3);
     ddheave=-w3^2*a3*sin(w3*d*dt+phase3);
     
-    fx = fx  - 0.*7850*h*ddheave; %FIX
+    fx = fx  - 7850*h*ddheave; %FIX
     
 %     7850*0.001*ddheave
 %     error('er')

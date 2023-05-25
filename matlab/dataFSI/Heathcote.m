@@ -46,7 +46,7 @@ for ii = 2:length(t)
 % %     wCrankNicolson = solutionCrankNicolson.w(:,ii);
 % %     h3=plot(t(ii)/inData.T3,wCrankNicolson(BBnodesTIP(NODE)),'ks', 'MarkerSize',2);
     %
-    w = solutionC.w(:,ii);
+    w = solution.w(:,ii);
     h0=plot(t(ii)/inData.T3,w(BBnodesTIP(NODE)),'go-', 'MarkerSize',2);
     %
 %     w_fromC = w;%-w99(:,ii);

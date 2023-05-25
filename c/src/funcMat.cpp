@@ -44,9 +44,12 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol);
 //
 template<class T>
 void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals);
-//
+// TIME INTEGRATION WITH CRANK-NICOLSON
 template<class T>
-void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, T **Kglob_aug, T **C, T **u_t); // TIME INTEGRATION WITH CRANK-NICOLSON
+void timeIntegrationCN(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, T **Kglob_aug, T **C, T **u_t); 
+// TIME INTEGRATION WITH NEWMARK
+template<class T>
+void timeIntegrationNewmark(); 
 //
 template<class T>
 void writeMatrixInBinary(int rowsA, int colsA, T **arrA);
@@ -660,7 +663,7 @@ void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals){
 }
 
 template<class T>
-void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, T **Kglob_aug, T **C, T **u_t){
+void timeIntegrationCN(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, T **Kglob_aug, T **C, T **u_t){
 
 // MAKE MATRICES FOR THE SECOND ORDER SYSTEM OF EQS. //
 /*
