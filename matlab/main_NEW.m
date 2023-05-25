@@ -490,11 +490,11 @@ if DYNAMIC_ANALYSIS == 1
     q=zeros(sizeM,length(t)); %displacement unknown vector (previous U)
     qdot=zeros(sizeM,length(t)); %velocity
     % Rayleigh damping
-%     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
+    [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
     
-    a = 2.5;
-    b = 0.001;
-    C = a*Mglob + b*Kglob;
+% %     a = 2.5;
+% %     b = 0.001;
+% %     C = a*Mglob + b*Kglob;
     disp(['Rayleigh coef. a=',num2str(a),' b=',num2str(b)]);
     full(C(1:10,1:10))
     
@@ -502,7 +502,7 @@ if DYNAMIC_ANALYSIS == 1
 
     [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
         importFromFile,fluid_dens, Uvel, h, d);
-    FxDYN = FxDYN.*sin(inData.omega3*t(d)); %DUMMY SCENARIO FOR DEBUGGING
+%     FxDYN = FxDYN.*sin(inData.omega3*t(d)); %DUMMY SCENARIO FOR DEBUGGING
     [Fglob_t] = createFglob(lll,GEN, Nelem, P_load, FxDYN, Area,LM, Bdofs);
     Fm = [Fglob_t; zeros(sizeM,1)];
 
@@ -528,9 +528,7 @@ if DYNAMIC_ANALYSIS == 1
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
         BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
         qdot2(:,1)=AA\BB;
-        
-%         error('er')
-    
+
         for d = 1:length(t)-1
 
             d
@@ -562,7 +560,7 @@ if DYNAMIC_ANALYSIS == 1
             d
             % Update load vector
             [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-            FxDYN = FxDYN.*sin(inData.omega3*t(d+1)); %DUMMY SCENARIO FOR DEBUGGING
+%             FxDYN = FxDYN.*sin(inData.omega3*t(d+1)); %DUMMY SCENARIO FOR DEBUGGING
 % %             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
             [Fglob_t] = createFglob(lll, GEN, Nelem, P_load, FxDYN, Area, LM, Bdofs);
             Fm = [Fglob_t; zeros(sizeM,1)];

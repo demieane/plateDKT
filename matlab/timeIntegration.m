@@ -18,25 +18,25 @@ BB =  A + (1 - theta)*dt*B;
 
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
 
-Q(1:10)'
-Q(sizeM+1:sizeM+10)'
+% Q(1:10)'
+% Q(sizeM+1:sizeM+10)'
+% 
+% rcond(full(AA));
 
-rcond(full(AA))
+% disp('Using sparse matrices');
+% t11=mldivide(AA,(BB*u(:,d-1) + Q));
+% 
+% t11(sizeM+1:sizeM+10)'
+% disp('Using dense matrices');
+% t22=mldivide(full(AA),full((BB*u(:,d-1) + Q)));
 
-disp('Using sparse matrices');
-t11=mldivide(AA,(BB*u(:,d-1) + Q));
-
-t11(sizeM+1:sizeM+10)'
-disp('Using dense matrices');
-t22=mldivide(full(AA),full((BB*u(:,d-1) + Q)));
-
-t22(sizeM+1:sizeM+10)'
+% t22(sizeM+1:sizeM+10)'
 
 
-error('er')
+% error('er')
 u(:,d) = AA\(BB*u(:,d-1) + Q);
 
-rhs = (BB*u(:,d-1) + Q);
+% rhs = (BB*u(:,d-1) + Q);
 
 % % %     file = fopen('test_lin_solve.bin', 'wb');
 % % %     % AA
@@ -74,8 +74,8 @@ rhs = (BB*u(:,d-1) + Q);
 
 
 uNEW = u(:,d);
-u(1:10,d)'
-u(end-10:1:end,d)'
+% u(1:10,d)'
+% u(end-10:1:end,d)'
 
 % error('er')
 
