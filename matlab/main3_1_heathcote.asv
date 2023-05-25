@@ -44,8 +44,8 @@ debugOn=1;
 addpath('mesh');
 
 addpath('mesh/heathcote');
-% load('mesh_h1_half');
-load('mesh_h2_half');
+load('mesh_h1_half');
+% load('mesh_h2_half');
 
 %Create Rectangular plate
 % pderect([0 0.1 -0.3 0.3],'C1')
@@ -423,9 +423,9 @@ ddt=inData.dt;%T/100; %time-step
 % t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
 t=[0:ddt:(2)*T];%[0:h:2*T]; %time [sec]
 
-newmark = 1;
+newmark = 0;
 implicitEuler = 0;
-crankNisolson = 0; %like newmark
+crankNisolson = 1; %like newmark
 
 d=1; %starting point
 
@@ -545,7 +545,17 @@ title('(contour)','FontWeight','normal');
 % save FEM_newmark
    
 % save FEM_sol_h15_r_h2
-save FEM_sol_h182_r_h22
+% save FEM_sol_h182_r_h2
+
+if newmark
+    solutionNewmark = solution;
+    save solution_newmark solutionNewmark pp ee tt BBnodes
+elseif implicitEuler
+    save solution_implicitEuler solution pp ee tt BBnodes
+elseif crankNisolson
+    solutioncrankNicolson = solution;
+    save solution_crankNicolson solutioncrankNicolson pp ee tt BBnodes
+end
 
 error('er')
 % save FEM_sol_h05_r_h1
@@ -574,7 +584,8 @@ if newmark
 elseif implicitEuler
     save solution_implicitEuler solution pp ee tt BBnodes
 elseif crankNisolson
-    save solution_crankNicolson solution pp ee tt BBnodes
+    solutioncrankNicolson = solution;
+    save solution_crankNicolson crankNicolson pp ee tt BBnodes
 end
 %  
 % % 

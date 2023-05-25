@@ -44,8 +44,8 @@ debugOn=1;
 addpath('mesh');
 
 addpath('mesh/heathcote');
-% load('mesh_h1_half');
-load('mesh_h2_half');
+load('mesh_h1_half');
+% load('mesh_h2_half');
 
 %Create Rectangular plate
 % pderect([0 0.1 -0.3 0.3],'C1')
@@ -545,8 +545,7 @@ title('(contour)','FontWeight','normal');
 % save FEM_newmark
    
 % save FEM_sol_h15_r_h2
-save FEM_sol_h182_r_h2
-
+% save FEM_sol_h182_r_h2
 
 if newmark
     solutionNewmark = solution;
@@ -554,8 +553,8 @@ if newmark
 elseif implicitEuler
     save solution_implicitEuler solution pp ee tt BBnodes
 elseif crankNisolson
-    solutioncrankNicolson = solution;
-    save solution_crankNicolson solutioncrankNicolson pp ee tt BBnodes
+    solutionCrankNicolson = solution;
+    save solution_crankNicolson solutionCrankNicolson pp ee tt BBnodes
 end
 
 error('er')

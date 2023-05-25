@@ -54,6 +54,7 @@ addpath('mesh');
 addpath('mesh/heathcote');
 
 load('mesh_h1_half');
+% load('mesh_h2_half');
 
 %Create Rectangular plate
 % pderect([0 0.1 -0.3 0.3],'C1')
@@ -190,9 +191,9 @@ Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
-% Bnodes = [Bound4(1), Bound3];
+Bnodes = [Bound4(1), Bound3];
 % Bnodes = [Bound2, Bound2];
-Bnodes=Bound3; %for distributed load from function ANSYS
+% Bnodes=Bound3; %for distributed load from function ANSYS
 % Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
@@ -482,7 +483,8 @@ if DYNAMIC_ANALYSIS == 1
     T=2*pi/inData.omega3;%sec
     % wf=2*pi/T; %rad/s
     ddt=inData.dt;%T/100; %time-step
-    t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
+    t=[0:ddt:(2)*T];%[0:h:2*T]; %time [sec]
+    %t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
     Ntimesteps = ceil((inData.Nper)*T/ddt)+1
     length(t)
     % for crank-nicolson second order system
@@ -576,6 +578,8 @@ if DYNAMIC_ANALYSIS == 1
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
         end
     end
+    
+    save solution_TEST solution pp ee tt BBnodes inData
 
 %     hmax = max(max(abs(solution.w)))
 %     (inData.a3 + hmax)/inData.a3
@@ -587,7 +591,7 @@ if DYNAMIC_ANALYSIS == 1
     
     
     
-    error('er')
+%     error('er')
 
     w = solution.w(:,d);
 
@@ -608,7 +612,7 @@ if DYNAMIC_ANALYSIS == 1
     % save FEM_newmark
 
     % save FEM_sol_h15_r_h2
-    save compare_with_c
+%     save compare_with_c
 
     debugOn=0;
     if debugOn
