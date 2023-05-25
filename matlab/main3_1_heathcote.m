@@ -435,9 +435,9 @@ q=zeros(sizeM,length(t)); %displacement unknown vector (previous U)
 qdot=zeros(sizeM,length(t)); %velocity
 C = 0.*Mglob;
 % 
-% % [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
-% % a
-% % b
+[ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
+a
+b
 
 % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 
@@ -545,7 +545,18 @@ title('(contour)','FontWeight','normal');
 % save FEM_newmark
    
 % save FEM_sol_h15_r_h2
-save FEM_sol_h182_r_h22
+save FEM_sol_h182_r_h2
+
+
+if newmark
+    solutionNewmark = solution;
+    save solution_newmark solutionNewmark pp ee tt BBnodes
+elseif implicitEuler
+    save solution_implicitEuler solution pp ee tt BBnodes
+elseif crankNisolson
+    solutioncrankNicolson = solution;
+    save solution_crankNicolson solutioncrankNicolson pp ee tt BBnodes
+end
 
 error('er')
 % save FEM_sol_h05_r_h1
@@ -569,11 +580,13 @@ bx=solution.bx(:,d+1);
 by=solution.by(:,d+1);
 
 if newmark
-    save solution_newmark solution pp ee tt BBnodes
+    solutionNewmark = solution;
+    save solution_newmark solutionNewmark pp ee tt BBnodes
 elseif implicitEuler
     save solution_implicitEuler solution pp ee tt BBnodes
 elseif crankNisolson
-    save solution_crankNicolson solution pp ee tt BBnodes
+    solutioncrankNicolson = solution;
+    save solution_crankNicolson crankNicolson pp ee tt BBnodes
 end
 %  
 % % 

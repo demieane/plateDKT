@@ -27,9 +27,9 @@ BBnodesTIP=sort(BBnodesTIP);
 % Bdofs3=ID(3,BBnodesTIP);%by
 NODE = 1;%round(length(BBnodesTIP));
 
-% load newmark;
+load solution_newmark;
 % load implicitEuler;
-% load crankNicolson;
+load solution_crankNicolson;
 
 % load FEM_sol_h182_r_h2_NEW;
 % load solFromC;
@@ -37,22 +37,22 @@ NODE = 1;%round(length(BBnodesTIP));
 figure;
 hold on;grid on;
 for ii = 2:length(t)
-% %     wNewmark = solutionNewmark.w(:,ii);
-% %     h1=plot(t(ii)/inData.T3,wNewmark(BBnodesTIP(NODE)),'bo', 'MarkerSize',2);
+    wNewmark = solutionNewmark.w(:,ii);
+    h1=plot(t(ii)/inData.T3,wNewmark(BBnodesTIP(NODE)),'bo', 'MarkerSize',2);
 % %     %
 % %     wImplicitEuler = solutionImplicitEuler.w(:,ii);
 % %     h2=plot(t(ii)/inData.T3,wImplicitEuler(BBnodesTIP(NODE)),'r^', 'MarkerSize',2);
 % %     %
-% %     wCrankNicolson = solutionCrankNicolson.w(:,ii);
-% %     h3=plot(t(ii)/inData.T3,wCrankNicolson(BBnodesTIP(NODE)),'ks', 'MarkerSize',2);
+    wCrankNicolson = solutioncrankNicolson.w(:,ii);
+    h3=plot(t(ii)/inData.T3,wCrankNicolson(BBnodesTIP(NODE)),'ks', 'MarkerSize',2);
     %
-    w = solution.w(:,ii);
-    h0=plot(t(ii)/inData.T3,w(BBnodesTIP(NODE)),'go-', 'MarkerSize',2);
+%     w = solution.w(:,ii);
+%     h0=plot(t(ii)/inData.T3,w(BBnodesTIP(NODE)),'go-', 'MarkerSize',2);
     %
 %     w_fromC = w;%-w99(:,ii);
 %     h99=plot(t(ii)/inData.T3,w_fromC(BBnodesTIP(NODE)),'m^-', 'MarkerSize',2);
 end
-legend([h0 ],'solution')
+legend([h1 h3 ],'newmark','crank-nicolson');
 % legend([h0 h1 h2 h3 h99],'solution', 'newmark', 'implicit euler','crank-nicolson','c')
 xlabel('t [s]');ylabel('w tip');
 
