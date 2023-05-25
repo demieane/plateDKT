@@ -1650,8 +1650,8 @@ void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F){
 template<class T>
 void RayleighDampingCoefs(T *a, T *b){
     
-    *a = 0.166328454612080;
-    *b = 2.473011484105673*mypow<T>(10.0,-4.0);
+    *a = 2.5;//0.166328454612080;
+    *b = 0.001;//2.473011484105673*mypow<T>(10.0,-4.0);
 
 
 }
@@ -1683,7 +1683,7 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
         if (inDataFem->LL == 3){
             q = distrLoad[kk]*sin(w3*t);
             if (kk == 0){
-                printf("\nd = %d, sin(w3t)%f,\n",d, sin(w3*t));
+                printf("\n    d = %4d, t=%10.4f, sin(w3 t)=%10.4f,\n",d, t, sin(w3*t));
             }
             
         }
@@ -1706,9 +1706,9 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
         }
 
 
-        for (int i = 0;i<9;i++){
-            elemFemArr->floc[i][0] = 0;
-        }
+        //for (int i = 0;i<9;i++){
+        //    elemFemArr->floc[i][0] = 0;
+        //}
         /*
         for (int i = 0;i<10;i++){
             //printf("%f, ",elemFemArr.floc1[i][0] );

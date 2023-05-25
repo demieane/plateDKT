@@ -121,7 +121,7 @@ end
 
 
 %% CREATE MODE.bin binary file for passing data 
-modeFem = 1; %double:1, single(or mixed):2
+modeFem = 2; %double:1, single(or mixed):2
 % write to binary for communication with GPU executable
 % file1 = fopen('MODE_FEM.bin', 'wb');
 % fwrite(file1, modeFem, 'int');
@@ -216,6 +216,7 @@ elseif modeFem == 2
     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
 end
 
+%error('er')
 
 %% RUN THE CODE
 if modeFem == 1
@@ -318,7 +319,7 @@ freq'
 
 GEN = size(pp,2)*3;
 load solMatlab
-u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+u=Ustatic(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 %
 w=u(1:3:end);   % vertical displacement
 bx=u(2:3:end);  % rotation x

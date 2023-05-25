@@ -1,16 +1,87 @@
+
+% file = fopen('test_lin_solve', 'wb');
+% % AA
+% fwrite(file, size(AA,1),'int');
+% fwrite(file, size(AA,2),'int');
+% for ii = 1:size(AA,1)
+%     for jj = 1:size(AA,2)
+%         fwrite(file, AA(ii,jj),precision);
+%     end
+% end
+% % rhs
+% fwrite(file, size(rhs,1),'int');
+% fwrite(file, size(rhs,2),'int');
+% for ii = 1:size(rhs,1)
+%     for jj = 1:size(rhs,2)
+%         fwrite(file, rhs(ii,jj),precision);
+%     end
+% end
+% fclose(file);
+
+
+
+
+
+%%
 % Read solution from binary file
 modeFem = 1;
 precision = 'double';
 
 fileID = fopen('../c/OUTDATA_FEM_DEBUG.bin','rb')
+% fileID = fopen('../c/OUTDATA_FEM_double.bin','rb')
+% GEN_fromC = fread(fileID,1,'int')
 rowsUsol = fread(fileID,1,'int')
 colsUsol = fread(fileID,1,'int')
 
+
 for i = 1:rowsUsol
     for j = 1:colsUsol
+%         Cdamp(i,j)=fread(fileID,1,precision);
+%         Gdebug(i,j)=fread(fileID,1,precision);
         AA(i,j)=fread(fileID,1,precision);
+%         Usol(i,j)=fread(fileID,1,precision);
     end
 end
+
+rowsUsol1 = fread(fileID,1,'int')
+colsUsol1 = fread(fileID,1,'int')
+
+for i = 1:rowsUsol1
+    for j = 1:colsUsol1
+%         Cdamp(i,j)=fread(fileID,1,precision);
+%         Gdebug(i,j)=fread(fileID,1,precision);
+        rhs(i,j)=fread(fileID,1,precision);
+    end
+end
+
+fclose(fileID);
+
+% solutionC = struct( 'w',[], 'bx',[], 'by', [],...
+%         'w_dot',[], 'bx_dot',[], 'by_dot', [],...
+%         'uu', [], 'uu_dot',[]); 
+%         
+% for d = 1:length(t)-1
+%     [solutionC] = solutionRetriever(GEN, sizeM, d+1, length(t), Usol, solutionC);%[w,bx,by]
+% end
+        
+        
+
+Usol = AA\rhs;
+
+Usol(1:10)
+Usol(sizeM+1:sizeM+10)
+
+max(max(abs(u(:,2:4) - Usol(:,2:4))))
+
+
+
+% max(max(abs(full(C) - Cdamp)))
+% C(end,end)
+
+% max(max(abs(full(G(:,2)) - Gdebug(:,2))))
+% max(max(abs(full(G) - Gdebug)))
+
+error('er')
 
 rowsUsol1 = fread(fileID,1,'int')
 colsUsol1 = fread(fileID,1,'int')

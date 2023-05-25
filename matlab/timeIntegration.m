@@ -16,60 +16,64 @@ B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
 AA =  A - theta*dt*B;
 BB =  A + (1 - theta)*dt*B;
 
-sizeM
-full(BB(sizeM+1:sizeM+10,1:10))
-
-
-error('r')
-
-% sizeBB = size(BB);
-
 Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
-Qtemp = Q(1:10)'
-Qtemp1 = Q(sizeM-4:sizeM+10)'
+
+Q(1:10)'
+Q(sizeM+1:sizeM+10)'
 
 u(:,d) = AA\(BB*u(:,d-1) + Q);
-utemp2 = (BB*u(:,d-1) + Q);
 
-utemp1  = BB*u(:,d-1);
+rhs = (BB*u(:,d-1) + Q);
 
-utemp11 = utemp1(1:10)'
-utemp22 = utemp2(1:10)'
-% uprevious = u(1:10,d-1);
+    file = fopen('test_lin_solve.bin', 'wb');
+    % AA
+    size(full(AA),1)
+    size(full(AA),2)
+    fwrite(file, size(full(AA),1),'int');
+    fwrite(file, size(full(AA),2),'int');
+    for ii = 1:size(full(AA),1)
+        for jj = 1:size(full(AA),2)
+            fwrite(file, full(AA(ii,jj)),'double');
+        end
+    end
+    % rhs
+    size(rhs,1)
+    size(rhs,2)
+    fwrite(file, size(rhs,1),'int');
+    fwrite(file, size(rhs,2),'int');
+    for ii = 1:size(rhs,1)
+        for jj = 1:size(rhs,2)
+            fwrite(file, rhs(ii,jj),'double');
+        end
+    end
+    fclose(file);
+
+% rhsDEBUG = 0;
+% ii = 1;
+% for jj = 1:sizeM*2
+%     rhsDEBUG(ii) = rhsDEBUG(ii) + BB(jj,ii);%*u(jj,d-1);
+% end
+% rhsDEBUG
+% 
+% utemp2 = BB*u(:,d-1) + Q;
+% utemp2(1:10)' 
+
+
 
 uNEW = u(:,d);
+u(1:10,d)'
+u(end-10:1:end,d)'
 
+% error('er')
 
-
-
-
-% % % % sizeM=size(Mglob,1);
-% % % % 
-% % % % A = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
-% % % % % B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-% % % % B = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-% % % % 
-% % % % %lamda (1: implicit Euler, 1/2: Crank - Nicolson)
-% % % % 
-% % % % AA =  A + theta*dt*B;
-% % % % BB =  A - (1 - theta)*dt*B;
-% % % % 
-% % % % % AA =  A - theta*dt*B;
-% % % % % BB =  A + (1 - theta)*dt*B;
-% % % % 
-% % % % AAmat = full(AA(1:10,1:10));
-% % % % BBmat = full(BB(1:10,1:10));
-% % % % 
+%% debugging zone
 % fileID = fopen('../c/OUTDATA_FEM_DEBUG.bin','rb')
 % rowsUsol = fread(fileID,1,'int')
 % colsUsol = fread(fileID,1,'int')
 % 
 % for i = 1:rowsUsol
 %     for j = 1:colsUsol
-% %         udebug(i,j)=fread(fileID,1,'double');
-% %         Qdebug(i,j)=fread(fileID,1,'double');
-%         AAdebug(i,j)=fread(fileID,1,'double');
-% %         Adebug(i,j)=fread(fileID,1,'double');
+%         Adebug(i,j)=fread(fileID,1,'double');
 %     end
 % end
 % 
@@ -78,18 +82,41 @@ uNEW = u(:,d);
 % 
 % for i = 1:rowsUsol1
 %     for j = 1:colsUsol1
-% %         utemp2debug(i,j)=fread(fileID,1,'double');
-%         BBdebug(i,j)=fread(fileID,1,'double');
-% %         Bdebug(i,j)=fread(fileID,1,'double');
+%         Bdebug(i,j)=fread(fileID,1,'double');
 %     end
 % end
-% % % % % 
-% % % % % 
-% % % % % 
+% 
+% rowsUsol2 = fread(fileID,1,'int')
+% colsUsol2 = fread(fileID,1,'int')
+% 
+% for i = 1:rowsUsol2
+%     for j = 1:colsUsol2
+%         AAdebug(i,j)=fread(fileID,1,'double');
+%     end
+% end
+% 
+% rowsUsol3 = fread(fileID,1,'int')
+% colsUsol3 = fread(fileID,1,'int')
+% 
+% for i = 1:rowsUsol3
+%     for j = 1:colsUsol3
+%         BBdebug(i,j)=fread(fileID,1,'double');
+%     end
+% end
+% 
+% max(max(abs(A - Adebug)))
+% max(max(abs(B - Bdebug)))
+% 
 % max(max(abs(AA - AAdebug)))
 % max(max(abs(BB - BBdebug)))
 % 
 % fclose(fileID)
+
+%%
+
+
+
+
 % 
 % % a = max(max(abs(AA(1:sizeM,1:sizeM) - AAdebug(1:sizeM,1:sizeM)))) %a
 % % b = max(max(abs(AA(1:sizeM,sizeM+1:end) - AAdebug(1:sizeM,sizeM+1:end))))%b

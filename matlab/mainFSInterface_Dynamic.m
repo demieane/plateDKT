@@ -183,7 +183,7 @@ if lll==3%distributed load & distributed thickness
     xcp=xc_fem_data;
     ycp=yc_fem_data;
     tinstance = 100;
-    fcp = DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
+    fcp = 100 + 0.*DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
     tcp= th_fem_data.*0 + h;
 %     tcp= th_fem_data;
     fwrite(file, length(xcp(:)),'int');
@@ -216,7 +216,7 @@ elseif modeFem == 2
     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
 end
 
-
+error('er')
 %% RUN THE CODE
 if modeFem == 1
     system('../c/./mainDKT_CPP');

@@ -53,7 +53,8 @@ void shepard_interp_2d(int nd, T *xd, T *yd, T *zd,
     for (int i=0;i<ni;i++){
         if (abs(*p) < 0.01){
             for ( int j = 0; j < nd; j++ ){
-                w[j] = 1.0 / ( double ) ( nd );
+                //w[j] = 1.0 / ( double ) ( nd );
+                w[j] = 1.0/(mytype) nd;
             }
             printf("here...\n");
         }
@@ -82,7 +83,7 @@ void shepard_interp_2d(int nd, T *xd, T *yd, T *zd,
             }
             else{
                 for (int j = 0; j < nd; j++ ){
-                    w[j] = 1.0 / pow ( w[j], *p );
+                    w[j] = 1.0 / mypow<mytype>( w[j], *p );
                 }
                 suma = 0.0;
                 for (int k=0;k<nd;k++){

@@ -43,7 +43,7 @@ template<class T>
 void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals);
 //
 template<class T>
-void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u_t); // TIME INTEGRATION WITH CRANK-NICOLSON
+void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, T **Kglob_aug, T **C, T **u_t); // TIME INTEGRATION WITH CRANK-NICOLSON
 //
 template<class T>
 void writeMatrixInBinary(int rowsA, int colsA, T **arrA);
@@ -589,165 +589,181 @@ void myeigs(int N, T **arrA, T **arrB, int n_eigs, T *eigVals){
 }
 
 template<class T>
-void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **AA, T **BB, T **u_t){
+void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, T **Kglob_aug, T **C, T **u_t){
 
-    printf("\nrowsColsG = %d\n", rowsColsG);
-    int sz1 = rowsColsG/2;
-    //==================================================================
-    //Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
-    T **Q;
-    allocate2Darray<T>(rowsColsG,1,&Q);
-
-    for (int i = 0;i<rowsColsG;i++){
-        Q[i][0] = (1-theta)*dt*G[i][d-1]+ theta*dt*G[i][d];
-    }
-
-    printf("\nQ=");
-    for (int i = 0;i<10;i++){
-        printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
-    }
-    printf("\nQ=");
-    
-    for (int i = sz1-4;i<sz1+10;i++){
-        printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
-    }
-
+// MAKE MATRICES FOR THE SECOND ORDER SYSTEM OF EQS. //
 /*
-    T **Gdminus1, **Gd;
-    allocate2Darray<T>(rowsColsG,1,&Gdminus1);
-    allocate2Darray<T>(rowsColsG,1,&Gd);
+    sizeM=size(Mglob,1);
 
-    for (int i = 0;i<rowsColsG;i++){
-        Gdminus1[i][0] = G[i][d-1];
-        Gd[i][0] = G[i][d];
-    }
+    A = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
+    B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
 
-    T alphaVar = (1.0 - theta)*dt;
-    T betaVar = theta*dt;
-    matSum2<T>(alphaVar, betaVar, rowsColsG, 1, Gdminus1, Gd, Q);
+    %lamda (1: implicit Euler, 1/2: Crank - Nicolson)
 
-    printf("\nQ=");
-    for (int i = 0;i<10;i++){
-        printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
-    }
+    AA =  A - theta*dt*B;
+    BB =  A + (1 - theta)*dt*B;
+
+    MAT = [a, b; 
+           c, d]
 */
-    //==================================================================
 
-    //==================================================================
-    //u(:,d) = AA\(BB*u(:,d-1) + Q);
+    int sz1 = rowsColsG/2;
+    int sz2 = rowsColsG;
 
-    printf("\nu_previous=");
-    for (int i = 0;i<10;i++){
-        printf("%10.6f, ", u_t[i][d-1]);
-    }
+    T **A, **B, **AA, **BB;
 
-    T **product;
-    allocate2Darray<T>(rowsColsG,1,&product);
+    allocate2Darray<T>(sz2,sz2,&A);
+    allocate2Darray<T>(sz2,sz2,&B);
+    allocate2Darray<T>(sz2,sz2,&AA);
+    allocate2Darray<T>(sz2,sz2,&BB);
 
-    int i,j;
-    // i: row, j: column
-    for (i = 0; i<rowsColsG; i++){
-        product[i][0] = 0.0;
-        for (j = 0; j<rowsColsG; j++){      
-            //printf("i= %d,j=%d",i,j);
-            product[i][0] = product[i][0] + BB[j][i]*u_t[j][d-1];
-            //product[i][0] = product[i][0] + BB[i][j]*u_t[j][d-1];
+    
+    for (int i = 0;i<sz1;i++){
+        for (int j = 0;j<sz1;j++){
+            // a: part of matrix
+            A[i][j] = Mglob_aug[i][j];
+            B[i][j] = -C[i][j];
+            // b: part of matrix
+            B[i][j+sz1] = -Kglob_aug[i][j];
+            // Ieye
+            if (i == j){
+                // c: part of matrix
+                B[i+sz1][j] = 1;
+                // d: part of matrix
+                A[i+sz1][j+sz1] = 1;
+            }
         }
     }
 
-    printf("\nutemp1=");
-    //for (int i = 782;i<782+10;i++){
-    for (int i = 0;i<10;i++){    
-        printf("%10.5f, ", product[i][0]/pow(10.0,-6.0));
-    }
+    //AA =  A - theta*dt*B;
+    matSum2<T>(1.0, (-theta*dt), sz2, sz2, A, B, AA);
+    //BB =  A + (1 - theta)*dt*B;
+    matSum2<T>(1.0, ( (1.0-theta)*dt ), sz2, sz2, A, B, BB);
 
-    for (int i = 0; i<rowsColsG; i++){
-        product[i][0] = product[i][0] + Q[i][0];
-    }
+    //writeMatrixInBinary<T>(sz2, sz2, A);
+    //writeMatrixInBinary<T>(sz2, sz2, B);
+    //writeMatrixInBinary<T>(sz2, sz2, AA);
+    //writeMatrixInBinary<T>(sz2, sz2, BB);
 
-    printf("\nutemp2=");
-    //for (int i = 782;i<782+10;i++){
-    for (int i = 0;i<10;i++){    
-        printf("%10.5f, ", product[i][0]/pow(10.0,-6.0));
-    }
+    //==================================================================
+    //Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
+    T **Q;
+    allocate2Darray<T>(sz2,1,&Q);
 
-    
-    //C := alpha*op( A )*op( B ) + beta*C,
-    //matMatMultiplication2<T>(1, rowsColsG, rowsColsG, 1, 1.0, 0.0, BB, u_previous, utemp1);
-
- 
-    //matSum2<T>(1.0, 1.0, rowsColsG, 1, utemp1, Q, utemp2);
-
-    //writeMatrixInBinary<T>(rowsColsG, 1, Q);
-    //writeMatrixInBinary<T>(rowsColsG, 1, utemp2);
-    
-    //exit(88);
-
-
-
-    //printf("\nutemp2=");
-    //for (int i = 782;i<782+10;i++){
-    //for (int i = 0;i<10;i++){    
-    //    printf("%f, ", utemp2[i][0]/pow(10.0,-6.0));
-    //}
-    //
-
-    //printf("\nrowsColsG=%d\n", rowsColsG);
-
-
-    printf("\nBB\n");
-    for (int i = sz1; i < sz1+10; i++) {
-        for (int j = 0; j < 10; j++){
-            printf(" %f, ", BB[i][j]);
-        } 
-        printf("\n");
+    for (int i = 0; i<sz2; i++){
+        Q[i][0] = (1.0-theta)*dt*G[i][d-1] + theta*dt*G[i][d];
     }
 /*
-    printf("BB\n");
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++){
-            printf("%f", BB[i][j]);
-        } 
-        printf("\n");
+    printf("\nQ[%d]=",d);
+    for (int i = 0;i<10;i++){
+        printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
+    }
+    printf("\nQ[%d]=",d);
+    for (int i = sz1;i<sz1+10;i++){
+        printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
     }
 */
-    T **Usol;
-    allocate2Darray(rowsColsG,1,&Usol);
-    //linearSystemSolve<T>(rowsColsG, rowsColsG, AA, utemp1, Usol);
-    linearSystemSolve<T>(rowsColsG, rowsColsG, AA, product, Usol);
+    //==================================================================
+/*
+    printf("\nu_t[%d]=",d);
+    for (int i = 0;i<10;i++){
+        printf("%10.6f, ", u_t[i][d-1]);
+    }
+*/
+    T **rhs, **rhsDEBUG;
+    allocate2Darray<T>(sz2,1,&rhs);
+    allocate2Darray<T>(sz2,1,&rhsDEBUG);
 
-    for (int i = 0; i<rowsColsG; i++){
+    for (int ii = 0; ii<sz2; ii++){
+        for (int jj = 0; jj<sz2; jj++){      
+            //rhs[ii][0] = rhs[ii][0] + BB[jj][ii]*u_t[jj][d-1];//matrix multiplication
+            rhs[ii][0] = rhs[ii][0] + BB[ii][jj]*u_t[jj][d-1];//matrix multiplication
+        }
+        rhs[ii][0] = rhs[ii][0] + Q[ii][0];//matrix addition
+    }
+
+/*
+    int ii = 0;
+    //for (int ii = 0; ii<sz2; ii++){
+        for (int jj = 0; jj<sz2; jj++){      
+            //rhs[ii][0] = rhs[ii][0] + BB[jj][ii]*u_t[jj][d-1];//matrix multiplication
+            rhsDEBUG[ii][0] = rhsDEBUG[ii][0] + BB[jj][ii];//matrix multiplication
+        }
+        //rhs[ii][0] = rhs[ii][0] + Q[ii][0];//matrix addition
+    //}
+
+    printf("\nrhs = %f\n", rhsDEBUG[ii][0]);
+*/
+    //exit(55);
+/*
+    printf("\nutemp2[%d]=",d);
+    for (int i = 0;i<10;i++){    
+        printf("%10.5f, ", rhs[i][0]/pow(10.0,-6.0));
+    }
+*/    
+    //==================================================================
+    T **Usol;
+    allocate2Darray(sz2,1,&Usol);
+
+
+    FILE *file;
+    file = fopen("test_lin_solve.bin", "rb"); // r for read, b for binary
+    //printf("file: %d", file);
+    int rows_dummy1, cols_dummy2;
+    fread(&(rows_dummy1), sizeof(T) , 1, file);
+    fread(&(cols_dummy2), sizeof(T) , 1, file);
+    
+    for (int i=0;i<rows_dummy1;i++){
+        for (int j=0;j<cols_dummy2;j++){
+            fread(&(AA[i][j]), sizeof(T), 1, file);
+        } 
+    }
+    printf("AA: %d,%d", rows_dummy1, cols_dummy2);
+    //
+    int rows_dummy3, cols_dummy4;
+    fread(&(rows_dummy3), sizeof(T) , 1, file);
+    fread(&(cols_dummy4), sizeof(T) , 1, file);
+    for (int i=0;i<rows_dummy3;i++){
+        for (int j=0;j<cols_dummy4;j++){
+            fread(&(rhs[i][j]), sizeof(T), 1, file);
+        } 
+    }
+    fclose(file);
+
+    linearSystemSolve<T>(sz2, sz2, AA, rhs, Usol);
+
+    if (d == 2){
+        writeMatrixInBinary<T>(sz2, sz2, AA);
+        writeMatrixInBinary<T>(sz2, 1, rhs);
+    }
+
+    for (int i = 0; i<sz2; i++){
         u_t[i][d]=Usol[i][0];
     }
 
-    //writeMatrixInBinary<T>(rowsColsG, rowsColsG, AA);
-    
-    //writeMatrixInBinary<T>(rowsColsG, 1, product);
 
-    //writeMatrixInBinary<T>(rowsColsG, 1, Usol);
+    printf("\nu[%d]=",d);
+    for (int i = 0;i<10;i++){
+        printf("    %10.6f, ",Usol[i][0]/pow(10.0,-3.0));
+    }
 
-    //exit(55);
+    printf("\nu[%d]=",d);
+    for (int i = sz2-10;i<sz2;i++){
+        printf("    %10.15f, ",Usol[i][0]);
+    }
 
-    
-    //printf("\n    Retrieving Usol at time step\n");
+    //==================================================================
 
-    //printf("\nu_t[i][d]=");
-    //for (int i = 0;i<10;i++){
-    //    printf("%f, ", u_t[i][d]);
-    //}
-    //exit(55);
-    //uNEW = u(:,d);
-
-    //deallocate2Darray<T>(rowsColsG,Gdminus1);
-    //deallocate2Darray<T>(rowsColsG,Gd);
+    deallocate2Darray<T>(sz2,A);
+    deallocate2Darray<T>(sz2,B);
+    deallocate2Darray<T>(sz2,AA);
+    deallocate2Darray<T>(sz2,BB);
+    //
     deallocate2Darray<T>(rowsColsG,Q);
-    //
-    //deallocate2Darray<T>(rowsColsG,u_previous);
-    //deallocate2Darray<T>(rowsColsG,utemp1);
-    deallocate2Darray<T>(rowsColsG,product);
-    //
+    deallocate2Darray<T>(rowsColsG,rhs);
     deallocate2Darray<T>(rowsColsG,Usol);
 
+    exit(55);
 }
 
 

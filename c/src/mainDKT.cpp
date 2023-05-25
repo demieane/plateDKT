@@ -50,8 +50,17 @@ int main(int argc, char **argv){
         int nd = inDataFem.sizexcp;
         int ni = wingMeshFem.Nelem; //size(xm)
 
-        mytype p1 = 20.55;
-        mytype p2 = 20.55;
+        #if PRECISION_MODE_FEM == 2 
+            mytype p1 = 2.5;
+            mytype p2 = 2.5;
+        #endif
+        #if PRECISION_MODE_FEM == 1 
+            //mytype p1 = 20.55;
+            //mytype p2 = 20.55;
+            mytype p1 = 20.55;
+            mytype p2 = 20.55;
+        #endif
+
         mytype *pparam1, *pparam2;
         pparam1 = &p1;  
         pparam2 = &p2; 
@@ -62,25 +71,31 @@ int main(int argc, char **argv){
         shepard_interp_2d<mytype>(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
         pparam2, ni, wingMeshFem.xm, wingMeshFem.ym, distrThick);
 
-        //printf("distrThick[i], distrLoad[i]\n");
-        //for (int i = 0; i<10; i++){
-        //    printf("%f, %f\n", distrThick[i], distrLoad[i]);
-        //}
+/*
+        printf("distrThick[i], distrLoad[i]\n");
+        for (int i = 0; i<10; i++){
+            printf("%f, %f\n", distrThick[i], distrLoad[i]);
+        }
+*/
     }
 
-    mytype **BeSt = NULL;
+
+    mytype **BeSt;
     allocate2Darray<mytype>(3, 3, &(BeSt)); //[GEN x 1]
-    /*
+
+    if (inDataFem.LL==2 || inDataFem.LL==1 || inDataFem.LL==3 ){
+        BendingStiffness<mytype>(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
+    }
+
+/*
+    printf("\n");
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
             printf("%f,",BeSt[i][j]);
         } 
         printf("\n");
     }
-    */
-    if (inDataFem.LL==2 || inDataFem.LL==1){
-        BendingStiffness<mytype>(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
-    }
+*/
 
     /* DKT */
     TrigElCoefsDKT<mytype>(&inDataFem, &wingMeshFem);
@@ -134,6 +149,7 @@ int main(int argc, char **argv){
     printf("\n\n");
     //for each triangle in the mesh
     for (int kk = 0;kk<wingMeshFem.Nelem;kk++){   
+    //for (int kk = 0;kk<1;kk++){       
         massHmDKT<mytype>(kk, &wingMeshFem, &elemFemArr); // Hm, HW
         rotationMass2<mytype>(kk, &wingMeshFem, &elemFemArr); // Hxx, Hyy
         //------------------------------------------------------------->>
@@ -149,6 +165,16 @@ int main(int argc, char **argv){
             if (inDataFem.LL == 3.0){
                 BendingStiffness<mytype>(inDataFem.E, inDataFem.v, distrThick[kk], BeSt);
             }
+
+/*
+            for (int i=0;i<3;i++){
+                for (int j=0;j<3;j++){
+                    printf("%f, ", BeSt[i][j]);
+                }
+                printf("\n");
+            }
+*/
+            
             mytype **kb;
             allocate2Darray<mytype>(9, 3, &kb); //Bb'*BeSt2(:,:,kk)
             matMatMultiplication2<mytype>(2, 3, 9, 3, 1.0, 0.0, elemFemArr.Bb, BeSt, kb);
@@ -157,6 +183,7 @@ int main(int argc, char **argv){
             allocate2Darray<mytype>(9,9,&kb1);
             mytype var1 = wingMeshFem.area[kk] * xw[ii][2];
             matMatMultiplication2<mytype>(1, 9, 3, 9, var1, 0.0, kb, elemFemArr.Bb, kb1);
+
 /*
             for (int i=0;i<9;i++){
                 for (int j=0;j<9;j++){
@@ -165,8 +192,8 @@ int main(int argc, char **argv){
                 printf("\n");
             }
             printf("\n---->");
-*/
 
+*/
             matSum2<mytype>(1.0, 0.0, 9, 9, kb1, kb1, elemFemArr.kloc); // kloc = kloc + kb1
 
 /*
@@ -206,7 +233,7 @@ int main(int argc, char **argv){
             mytype var0;
             var0 = pow(inDataFem.h,2)/12.0;
             if (inDataFem.LL==3){
-                var0 = pow(distrThick[kk],2)/12.0;
+                var0 = mypow<mytype>(distrThick[kk],2)/12.0;
             }
             
             matMatMultiplication2<mytype>(2, 1, 9, 9, var0, 0.0, elemFemArr.Hx, elemFemArr.Hx, term1); //Hx'*Hx
@@ -401,6 +428,28 @@ int main(int argc, char **argv){
             Mglob[indexKi][indexKj] = Mglob[indexKi][indexKj] + elemFemArr.Mg[i][j];
         }
     }
+/*
+    printf("\n----\n");
+    printf("Mglob[i][j]\n");
+    for (int i = 0;i<5;i++){
+        for (int j = 0;j<5;j++){
+            printf("%f, ",Mglob[i][j]);
+        }
+        printf("\n");
+    }
+    printf("----\n");
+
+    printf("\n----\n");
+    printf("Kglob[i][j]\n");
+    for (int i = 0;i<5;i++){
+        for (int j = 0;j<5;j++){
+            printf("%f, ",Kglob[i][j]);
+        }
+        printf("\n");
+    }
+    printf("----\n");
+    exit(55);
+*/
 
     printf("\n    Kglob, Mglob OK... DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)\n");
 
@@ -445,13 +494,11 @@ int main(int argc, char **argv){
         }
     }
 
-
-
     printf("\n----\n");
     printf("Mglob_aug[i][j]\n");
     for (int i = 0;i<5;i++){
         for (int j = 0;j<5;j++){
-            printf("%10.4f, ",Mglob_aug[i][j]/pow(10.0,-3.0));
+            printf("%f, ",Mglob_aug[i][j]);
         }
         printf("\n");
     }
@@ -461,7 +508,7 @@ int main(int argc, char **argv){
     printf("Kglob_aug[i][j]\n");
     for (int i = 0;i<5;i++){
         for (int j = 0;j<5;j++){
-            printf("%10.4f, ",Kglob_aug[i][j]/pow(10.0,6.0));
+            printf("%f, ",Kglob_aug[i][j]);
         }
         printf("\n");
     }
@@ -523,23 +570,26 @@ int main(int argc, char **argv){
     //----
 
     #if (DYNAMIC_ANALYSIS == 1)
+        // select method for time integration
+        printf("\n    Starting DYNAMIC ANALYSIS using Crank-Nicolson.\n");
 
         if (inDataFem.LL == 3){
-            printf("\n    Starting DYNAMIC ANALYSIS.\n");
+            int d = 0; // index for time integration
+            mytype t = 0.0;
+            mytype dt = inDataFem.dt;
+            mytype Tp = 2*M_PI/inDataFem.omega3; // period of motion
+            int NtimeSteps = ceil((inDataFem.Nper*Tp)/dt)+1;
+            printf("    dt=%10.4f, Tp=%10.4f, NtimeSteps=%d \n", dt, Tp, NtimeSteps);
 
-            //========================================DAMPING MATRIX=================================
-            mytype **Cdamp; // Rayleigh damping
+            //==========DAMPING MATRIX============
+            mytype **Cdamp; // Rayleigh damping matrix
             allocate2Darray<mytype>(sizeKMglob_aug,sizeKMglob_aug,&Cdamp);
 
             mytype a=0, b=0;
-
-            
-            
             RayleighDampingCoefs<mytype>(&a, &b); // TO DO (based on eigenfrequencies)
-            
-            printf("    a=%f, b=%f", a, b);
-
             matSum2<mytype>(a, b, sizeKMglob_aug, sizeKMglob_aug, Mglob_aug, Kglob_aug, Cdamp); //C = a*Mglob+b*Kglob;
+
+            printf("    Rayleigh damping coefs. a=%10.4f, b=%10.4f\n",a,b);
 
             printf("\nCdamp: \n");
             for (int i=0;i<10;i++){
@@ -549,166 +599,34 @@ int main(int argc, char **argv){
                 printf("\n");
             }
             printf("\nCdamp(end,end)=%10.4f\n", Cdamp[sizeKMglob_aug-1][sizeKMglob_aug-1]/mypow<mytype>(10.0,3.0));
-            //========================================DAMPING MATRIX=================================
+            //==========DAMPING MATRIX============
 
-            
-            
-            int d = 0;
-            mytype t = 0.0;
-            mytype dt = inDataFem.dt;
-            mytype Tp = 2*M_PI/inDataFem.omega3; // period of motion
-            int NtimeSteps = ceil((inDataFem.Nper*Tp)/dt)+1;
-            printf("NtimeSteps=%d ", NtimeSteps);
+            //writeMatrixInBinary(sizeKMglob_aug, sizeKMglob_aug, Cdamp);
 
-            /* =============== CRANK-NICOLSON ====================
-            sizeM=size(Mglob,1);
-
-            A = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
-            B = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
-
-            %lamda (1: implicit Euler, 1/2: Crank - Nicolson)
-
-            AA =  A + theta*dt*B;
-            BB =  A - (1 - theta)*dt*B;
-
-            MAT = [a, b; 
-                   c, d]
-            ======================================================*/
-            mytype **Atemp, **Btemp, **AA, **BB;
-            mytype **Ieye;
+            // Create loading vector G(:,d) for the current time step
+            mytype **G;
             int sz1 = sizeKMglob_aug;
             int sz2 = 2*sz1;
-
-            /* G(:,d) for the current time step */
-            mytype **G;
             allocate2Darray<mytype>(sz2, NtimeSteps, &G); //[G(:,d), G(:,d+1)]
 
-            printf("sz1 = %d, sz2 = %d\n",sz1,sz2);
+            createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
+                             distrLoad, G, d); //G(:,d)
 
-            for (int i = 0;i<sz2;i++){
-                for (int j=0;j<NtimeSteps;j++){
-                    G[i][j] = 0.0;
-                }
+            //writeMatrixInBinary(sz2, NtimeSteps, G);
+
+            printf("\n    sizeKMglob_aug=%d, GEN=%d \n", sizeKMglob_aug, wingMeshFem.GEN);
+            printf("    sz1 = %d, sz2 = %d\n",sz1,sz2);
+            printf("\n    G(1:10,%d)=\n",d);
+            for (int i=0;i<10;i++){
+                printf("%10.8f, ",G[i][d]);
             }
 
-            createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
-                             distrLoad, G, d=0); //G(:,d)
-
-            //printf("\nG(1:10,d=0)=\n");
-            //for (int i=0;i<10;i++){
-            //    printf("%10.4f, ",G[i][d]);
-            //}
+            //==========TIME INTEGRATION============
 
             mytype **u_t; // u(:,d)
             allocate2Darray(sz2,NtimeSteps,&u_t);
             mytype theta = 0.5; //Crank-Nicolson
 
-            allocate2Darray<mytype>(sz2,sz2,&Atemp);
-            allocate2Darray<mytype>(sz2,sz2,&Btemp);
-            allocate2Darray<mytype>(sz2,sz2,&AA);
-            allocate2Darray<mytype>(sz2,sz2,&BB);
-            //
-            allocate2Darray<mytype>(sz1,sz1,&Ieye);
-            
-            /*
-            printf("\n----\n");
-            printf("Mglob_aug[i][j]\n");
-            for (int i = 0;i<5;i++){
-                for (int j = 0;j<5;j++){
-                    printf("%f, ",Mglob_aug[i][j]);
-                }
-                printf("\n");
-            }
-            printf("----\n");
-            */
-
-            // a: part of matrix
-            for (int i = 0;i<sz1;i++){
-                for (int j = 0;j<sz1;j++){
-                    Atemp[i][j] = Mglob_aug[i][j];
-                    Btemp[i][j] = -Cdamp[i][j];
-                    if (i == j){ //diagonal
-                        Ieye[i][j] = 1.0;
-                    }  
-                }
-            }
-            //printf("\npart a OK\n");
-
-            // b: part of matrix
-            for (int i = 0;i<sz1;i++){
-                for (int j = 0;j<sz1;j++){
-                    Btemp[i][j+sz1] = -Kglob_aug[i][j];
-                }
-            }
-            //printf("\npart b OK\n");
-
-            // c: part of matrix
-            for (int i = 0;i<sz1;i++){
-                for (int j = 0;j<sz1;j++){
-                    if (i == j){
-                        Btemp[i+sz1][j] = 1.0;
-                    }
-                    // = Ieye[i][j];
-                }
-            }
-            //printf("\npart c OK\n");
-
-            printf("\nBtemp\n");
-            for (int i = sz1; i < sz1+10; i++) {
-                for (int j = 0; j < 10; j++){
-                    printf(" %f, ", Btemp[i][j]);
-                } 
-                printf("\n");
-            }
-
-            // d: part of matrix
-            for (int i = 0;i<sz1;i++){  
-                for (int j = 0;j<sz1;j++){
-                    Atemp[i+sz1][j+sz1] = Ieye[i][j];
-                }
-            }
-            //printf("part d OK\n");
-
-            //writeMatrixInBinary<mytype>(sz2, sz2, Atemp);
-    
-            //writeMatrixInBinary<mytype>(sz2, sz2, Btemp);
-
-            //exit(55);
-
-            //AA =  A - theta*dt*B;
-            
-            mytype alphaVar = 1.0;
-            mytype betaVar = -theta*dt;
-            matSum2(alphaVar, betaVar, sz2, sz2, Atemp, Btemp, AA);
-
-            //BB =  A + (1 - theta)*dt*B;
-            alphaVar = 1.0;
-            betaVar = (1.0-theta)*dt;
-            matSum2(alphaVar, betaVar, sz2, sz2, Atemp, Btemp, BB);
-
-            //writeMatrixInBinary<mytype>(sz2, sz2, AA);
-    
-            //writeMatrixInBinary<mytype>(sz2, sz2, BB);
-
-            //exit(66);
-
-/*
-            printf("\nAA[i][j]=\n");
-            for (int i = 0;i<10;i++){  
-                for (int j = 0;j<10;j++){
-                    printf("%10.4f,",AA[i][j]);
-                }
-                printf("\n");
-            }
-            printf("\nBB[i][j]=\n");
-            for (int i = 0;i<10;i++){  
-                for (int j = 0;j<10;j++){
-                    printf("%10.4f,",BB[i][j]);
-                }
-                printf("\n");
-            }
-*/
-            //exit(55);
 
             //for (int d = 1; d< NtimeSteps ; d++){  
             for (int d = 0; d< 2 ; d++){   
@@ -717,9 +635,8 @@ int main(int argc, char **argv){
 
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                             distrLoad, G, d+1);//G(:,d+1)
-          
 
-                timeIntegration((d+1), dt, theta, sz2, G, AA, BB, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
+                timeIntegration((d+1), dt, theta, sz2, G, Mglob_aug, Kglob_aug, Cdamp, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
 
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
@@ -730,7 +647,7 @@ int main(int argc, char **argv){
             printf("\n\nG=\n");
             for (int i = 0;i<10;i++){
                 for (int j=0;j<10;j++){
-                    printf("    %f, ",G[i][j]);
+                    printf("    %10.8f, ",G[i][j]);
                 }
                 printf("\n");
             }
@@ -738,28 +655,22 @@ int main(int argc, char **argv){
             printf("\n\nu=\n");
             for (int i = 0;i<10;i++){
                 for (int j=0;j<10;j++){
-                    printf("    %10.6f, ",u_t[i][j]);
+                    printf("    %10.8f, ",u_t[i][j]);
                 }
                 printf("\n");
             }
 
             printf("\n\nu(sz1-1:sz1+10,1:10)=\n");
             for (int i = sz1-4;i<sz1+10;i++){
-                for (int j=0;j<4;j++){
-                    printf("    %10.6f, ",u_t[i][j]);
+                for (int j=0;j<10;j++){
+                    printf("    %10.8f, ",u_t[i][j]);
                 }
                 printf("\n");
             }
 
 
             deallocate2Darray<mytype>(sizeKMglob_aug,Cdamp);
-            deallocate2Darray<mytype>(sizeKMglob_aug,u_t);
-            deallocate2Darray<mytype>(sz2,Atemp);
-            deallocate2Darray<mytype>(sz2,Btemp);
-            deallocate2Darray<mytype>(sz2,AA);
-            deallocate2Darray<mytype>(sz2,BB);
-            //
-            deallocate2Darray<mytype>(sz1,Ieye);
+            deallocate2Darray<mytype>(sizeKMglob_aug,u_t);  
             deallocate2Darray<mytype>(sz2, G); //[G(:,d), G(:,d+1)]
 
 

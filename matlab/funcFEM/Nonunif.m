@@ -20,7 +20,7 @@ if importFromFile.toggle
     yy=yc_fem_data;
 
     dummy = 100;
-    fx=DCoefpres(:,:,dummy)*(0.5*fluid_dens*Uvel^2);%*chord*span; %dimensionalize data [N]
+    fx=100+0.*DCoefpres(:,:,dummy)*(0.5*fluid_dens*Uvel^2);%*chord*span; %dimensionalize data [N]
     
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2);%*chord*span; %dimensionalize data [N]
 

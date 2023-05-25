@@ -21,6 +21,7 @@ clear all;
 close all;
 clc;
 
+
 MODAL_ANALYSIS = 1;
 DYNAMIC_ANALYSIS = 1;
 
@@ -421,7 +422,7 @@ Fglob1=[Fglob; zeros(length(Bdofs),1)];
 
 Fglob1(1:15)'
 
-U = mldivide(Kglob,Fglob1); %or backslash
+Ustatic = mldivide(Kglob,Fglob1); %or backslash
 
 telapsed = toc(tstart);
 
@@ -430,7 +431,7 @@ telapsed = toc(tstart);
 %==========================================================================
 %                            POST-PROCESSOR
 %==========================================================================
-u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+u=Ustatic(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 %
 w=u(1:3:end);   % vertical displacement
 bx=u(2:3:end);  % rotation x
@@ -456,7 +457,7 @@ title('(contour)','FontWeight','normal');
 
 max(abs(w))/inData.a3;
 
-save solMatlab U
+save solMatlab Ustatic
 
 if MODAL_ANALYSIS == 1
     [XX,lamM,flag]=eigs(Kglob,Mglob,5,'sm');
@@ -472,44 +473,31 @@ end
 %% TIME-MARCHING
 
 if DYNAMIC_ANALYSIS == 1
-    
-    
-
+    d=1; %starting point
+    %select method for time integration
     newmark = 0;
     implicitEuler = 0;
     crankNicolson = 1;
-   
+    % set up time discretization parameters
     T=2*pi/inData.omega3;%sec
     % wf=2*pi/T; %rad/s
     ddt=inData.dt;%T/100; %time-step
     t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
-    
-%     figure
-%     plot(t/inData.T3,sin(inData.omega3.*t),'k--');
-    
     Ntimesteps = ceil((inData.Nper)*T/ddt)+1
     length(t)
-
-    d=1; %starting point
-
+    % for crank-nicolson second order system
     sizeM=size(Mglob,1);
-
     q=zeros(sizeM,length(t)); %displacement unknown vector (previous U)
     qdot=zeros(sizeM,length(t)); %velocity
-    C = 0.*Mglob;
-    % 
+    % Rayleigh damping
     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
-    a
-    b
-%     Cfull=full(C);
-%     Cfull(1:10,1:10);
-
+    disp(['Rayleigh coef. a=',num2str(a),' b=',num2str(b)]);
+    a = 2.5;
+    b = 0.001;
+    C = a*Mglob + b*Kglob;
+    full(C(1:10,1:10))
     
-    % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
-% %     [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
-% %             importFromFile,fluid_dens, Uvel, h, d);
-% %     [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
-%     [Fglob_t] = createFglob(lll,GEN, Nelem, P_load, FxDYN*cos(inData.omega3*t(d)),Area,LM,Bdofs);
+%     d = 2;
 
     [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
         importFromFile,fluid_dens, Uvel, h, d);
@@ -521,13 +509,14 @@ if DYNAMIC_ANALYSIS == 1
         G = zeros(length(Fm),length(t));
     end
     G(:,d) = Fm;
+%     G(1:10,d)'
     
     u=[qdot;q]; % BEWAREEEE
 
     solution = struct( 'w',[], 'bx',[], 'by', [],...
             'w_dot',[], 'bx_dot',[], 'by_dot', [],...
             'uu', [], 'uu_dot',[]);    
-
+% error('kk');
     if newmark
         qdot2=zeros(sizeM,length(t)); %acceleration 
         beta = 0.25;
@@ -560,12 +549,8 @@ if DYNAMIC_ANALYSIS == 1
             u(:,d+1)=[qdot(:,d+1);q(:,d+1)];
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
 
-        end
-    %    
-    %    
+        end   
     end
-    %
-    %
     
     if implicitEuler || crankNicolson 
     % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
@@ -592,12 +577,13 @@ if DYNAMIC_ANALYSIS == 1
 %     (inData.a3 + hmax)/inData.a3
 %     chord
 
+    G(1:10,1:10)
     u(1:10,1:10)
     u(sizeM-3:sizeM+10,1:10)
     
     
     
-%     error('er')
+    error('er')
 
     w = solution.w(:,d);
 
@@ -618,7 +604,7 @@ if DYNAMIC_ANALYSIS == 1
     % save FEM_newmark
 
     % save FEM_sol_h15_r_h2
-    save FEM_sol_h182_r_h2_NEW
+    save compare_with_c
 
     debugOn=0;
     if debugOn
