@@ -1588,6 +1588,8 @@ for (int i = 0; i<10; i++){
 template<class T>
 void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN){
 
+    printf("\n    Entering CuFEMNum2DWriteDataInBinary...  (STATIC SOLUTION):");
+
     FILE *fileOut;
     #if PRECISION_MODE_FEM == 1
 	    fileOut = fopen("../c/OUTDATA_FEM_double.bin", "wb"); // w for write, b for binary
@@ -1600,7 +1602,7 @@ void CuFEMNum2DWriteDataInBinary(int rows, int cols, T **Usol, int GEN){
     fwrite(&rows, sizeof(int), 1, fileOut);
     fwrite(&cols, sizeof(int), 1, fileOut);
 
-    printf("rows = %d, cols=%d\n",rows,cols);
+    printf("    rows = %d, cols=%d\n",rows,cols);
 
     for (int i = 0; i < rows; i++){
         for (int j = 0; j < cols; j++){

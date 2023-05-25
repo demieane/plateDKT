@@ -19,6 +19,9 @@ template<class T>
 T mysqrt(T base, T root);
 //
 template<class T>
+T myabs(T var);
+//
+template<class T>
 void allocate1Darray(int rows, T **arrIn);
 //
 template<class T>
@@ -48,6 +51,9 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, 
 template<class T>
 void writeMatrixInBinary(int rowsA, int colsA, T **arrA);
 //
+template<class T>
+void writeMatrixInTextFile(int rowsA, int colsA, T **arrA);
+//
 // from funcBLAS.c
 /*=========================================================================================*/
 /* Definition of the functions BELOW */
@@ -64,6 +70,17 @@ T mypow(T base, T power){
     #endif
     #if PRECISION_MODE_FEM == 2 //single
         return powf(base,power);
+    #endif
+}
+
+template<class T>
+T myabs(T var){
+
+    #if PRECISION_MODE_FEM == 1 //double
+        return fabs(var);
+    #endif
+    #if PRECISION_MODE_FEM == 2 //single
+        return abs(var);
     #endif
 }
 
@@ -96,7 +113,7 @@ void allocate1Darray(int rows, T **arrIn){
     //printf("\nInside allocate1Darray()..\n");
     // Note that arr[i][j] is same as *(*(arr+i)+j)
     for (i = 0; i < rows; i++){
-        arrTemp[i] = 0.0;
+        arrTemp[i] = (T)0;
         //printf("\n%f,",arrTemp[i]);
     }
 
@@ -412,7 +429,7 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
     //printf("Allocated A.. OK!\n");
 
     T *BB;
-    BB = (T*)malloc((rowsA*1) *sizeof(T));
+    BB = (T*)malloc((rowsA) *sizeof(T));
     for (int i = 0; i < rowsA; i++) {
         BB[i] = arrB[i][0];
     }
@@ -431,21 +448,75 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
         sgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
     #endif
     #if PRECISION_MODE_FEM == 1
-        dgesv_(&rowsA, &nrhs, &(AA[0]), &LDA, IPIV , &(BB[0]), &LDB, &info); //INTEL DOCS
+        size_t dummyVar=1;
+        const char NORM = 'I';
+        T *workNorm;
+        allocate1Darray<T>(rowsA,&workNorm);
+        T ANORM;
+        ANORM=dlange_(&NORM, &rowsA, &colsA, AA, &LDA, workNorm, dummyVar);
+        printf("\n    ANORM=%f, ", ANORM);
+        T RCOND;
+        T *WORK;
+        int *IWORK;
+        allocate1Darray<T>(4*rowsA,&WORK);
+        allocate1Darray<int>(rowsA,&IWORK);
+        dgecon_(&NORM,&rowsA,AA,&LDA,&ANORM,&RCOND,WORK,IWORK,&info, dummyVar);
+        printf("RCOND=%10.8f\n",RCOND);
+
+        free(workNorm);
+        free(WORK);
+        free(IWORK);
+
+        printf("\n    rowsA=%d,colsA=%d\n",rowsA,colsA);
+        /*checking sparse of matrix*/
+        int count = 0;
+        T epsTEST = mypow<T>(10.0, -5);
+        for (int i = 0; i < rowsA; i++){
+            for (int j = 0; j < colsA; j++){
+                if( myabs<T>(arrA[i][j])< epsTEST){
+                    count = count + 1;
+                }     
+            }
+        }
+        int criterion = (rowsA * colsA)/2;
+        if (count > ((rowsA * colsA)/2))
+            printf("    arrA: Matrix is a sparse matrix, count=%d, criterion=%d\n",count, criterion);
+        else
+            printf("    arrA: Matrix is not sparse matrix, count=%d, criterion=%d\n",count, criterion);
+
+        /*
+        The reciprocal condition number is a scale-invariant measure 
+        of how close a given matrix is to the set of singular matrices. 
+        If C is near 0, the matrix is nearly singular and badly conditioned.
+        If C is near 1.0, the matrix is well conditioned.
+        */
+ 
+        //dgesv_(&rowsA, &nrhs, &(AA[0]), &LDA, IPIV , &(BB[0]), &LDB, &info); //INTEL DOCS
+        dgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
+
+        //size_t dummyVar = 0;
+        //const char TRANS = 'N';
+        //dgetrs_(&TRANS,&rowsA,&nrhs,AA,&LDA,IPIV,BB,&LDB,&info,dummyVar); //INTEL DOCS
     #endif
 
-    if (info == 0){
-        //printf("\n    Solution successfull");
 
+    if (info == 0){
+        printf("\n    Solution successfull\n");
+ 
         for (int i = 0; i < rowsA; i++) {
             Usol[i][0]=BB[i];
             //printf("%10.4f,%10.4f,\n",BB[i]/pow(10.0,8.0), Usol[i][0]/pow(10.0,8.0));
         }
-            //printf("\n    Transfered solution from B to Usol.. OK!\n");
+
+        for (int i=0;i<10;i++){
+            printf("    %f,", Usol[i][0]);
+        }
+        
     }
     else{
         printf("\n    Solution failed in sgesv_: info=%d", info);
     } 
+
 
     free(IPIV);
     free(BB);
@@ -611,7 +682,6 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, 
     int sz2 = rowsColsG;
 
     T **A, **B, **AA, **BB;
-
     allocate2Darray<T>(sz2,sz2,&A);
     allocate2Darray<T>(sz2,sz2,&B);
     allocate2Darray<T>(sz2,sz2,&AA);
@@ -628,12 +698,19 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, 
             // Ieye
             if (i == j){
                 // c: part of matrix
-                B[i+sz1][j] = 1;
+               B[i+sz1][j] = 1.0;
                 // d: part of matrix
-                A[i+sz1][j+sz1] = 1;
+               A[i+sz1][j+sz1] = 1.0;
             }
         }
     }
+
+    //writeMatrixInBinary<T>(sz2, sz2, A);
+    //writeMatrixInBinary<T>(sz2, sz2, B);
+    //writeMatrixInBinary<T>(sz2, sz2, AA);
+    //writeMatrixInBinary<T>(sz2, sz2, BB);
+
+    //exit(55);
 
     //AA =  A - theta*dt*B;
     matSum2<T>(1.0, (-theta*dt), sz2, sz2, A, B, AA);
@@ -653,7 +730,7 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, 
     for (int i = 0; i<sz2; i++){
         Q[i][0] = (1.0-theta)*dt*G[i][d-1] + theta*dt*G[i][d];
     }
-/*
+
     printf("\nQ[%d]=",d);
     for (int i = 0;i<10;i++){
         printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
@@ -662,17 +739,17 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, 
     for (int i = sz1;i<sz1+10;i++){
         printf("%10.5f, ", Q[i][0]/pow(10.0,-6.0));
     }
-*/
+
     //==================================================================
-/*
+
     printf("\nu_t[%d]=",d);
     for (int i = 0;i<10;i++){
         printf("%10.6f, ", u_t[i][d-1]);
     }
-*/
-    T **rhs, **rhsDEBUG;
+
+    T **rhs;//, **rhsDEBUG;
     allocate2Darray<T>(sz2,1,&rhs);
-    allocate2Darray<T>(sz2,1,&rhsDEBUG);
+    //allocate2Darray<T>(sz2,1,&rhsDEBUG);
 
     for (int ii = 0; ii<sz2; ii++){
         for (int jj = 0; jj<sz2; jj++){      
@@ -680,6 +757,11 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, 
             rhs[ii][0] = rhs[ii][0] + BB[ii][jj]*u_t[jj][d-1];//matrix multiplication
         }
         rhs[ii][0] = rhs[ii][0] + Q[ii][0];//matrix addition
+    }
+
+    printf("\nQ[%d]=",d);
+    for (int i = 0;i<10;i++){
+        printf("%10.5f, ", rhs[i][0]/pow(10.0,-6.0));
     }
 
 /*
@@ -705,7 +787,7 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, 
     T **Usol;
     allocate2Darray(sz2,1,&Usol);
 
-
+/*
     FILE *file;
     file = fopen("test_lin_solve.bin", "rb"); // r for read, b for binary
     //printf("file: %d", file);
@@ -729,26 +811,31 @@ void timeIntegration(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug, 
         } 
     }
     fclose(file);
+*/
+    writeMatrixInTextFile<T>(sz2, sz2, AA);
+    writeMatrixInTextFile<T>(sz2, 1, rhs);
 
-    linearSystemSolve<T>(sz2, sz2, AA, rhs, Usol);
 
-    if (d == 2){
-        writeMatrixInBinary<T>(sz2, sz2, AA);
-        writeMatrixInBinary<T>(sz2, 1, rhs);
-    }
+
+    linearSystemSolve<T>(sz2, sz2, AA, rhs, &(Usol[0]));
+
+    //if (d == 2){
+    //writeMatrixInBinary<T>(sz2, sz2, AA);
+    //writeMatrixInBinary<T>(sz2, 1, rhs);
+
+    //}
 
     for (int i = 0; i<sz2; i++){
         u_t[i][d]=Usol[i][0];
     }
 
-
     printf("\nu[%d]=",d);
     for (int i = 0;i<10;i++){
-        printf("    %10.6f, ",Usol[i][0]/pow(10.0,-3.0));
+        printf("    %10.6f, ",Usol[i][0]);
     }
 
     printf("\nu[%d]=",d);
-    for (int i = sz2-10;i<sz2;i++){
+    for (int i = sz1-4;i<sz1+10;i++){
         printf("    %10.15f, ",Usol[i][0]);
     }
 
@@ -787,5 +874,28 @@ void writeMatrixInBinary(int rowsA, int colsA, T **arrA){
 
     fclose(fileOut);
     printf("\n    Exiting writeMatrixInBinary...");
+
+}
+
+template<class T>
+void writeMatrixInTextFile(int rowsA, int colsA, T **arrA){
+
+    //If the file exists it just overwrites it (delete DEBUG file
+    //prior to each execution)
+
+    FILE *fileOut;
+	fileOut = fopen("../c/OUTDATA_FEM_DEBUG.txt", "ab"); // w for write, b for binary
+
+    fprintf(fileOut, "%d\n", rowsA);
+    fprintf(fileOut, "%d\n", colsA);
+
+    for (int i = 0; i < rowsA; i++){
+        for (int j = 0; j < colsA; j++){
+            fprintf(fileOut, "%.15f\n", arrA[i][j]);
+        }
+    }
+
+    fclose(fileOut);
+    printf("\n    Exiting writeMatrixInTextFile...");
 
 }

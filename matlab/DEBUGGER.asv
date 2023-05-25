@@ -1,3 +1,38 @@
+
+load mat
+
+max(max(abs(A - Adebug)))
+max(max(abs(B - Bdebug)))
+
+max(max(abs(B(1:sizeM,1:sizeM) - Bdebug(1:sizeM,1:sizeM))))
+max(max(abs(B(1:sizeM,sizeM+1:end) - Bdebug(1:sizeM,sizeM+1:end))))
+
+max(max(abs(full(Kglob) - -Bdebug(1:sizeM,sizeM+1:end))))
+
+% file = fopen('test_lin_solve', 'wb');
+% % AA
+% fwrite(file, size(AA,1),'int');
+% fwrite(file, size(AA,2),'int');
+% for ii = 1:size(AA,1)
+%     for jj = 1:size(AA,2)
+%         fwrite(file, AA(ii,jj),precision);
+%     end
+% end
+% % rhs
+% fwrite(file, size(rhs,1),'int');
+% fwrite(file, size(rhs,2),'int');
+% for ii = 1:size(rhs,1)
+%     for jj = 1:size(rhs,2)
+%         fwrite(file, rhs(ii,jj),precision);
+%     end
+% end
+% fclose(file);
+
+
+
+
+
+%%
 % Read solution from binary file
 modeFem = 1;
 precision = 'double';

@@ -83,7 +83,7 @@ int main(int argc, char **argv){
     mytype **BeSt;
     allocate2Darray<mytype>(3, 3, &(BeSt)); //[GEN x 1]
 
-    if (inDataFem.LL==2 || inDataFem.LL==1 || inDataFem.LL==3 ){
+    if (inDataFem.LL==2 || inDataFem.LL==1 ){
         BendingStiffness<mytype>(inDataFem.E, inDataFem.v, inDataFem.h, BeSt);
     }
 
@@ -569,6 +569,8 @@ int main(int argc, char **argv){
     #endif
     //----
 
+    exit(55);
+
     #if (DYNAMIC_ANALYSIS == 1)
         // select method for time integration
         printf("\n    Starting DYNAMIC ANALYSIS using Crank-Nicolson.\n");
@@ -660,7 +662,7 @@ int main(int argc, char **argv){
                 printf("\n");
             }
 
-            printf("\n\nu(sz1-1:sz1+10,1:10)=\n");
+            printf("\n\nu(sz1-4:sz1+10,1:10)=\n");
             for (int i = sz1-4;i<sz1+10;i++){
                 for (int j=0;j<10;j++){
                     printf("    %10.8f, ",u_t[i][j]);

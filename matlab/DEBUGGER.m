@@ -1,4 +1,14 @@
 
+% % load mat
+% % 
+% % max(max(abs(A - Adebug)))
+% % max(max(abs(B - Bdebug)))
+% % 
+% % max(max(abs(B(1:sizeM,1:sizeM) - Bdebug(1:sizeM,1:sizeM))))
+% % max(max(abs(B(1:sizeM,sizeM+1:end) - Bdebug(1:sizeM,sizeM+1:end))))
+% % 
+% % max(max(abs(full(Kglob) - -Bdebug(1:sizeM,sizeM+1:end))))
+
 % file = fopen('test_lin_solve', 'wb');
 % % AA
 % fwrite(file, size(AA,1),'int');
@@ -17,8 +27,6 @@
 %     end
 % end
 % fclose(file);
-
-
 
 
 
@@ -68,10 +76,13 @@ fclose(fileID);
 
 Usol = AA\rhs;
 
-Usol(1:10)
-Usol(sizeM+1:sizeM+10)
+Usol(1:10)'
+u(1:10,1)'
 
-max(max(abs(u(:,2:4) - Usol(:,2:4))))
+Usol(sizeM-3:sizeM+10)'
+u(sizeM-3:sizeM+10,2)'
+
+% max(max(abs(u(:,2:4) - Usol(:,2:4))))
 
 
 

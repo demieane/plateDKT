@@ -25,7 +25,8 @@ OBJ := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
 # your code and make it better than ever, use the -Wall flag.
 CFLAGS   := -Wall -g3             # some warnings about bad code
 #CFLAGS   :=               # some warnings about bad code
-LDFLAGS  :=  -lm -lblas -llapack               # Left empty if no libs are needed
+#LDFLAGS :=  -lm -lblas -llapack               # Left empty if no libs are needed
+LDFLAGS :=  -L/usr/lib -llapack -lblas -lm 
 
 # this tells the make file which targets to execute based on their names
 all: mydir printInfo file1 file2 file3 file4 $(TARGET_EXEC) 

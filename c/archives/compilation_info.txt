@@ -63,3 +63,10 @@ the entire header file file
 3. What graphics card is available in the system (linux)?
 
 >> lspci | grep VGA
+
+
+SOLUTION:
+
+LAPACK doesn't include any iterative solvers. The routines in LAPACK are for eigenvalues,
+matrix factorizations, and solutions of systems of equations involving dense matrices
+while iterative methods are generally used for matrices that are large and sparse.

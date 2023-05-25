@@ -21,32 +21,45 @@ Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
 Q(1:10)'
 Q(sizeM+1:sizeM+10)'
 
+rcond(full(AA))
+
+disp('Using sparse matrices');
+t11=mldivide(AA,(BB*u(:,d-1) + Q));
+
+t11(sizeM+1:sizeM+10)'
+disp('Using dense matrices');
+t22=mldivide(full(AA),full((BB*u(:,d-1) + Q)));
+
+t22(sizeM+1:sizeM+10)'
+
+
+error('er')
 u(:,d) = AA\(BB*u(:,d-1) + Q);
 
 rhs = (BB*u(:,d-1) + Q);
 
-    file = fopen('test_lin_solve.bin', 'wb');
-    % AA
-    size(full(AA),1)
-    size(full(AA),2)
-    fwrite(file, size(full(AA),1),'int');
-    fwrite(file, size(full(AA),2),'int');
-    for ii = 1:size(full(AA),1)
-        for jj = 1:size(full(AA),2)
-            fwrite(file, full(AA(ii,jj)),'double');
-        end
-    end
-    % rhs
-    size(rhs,1)
-    size(rhs,2)
-    fwrite(file, size(rhs,1),'int');
-    fwrite(file, size(rhs,2),'int');
-    for ii = 1:size(rhs,1)
-        for jj = 1:size(rhs,2)
-            fwrite(file, rhs(ii,jj),'double');
-        end
-    end
-    fclose(file);
+% % %     file = fopen('test_lin_solve.bin', 'wb');
+% % %     % AA
+% % %     size(full(AA),1)
+% % %     size(full(AA),2)
+% % %     fwrite(file, size(full(AA),1),'int');
+% % %     fwrite(file, size(full(AA),2),'int');
+% % %     for ii = 1:size(full(AA),1)
+% % %         for jj = 1:size(full(AA),2)
+% % %             fwrite(file, full(AA(ii,jj)),'double');
+% % %         end
+% % %     end
+% % %     % rhs
+% % %     size(rhs,1)
+% % %     size(rhs,2)
+% % %     fwrite(file, size(rhs,1),'int');
+% % %     fwrite(file, size(rhs,2),'int');
+% % %     for ii = 1:size(rhs,1)
+% % %         for jj = 1:size(rhs,2)
+% % %             fwrite(file, rhs(ii,jj),'double');
+% % %         end
+% % %     end
+% % %     fclose(file);
 
 % rhsDEBUG = 0;
 % ii = 1;
@@ -104,13 +117,17 @@ u(end-10:1:end,d)'
 %     end
 % end
 % 
+
+% save mat sizeM A B Adebug Bdebug
 % max(max(abs(A - Adebug)))
 % max(max(abs(B - Bdebug)))
-% 
+
 % max(max(abs(AA - AAdebug)))
 % max(max(abs(BB - BBdebug)))
 % 
 % fclose(fileID)
+% 
+% error('er')
 
 %%
 

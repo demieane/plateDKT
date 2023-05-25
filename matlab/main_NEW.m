@@ -465,7 +465,7 @@ if MODAL_ANALYSIS == 1
 
     freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
 
-    freq'
+    freq
 end
 
 % error('er')
@@ -490,11 +490,12 @@ if DYNAMIC_ANALYSIS == 1
     q=zeros(sizeM,length(t)); %displacement unknown vector (previous U)
     qdot=zeros(sizeM,length(t)); %velocity
     % Rayleigh damping
-    [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
-    disp(['Rayleigh coef. a=',num2str(a),' b=',num2str(b)]);
+%     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
+    
     a = 2.5;
     b = 0.001;
     C = a*Mglob + b*Kglob;
+    disp(['Rayleigh coef. a=',num2str(a),' b=',num2str(b)]);
     full(C(1:10,1:10))
     
 %     d = 2;
@@ -527,6 +528,8 @@ if DYNAMIC_ANALYSIS == 1
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
         BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
         qdot2(:,1)=AA\BB;
+        
+%         error('er')
     
         for d = 1:length(t)-1
 
@@ -540,7 +543,7 @@ if DYNAMIC_ANALYSIS == 1
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
 
             AA = Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
-            BB=Fglob_t - C*pr_vel- Kglob*pr_disp;
+            BB = Fglob_t - C*pr_vel- Kglob*pr_disp;
             qdot2(:,d+1) = AA\BB; 
 
             q(:,d+1) = pr_disp+ddt^2*beta*qdot2(:,d+1);
@@ -564,6 +567,9 @@ if DYNAMIC_ANALYSIS == 1
             [Fglob_t] = createFglob(lll, GEN, Nelem, P_load, FxDYN, Area, LM, Bdofs);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
+            G(1:10,d+1)
+            
+%             error('er')
 
             theta = implicitEuler*(1) + crankNicolson*(1/2);
             u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
