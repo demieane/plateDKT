@@ -543,7 +543,7 @@ if DYNAMIC_ANALYSIS == 1
     %         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,FxDYN,Area,LM,Bdofs);
             
-            Fglob_t(1:10)'
+%             Fglob_t(1:10)'
 
             pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
@@ -565,12 +565,12 @@ if DYNAMIC_ANALYSIS == 1
             %
             u(:,d+1)=[qdot(:,d+1);q(:,d+1)];
             
-            qdot2(1:10,d+1)'
-            qdot(1:10,d+1)'
-            q(1:10,d+1)'
-            u(1:10,d+1)'
-            
-            error('r');
+%             qdot2(1:10,d+1)'
+%             qdot(1:10,d+1)'
+%             q(1:10,d+1)'
+%             u(1:10,d+1)'
+%             
+%             error('r');
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
 
         end   
@@ -588,7 +588,7 @@ if DYNAMIC_ANALYSIS == 1
             [Fglob_t] = createFglob(lll, GEN, Nelem, P_load, FxDYN, Area, LM, Bdofs);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
-            G(1:10,d+1)
+%             G(1:10,d+1)
             
 %             error('er')
 
@@ -600,15 +600,16 @@ if DYNAMIC_ANALYSIS == 1
         end
     end
     
-    save solution_TEST solution pp ee tt BBnodes inData
+%     save solution_TEST solution pp ee tt BBnodes inData
+    save solution_BENCH_matlab solution pp ee tt BBnodes inData t sizeM
 
 %     hmax = max(max(abs(solution.w)))
 %     (inData.a3 + hmax)/inData.a3
 %     chord
 
-    G(1:10,1:10)
-    u(1:10,1:10)
-    u(sizeM-3:sizeM+10,1:10)
+%     G(1:10,1:10)
+%     u(1:10,1:10)
+%     u(sizeM-3:sizeM+10,1:10)
     
     
     

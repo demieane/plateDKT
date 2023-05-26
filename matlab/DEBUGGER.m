@@ -35,9 +35,9 @@
 modeFem = 1;
 precision = 'double';
 
-fileID = fopen('../c/OUTDATA_FEM_DEBUG.bin','rb')
-% fileID = fopen('../c/OUTDATA_FEM_double.bin','rb')
-% GEN_fromC = fread(fileID,1,'int')
+% fileID = fopen('../c/OUTDATA_FEM_DEBUG.bin','rb')
+fileID = fopen('../c/OUTDATA_FEM_double.bin','rb')
+GEN_fromC = fread(fileID,1,'int')
 rowsUsol = fread(fileID,1,'int')
 colsUsol = fread(fileID,1,'int')
 
@@ -46,36 +46,50 @@ for i = 1:rowsUsol
     for j = 1:colsUsol
 %         Cdamp(i,j)=fread(fileID,1,precision);
 %         Gdebug(i,j)=fread(fileID,1,precision);
-        AAdebug(i,j)=fread(fileID,1,precision);
+%         AAdebug(i,j)=fread(fileID,1,precision);
 %         qdot2_debug(i,j)=fread(fileID,1,precision);
-%         Usol(i,j)=fread(fileID,1,precision);
-    end
-end
-
-rowsUsol = fread(fileID,1,'int')
-colsUsol = fread(fileID,1,'int')
-
-for i = 1:rowsUsol
-    for j = 1:colsUsol
-%         Cdamp(i,j)=fread(fileID,1,precision);
-%         Gdebug(i,j)=fread(fileID,1,precision);
-        rhs(i,j)=fread(fileID,1,precision);
-    end
-end
-
-
-rowsUsol = fread(fileID,1,'int')
-colsUsol = fread(fileID,1,'int')
-
-for i = 1:rowsUsol
-    for j = 1:colsUsol
-%         Cdamp(i,j)=fread(fileID,1,precision);
-%         Gdebug(i,j)=fread(fileID,1,precision);
-        qdot2_buffer(i,j)=fread(fileID,1,precision);
+        Usol(i,j)=fread(fileID,1,precision);
     end
 end
 
 fclose(fileID);
+
+solutionC = struct( 'w',[], 'bx',[], 'by', [],...
+        'w_dot',[], 'bx_dot',[], 'by_dot', [],...
+        'uu', [], 'uu_dot',[]); 
+
+load solution_BENCH_matlab
+
+    
+for d = 1:length(t)-1
+    [solutionC] = solutionRetriever(GEN_fromC, sizeM, d+1, length(t), Usol, solutionC);%[w,bx,by]
+end
+
+
+% % rowsUsol = fread(fileID,1,'int')
+% % colsUsol = fread(fileID,1,'int')
+% % 
+% % for i = 1:rowsUsol
+% %     for j = 1:colsUsol
+% % %         Cdamp(i,j)=fread(fileID,1,precision);
+% % %         Gdebug(i,j)=fread(fileID,1,precision);
+% %         rhs(i,j)=fread(fileID,1,precision);
+% %     end
+% % end
+% % 
+% % 
+% % rowsUsol = fread(fileID,1,'int')
+% % colsUsol = fread(fileID,1,'int')
+% % 
+% % for i = 1:rowsUsol
+% %     for j = 1:colsUsol
+% % %         Cdamp(i,j)=fread(fileID,1,precision);
+% % %         Gdebug(i,j)=fread(fileID,1,precision);
+% %         qdot2_buffer(i,j)=fread(fileID,1,precision);
+% %     end
+% % end
+
+% % fclose(fileID);
 
 % solutionC = struct( 'w',[], 'bx',[], 'by', [],...
 %         'w_dot',[], 'bx_dot',[], 'by_dot', [],...

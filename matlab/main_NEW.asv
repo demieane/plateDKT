@@ -549,21 +549,28 @@ if DYNAMIC_ANALYSIS == 1
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
 
             AA = Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
-            BB = 0.*Fglob_t - C*pr_vel- 0.*Kglob*pr_disp;
-            BB = C(1:10,1:10)*pr_vel(1:10)
-            BB(1:10)
-            BB = C*pr_vel;
-            BB(1:10)
+            BB = Fglob_t - C*pr_vel- Kglob*pr_disp;
+%             BB = C(1:300,1:300)*pr_vel(1:300)
+%             BB(1:10)
+%             BB = C*pr_vel;
+%             BB(1:10)
             qdot2(:,d+1) = AA\BB; 
             
-            qdot2(1:10,d+1)'
+%             qdot2(1:10,d+1)'
             
-            error('er')
+%             error('er')
 
             q(:,d+1) = pr_disp+ddt^2*beta*qdot2(:,d+1);
             qdot(:,d+1) = pr_vel + gamma*ddt*qdot2(:,d+1);
             %
             u(:,d+1)=[qdot(:,d+1);q(:,d+1)];
+            
+%             qdot2(1:10,d+1)'
+%             qdot(1:10,d+1)'
+%             q(1:10,d+1)'
+%             u(1:10,d+1)'
+%             
+%             error('r');
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
 
         end   
@@ -605,7 +612,7 @@ if DYNAMIC_ANALYSIS == 1
     
     
     
-%     error('er')
+    error('er')
 
     w = solution.w(:,d);
 

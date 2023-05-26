@@ -452,6 +452,7 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
     #endif
     #if PRECISION_MODE_FEM == 1
 
+    #if DEBUG_ON
         size_t dummyVar=1;
         const char NORM = 'I';
         T *workNorm;
@@ -494,7 +495,7 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
         If C is near 0, the matrix is nearly singular and badly conditioned.
         If C is near 1.0, the matrix is well conditioned.
         */
- 
+    #endif
         //dgesv_(&rowsA, &nrhs, &(AA[0]), &LDA, IPIV , &(BB[0]), &LDB, &info); //INTEL DOCS
         dgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
 
@@ -505,17 +506,18 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
 
 
     if (info == 0){
-        printf("\n    Solution successfull\n");
+        //printf("\n    Solution successfull\n");
  
         for (int i = 0; i < rowsA; i++) {
             Usol[i][0]=BB[i];
             //printf("%10.4f,%10.4f,\n",BB[i]/pow(10.0,8.0), Usol[i][0]/pow(10.0,8.0));
         }
 
+/*
         for (int i=0;i<10;i++){
             printf("    %f,", Usol[i][0]);
         }
-        
+*/        
     }
     else{
         printf("\n    Solution failed in sgesv_: info=%d", info);

@@ -580,7 +580,8 @@ int main(int argc, char **argv){
             mytype t = 0.0;
             mytype dt = inDataFem.dt;
             mytype Tp = 2*M_PI/inDataFem.omega3; // period of motion
-            int NtimeSteps = ceil((inDataFem.Nper*Tp)/dt)+1;
+            int NtimeSteps = ceil((2*Tp)/dt)+1;
+            //int NtimeSteps = ceil((inDataFem.Nper*Tp)/dt)+1;
             printf("    dt=%10.4f, Tp=%10.4f, NtimeSteps=%d \n", dt, Tp, NtimeSteps);
 
             //==========DAMPING MATRIX============
@@ -600,7 +601,7 @@ int main(int argc, char **argv){
                 }
                 printf("\n");
             }
-            printf("\nCdamp(end,end)=%10.4f\n", Cdamp[sizeKMglob_aug-1][sizeKMglob_aug-1]/mypow<mytype>(10.0,3.0));
+            //printf("\nCdamp(end,end)=%10.4f\n", Cdamp[sizeKMglob_aug-1][sizeKMglob_aug-1]/mypow<mytype>(10.0,3.0));
             //==========DAMPING MATRIX============
 
             //writeMatrixInBinary(sizeKMglob_aug, sizeKMglob_aug, Cdamp);
@@ -610,9 +611,11 @@ int main(int argc, char **argv){
             int sz1 = sizeKMglob_aug;
             int sz2 = 2*sz1;
             allocate2Darray<mytype>(sz2, NtimeSteps, &G); //[G(:,d), G(:,d+1)]
-
+            
             createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                              distrLoad, G, d); //G(:,d)
+
+
 
             //writeMatrixInBinary(sz2, NtimeSteps, G);
 
@@ -620,8 +623,10 @@ int main(int argc, char **argv){
             printf("    sz1 = %d, sz2 = %d\n",sz1,sz2);
             printf("\n    G(1:10,%d)=\n",d);
             for (int i=0;i<10;i++){
-                printf("%10.8f, ",G[i][d]);
+                printf("    %10.8f, ",G[i][d]);
             }
+
+            
 
             //==========TIME INTEGRATION============
             mytype theta = 0.5; //Crank-Nicolson
@@ -648,7 +653,7 @@ int main(int argc, char **argv){
             mytype **AA,**BB;
             allocate2Darray<mytype>(sz1,sz1,&AA); 
             allocate2Darray<mytype>(sz1,1,&BB); 
-            printf("\nsz1=%d",sz1);
+            //printf("\nsz1=%d",sz1);
 
             for (int i=0; i<sz1;i++){
                 for (int j=0; j<sz1; j++){
@@ -692,20 +697,26 @@ int main(int argc, char **argv){
             allocate2Darray<mytype>(sz1,1,&pr_vel);
             allocate2Darray<mytype>(sz1,1,&pr_disp);
 
+
+            
+
             mytype suma1, suma2;
-            //for (int d = 1; d< NtimeSteps ; d++){  
-            for (int d = 0; d< 2 ; d++){   
-                //printf("\n    d (time) = %d\n",d);   
+            for (int d = 1; d< NtimeSteps-1 ; d++){  
+            //for (int d = 0; d< 100 ; d++){   
+                printf("\n    d (time) = %d\n",d);   
                 t = t + dt; // t in [sec]
 
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                             distrLoad, G, d+1);//G(:,d+1)
 
+                           
+
+/*
                 printf("\n    G(1:10,%d)=\n",d);
                 for (int i=0;i<10;i++){
                     printf("%10.8f, ",G[i][d+1]);
                 }            
-
+*/
                 /* 
                 // DOES NOT WORK!!!! ILL-CONDITIONED DENSE SYSTEM (dgesv_) fails
                 timeIntegrationCN((d+1), dt, theta, sz2, G, Mglob_aug, Kglob_aug, Cdamp, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
@@ -725,7 +736,7 @@ int main(int argc, char **argv){
                     pr_vel[i][0] = qdot[i][d] + (1.0-gamma)*dt*qdot2[i][d];
                     pr_disp[i][0] = q[i][d] + dt*qdot[i][d] + mypow<mytype>(dt, 2.0)*(0.5-beta)*qdot2[i][d];
                 }
-
+/*
                 printf("\n    pr_vel=\n");
                 for (int i=0;i<10;i++){
                     printf("%10.8f, ",pr_vel[i][0]);
@@ -735,7 +746,7 @@ int main(int argc, char **argv){
                 for (int i=0;i<10;i++){
                     printf("%10.8f, ",pr_disp[i][0]);
                 }
-
+*/
                 // re - initialize BB 
                 for (int i=0; i<sz1;i++){
                     BB[i][0] = 0.0;
@@ -754,13 +765,13 @@ int main(int argc, char **argv){
                     //printf("%f", suma1);
                     BB[i][0] = suma1 + suma2 + G[i][d+1];//maybe problematic but we will see
                 }
-
+/*
                 printf("\n   BB=\n");
                 // re - initialize BB 
                 for (int i=0; i<10;i++){
                     printf("%10.15f, ", BB[i][0]);
                 }
-
+*/
                 //printf("qdot2[295][0]=%10.15f, ",qdot2[295][0]);
 
                 for (int i = 0;i<sz1;i++){
@@ -771,18 +782,18 @@ int main(int argc, char **argv){
                 for (int i = 0;i<sz1;i++){
                     qdot2[i][d+1]=qdot2_buffer[i][0];
                 }
-
+/*
                 printf("\n qdot2=\n");
                 for (int i = 0;i<10;i++){
                     printf("%f,",qdot2[i][d+1]);
                 }
-
+*/
 
                 for (int i=0; i<sz1; i++){
                     q[i][d+1] = pr_disp[i][0] + mypow<mytype>(dt, 2.0)*beta*qdot2[i][d+1];
                     qdot[i][d+1] = pr_vel[i][0] + gamma*dt*qdot2[i][d+1];
                 }
-
+/*
                 printf("\n q=\n");
                 for (int i = 0;i<10;i++){
                     printf("%f,",q[i][d+1]/pow(10.0,-7));
@@ -793,12 +804,14 @@ int main(int argc, char **argv){
                     printf("%f,",qdot[i][d+1]/pow(10.0,-4));
                 }
 
+*/              
                 // return solution to the u_t vector
                 for (int i=0; i<sz1; i++){
                     u_t[i][d+1] = qdot[i][d+1];
                     u_t[i+sz1][d+1] = q[i][d+1];
                 }
 
+/*
                 printf("\n\nu=\n");
                 for (int i = 0;i<10;i++){
                     //for (int j=0;j<1;j++){
@@ -806,10 +819,10 @@ int main(int argc, char **argv){
                     //}
                     printf("\n");
                 }
+*/
+                //exit(55);
 
-                exit(55);
-
-                timeIntegrationNewmark<mytype>(); // TIME INTEGRATION WITH CRANK-NICOLSON 
+                //timeIntegrationNewmark<mytype>(); // TIME INTEGRATION WITH CRANK-NICOLSON 
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
             }
@@ -827,7 +840,13 @@ int main(int argc, char **argv){
             printf("\n\nu=\n");
             for (int i = 0;i<10;i++){
                 for (int j=0;j<10;j++){
-                    printf("    %10.8f, ",u_t[i][j]);
+                    if (u_t[i][j]>0.0){
+                        printf("    %10.9f, ",u_t[i][j]);
+                    }
+                    else{
+                        printf("    %10.8f, ",u_t[i][j]);
+                    }
+                    
                 }
                 printf("\n");
             }
@@ -835,26 +854,31 @@ int main(int argc, char **argv){
             printf("\n\nu(sz1-4:sz1+10,1:10)=\n");
             for (int i = sz1-4;i<sz1+10;i++){
                 for (int j=0;j<10;j++){
-                    printf("    %10.8f, ",u_t[i][j]);
+                    if (u_t[i][j]>0.0){
+                        printf("    %10.9f, ",u_t[i][j]);
+                    }
+                    else{
+                        printf("    %10.8f, ",u_t[i][j]);
+                    }
                 }
                 printf("\n");
             }
 
+            printf("UP TP HERE..\n");
 
-            deallocate2Darray<mytype>(sizeKMglob_aug,Cdamp);
-            deallocate2Darray<mytype>(sizeKMglob_aug,u_t);  
-            deallocate2Darray<mytype>(sz2, G); //[G(:,d), G(:,d+1)]
-
+            deallocate2Darray<mytype>(sz1,Cdamp);
+            deallocate2Darray<mytype>(sz1,AA); 
+            deallocate2Darray<mytype>(sz1,BB);
+            //
+            deallocate2Darray<mytype>(sz2,u_t);  
+            deallocate2Darray<mytype>(sz2,G); //[G(:,d), G(:,d+1)] 
             deallocate2Darray<mytype>(sz1,q); 
             deallocate2Darray<mytype>(sz1,qdot); 
             deallocate2Darray<mytype>(sz1,qdot2); 
-            deallocate2Darray<mytype>(sz1,AA); 
-            deallocate2Darray<mytype>(sz1,BB); 
-            //
             deallocate2Darray<mytype>(sz1,qdot2_buffer);
             deallocate2Darray<mytype>(sz1,pr_vel);
             deallocate2Darray<mytype>(sz1,pr_disp);
-
+           
 
         }
         else{
@@ -867,7 +891,6 @@ int main(int argc, char **argv){
 
     deallocate2Darray<int>(9,iii);
     deallocate2Darray<int>(9,rr);
-
 
     deallocate2Darray(inDataFem.sizeBdofs,kkk);
     deallocate2Darray(inDataFem.sizeBdofs,mmm);
@@ -884,21 +907,17 @@ int main(int argc, char **argv){
     printf("\n----\n Elapsed time [s]: %f\n----\n", cpu_time_used);
     printf("In Matlab the same operations using vectorization take 2.0383 sec.\n");
 
-
+    
     // DE-ALLOCATE MEMORY TO RESOLVE MEMORY LEAKS
     free(distrLoad);
     free(distrThick);
-    //
-    for (int i = 0;i<3;i++){
-        free(BeSt[i]);
-    }
-    free(BeSt);
+    deallocate2Darray<mytype>(3,BeSt);
     //
     freeInDataRecFem(&inDataFem);
     freetriangleDKT(GaussIntegrPoints,&wingMeshFem);
 
-    freefemArraysDKT(&wingMeshFem, &elemFemArr);
-
+    freefemArraysDKT<mytype>(&wingMeshFem, &elemFemArr);
+    
     deallocate2Darray<mytype>(wingMeshFem.GEN,Kglob);
     deallocate2Darray<mytype>(wingMeshFem.GEN,Mglob);
     //
