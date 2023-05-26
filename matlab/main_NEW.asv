@@ -54,6 +54,7 @@ addpath('mesh');
 addpath('mesh/heathcote');
 
 load('mesh_h1_half');
+% load('mesh_h2_half');
 
 %Create Rectangular plate
 % pderect([0 0.1 -0.3 0.3],'C1')
@@ -190,9 +191,9 @@ Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
-% Bnodes = [Bound4(1), Bound3];
+Bnodes = [Bound4(1), Bound3];
 % Bnodes = [Bound2, Bound2];
-Bnodes=Bound3; %for distributed load from function ANSYS
+% Bnodes=Bound3; %for distributed load from function ANSYS
 % Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
@@ -482,7 +483,8 @@ if DYNAMIC_ANALYSIS == 1
     T=2*pi/inData.omega3;%sec
     % wf=2*pi/T; %rad/s
     ddt=inData.dt;%T/100; %time-step
-    t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
+    t=[0:ddt:(2)*T];%[0:h:2*T]; %time [sec]
+    %t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
     Ntimesteps = ceil((inData.Nper)*T/ddt)+1
     length(t)
     % for crank-nicolson second order system
@@ -502,7 +504,7 @@ if DYNAMIC_ANALYSIS == 1
 
     [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0,....
         importFromFile,fluid_dens, Uvel, h, d);
-    FxDYN = FxDYN.*sin(inData.omega3*t(d)); %DUMMY SCENARIO FOR DEBUGGING
+%     FxDYN = FxDYN.*sin(inData.omega3*t(d)); %DUMMY SCENARIO FOR DEBUGGING
     [Fglob_t] = createFglob(lll,GEN, Nelem, P_load, FxDYN, Area,LM, Bdofs);
     Fm = [Fglob_t; zeros(sizeM,1)];
 
@@ -510,7 +512,7 @@ if DYNAMIC_ANALYSIS == 1
         G = zeros(length(Fm),length(t));
     end
     G(:,d) = Fm;
-%     G(1:10,d)'
+    G(1:10,d)'
     
     u=[qdot;q]; % BEWAREEEE
 
@@ -528,6 +530,10 @@ if DYNAMIC_ANALYSIS == 1
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
         BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
         qdot2(:,1)=AA\BB;
+        
+        qdot2(1:10,1)'
+        
+%         error('er')
 
         for d = 1:length(t)-1
 
@@ -536,13 +542,23 @@ if DYNAMIC_ANALYSIS == 1
             [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
     %         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,FxDYN,Area,LM,Bdofs);
+            
+            Fglob_t(1:10)'
 
             pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
 
             AA = Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
-            BB = Fglob_t - C*pr_vel- Kglob*pr_disp;
+            BB = 0.*Fglob_t - C*pr_vel- 0.*Kglob*pr_disp;
+            BB = C(1:10,1:10)*pr_vel(1:10)
+            BB(1:10)
+            BB = C*pr_vel;
+            BB(1:10)
             qdot2(:,d+1) = AA\BB; 
+            
+            qdot2(1:10,d+1)'
+            
+            error('er')
 
             q(:,d+1) = pr_disp+ddt^2*beta*qdot2(:,d+1);
             qdot(:,d+1) = pr_vel + gamma*ddt*qdot2(:,d+1);
@@ -576,6 +592,8 @@ if DYNAMIC_ANALYSIS == 1
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
         end
     end
+    
+    save solution_TEST solution pp ee tt BBnodes inData
 
 %     hmax = max(max(abs(solution.w)))
 %     (inData.a3 + hmax)/inData.a3
@@ -587,7 +605,7 @@ if DYNAMIC_ANALYSIS == 1
     
     
     
-    error('er')
+%     error('er')
 
     w = solution.w(:,d);
 
@@ -608,7 +626,7 @@ if DYNAMIC_ANALYSIS == 1
     % save FEM_newmark
 
     % save FEM_sol_h15_r_h2
-    save compare_with_c
+%     save compare_with_c
 
     debugOn=0;
     if debugOn

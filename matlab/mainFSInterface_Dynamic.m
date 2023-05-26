@@ -84,7 +84,7 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION*************
 % COMMENT: The numbering is offered by the pdeModeler
-Bnodes = Bound3;%[Bound4(1), Bound3];
+Bnodes = [Bound4(1), Bound3];
 % Bnodes = [Bound1, Bound2, Bound3, Bound4];
 %**************************************************************************
 %
@@ -182,8 +182,8 @@ if lll==3%distributed load & distributed thickness
     load(file1995); %xc_fem_data, yc_fem_data, DCoefpres
     xcp=xc_fem_data;
     ycp=yc_fem_data;
-    tinstance = 100;
-    fcp = 100 + 0.*DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
+    tinstance = 1;
+    fcp = 1 + 0.*DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
     tcp= th_fem_data.*0 + h;
 %     tcp= th_fem_data;
     fwrite(file, length(xcp(:)),'int');

@@ -624,12 +624,75 @@ int main(int argc, char **argv){
             }
 
             //==========TIME INTEGRATION============
-
-            mytype **u_t; // u(:,d)
-            allocate2Darray(sz2,NtimeSteps,&u_t);
             mytype theta = 0.5; //Crank-Nicolson
+            //
+            mytype **u_t; // u(:,d)
+            allocate2Darray(sz2,NtimeSteps,&u_t); //u=[qdot;q]
+            //
+            mytype **q; //displacement unknown vector (similar to Ustatic)
+            mytype **qdot; //velocity
+            mytype **qdot2, **qdot2_buffer; //acceleration
+            allocate2Darray<mytype>(sz1,NtimeSteps,&q); 
+            allocate2Darray<mytype>(sz1,NtimeSteps,&qdot); 
+            allocate2Darray<mytype>(sz1,NtimeSteps,&qdot2); 
+            allocate2Darray<mytype>(sz1,1,&qdot2_buffer); 
 
+            mytype beta = 0.25, gamma = 0.5;
+            /*====initialization=======================
 
+            AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
+            BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
+            qdot2(:,1)=AA\BB;
+            
+            ===========================================*/
+            mytype **AA,**BB;
+            allocate2Darray<mytype>(sz1,sz1,&AA); 
+            allocate2Darray<mytype>(sz1,1,&BB); 
+            printf("\nsz1=%d",sz1);
+
+            for (int i=0; i<sz1;i++){
+                for (int j=0; j<sz1; j++){
+                    AA[i][j] = Mglob_aug[i][j] + gamma*dt*Cdamp[i][j] + mypow<mytype>(dt,2.0)*beta*Kglob_aug[i][j];
+                    BB[i][0] = BB[i][0] -Cdamp[i][j]*qdot[j][0] - Kglob_aug[i][j]*q[j][0];
+                }
+                BB[i][0] = BB[i][0] + G[i][0];//maybe problematic but we will see
+            }
+
+/*
+            writeMatrixInTextFile<mytype>(sz1, sz1, AA);
+            writeMatrixInTextFile<mytype>(sz1, 1, BB);
+
+            printf("\nAA=\n");
+            for (int i = 0; i<10; i++){
+                for (int j = 0;j<10; j++){
+                    printf("%f, ", AA[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\nBB=\n");
+            for (int i = 0;i<10;i++){
+                printf("%f, ", BB[i][0]);
+            }
+
+*/
+
+            for (int i = 0;i<sz1;i++){
+                qdot2_buffer[i][0] = 0; // re-initialize
+            }
+            linearSystemSolve<mytype>(sz1, sz1, AA, BB, qdot2_buffer);
+
+            //printf("qdot2_buffer[295][0]=%10.15f, ",qdot2_buffer[295][0]);
+
+            for (int i = 0;i<sz1;i++){
+                qdot2[i][d]=qdot2_buffer[i][0];
+            }
+
+            mytype **pr_vel, **pr_disp;
+            allocate2Darray<mytype>(sz1,1,&pr_vel);
+            allocate2Darray<mytype>(sz1,1,&pr_disp);
+
+            mytype suma1, suma2;
             //for (int d = 1; d< NtimeSteps ; d++){  
             for (int d = 0; d< 2 ; d++){   
                 //printf("\n    d (time) = %d\n",d);   
@@ -638,12 +701,113 @@ int main(int argc, char **argv){
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                             distrLoad, G, d+1);//G(:,d+1)
 
+                printf("\n    G(1:10,%d)=\n",d);
+                for (int i=0;i<10;i++){
+                    printf("%10.8f, ",G[i][d+1]);
+                }            
+
                 /* 
                 // DOES NOT WORK!!!! ILL-CONDITIONED DENSE SYSTEM (dgesv_) fails
                 timeIntegrationCN((d+1), dt, theta, sz2, G, Mglob_aug, Kglob_aug, Cdamp, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
                 */
-               
+
                 // TO DO: Use newmark since it is the same with crank-nicolson
+
+                /*
+                pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
+                pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
+
+                AA = Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
+                BB = Fglob_t - C*pr_vel- Kglob*pr_disp;
+                qdot2(:,d+1) = AA\BB; 
+                */
+                for (int i = 0; i <sz1;i++) {
+                    pr_vel[i][0] = qdot[i][d] + (1.0-gamma)*dt*qdot2[i][d];
+                    pr_disp[i][0] = q[i][d] + dt*qdot[i][d] + mypow<mytype>(dt, 2.0)*(0.5-beta)*qdot2[i][d];
+                }
+
+                printf("\n    pr_vel=\n");
+                for (int i=0;i<10;i++){
+                    printf("%10.8f, ",pr_vel[i][0]);
+                }
+
+                printf("\n    pr_disp=\n");
+                for (int i=0;i<10;i++){
+                    printf("%10.8f, ",pr_disp[i][0]);
+                }
+
+                // re - initialize BB 
+                for (int i=0; i<sz1;i++){
+                    BB[i][0] = 0.0;
+                }
+
+                //printf("%\n");
+                for (int i=0; i<sz1;i++){
+                    suma1 = 0;
+                    suma2 = 0;
+                    for (int j=0; j<sz1;j++){
+                        //AA[i][j] = Mglob_aug[i][j] + gamma*dt*Cdamp[i][j] + mypow<mytype>(dt,2.0)*beta*Kglob_aug[i][j];
+                        suma1 = suma1 -Cdamp[i][j]*pr_vel[j][0];
+                        suma2 = suma2 - Kglob_aug[i][j]*pr_disp[j][0];  
+                        //printf("%10.8f,%10.8f,%10.8f\n", -Cdamp[i][j], pr_vel[j][0]/pow(10.0,-6.0), suma1);
+                    }
+                    //printf("%f", suma1);
+                    BB[i][0] = suma1 + suma2 + G[i][d+1];//maybe problematic but we will see
+                }
+
+                printf("\n   BB=\n");
+                // re - initialize BB 
+                for (int i=0; i<10;i++){
+                    printf("%10.15f, ", BB[i][0]);
+                }
+
+                //printf("qdot2[295][0]=%10.15f, ",qdot2[295][0]);
+
+                for (int i = 0;i<sz1;i++){
+                    qdot2_buffer[i][0] = 0; // re-initialize
+                }
+                linearSystemSolve<mytype>(sz1, sz1, AA, BB, qdot2_buffer);
+
+                for (int i = 0;i<sz1;i++){
+                    qdot2[i][d+1]=qdot2_buffer[i][0];
+                }
+
+                printf("\n qdot2=\n");
+                for (int i = 0;i<10;i++){
+                    printf("%f,",qdot2[i][d+1]);
+                }
+
+
+                for (int i=0; i<sz1; i++){
+                    q[i][d+1] = pr_disp[i][0] + mypow<mytype>(dt, 2.0)*beta*qdot2[i][d+1];
+                    qdot[i][d+1] = pr_vel[i][0] + gamma*dt*qdot2[i][d+1];
+                }
+
+                printf("\n q=\n");
+                for (int i = 0;i<10;i++){
+                    printf("%f,",q[i][d+1]/pow(10.0,-7));
+                }
+
+                printf("\n qdot=\n");
+                for (int i = 0;i<10;i++){
+                    printf("%f,",qdot[i][d+1]/pow(10.0,-4));
+                }
+
+                // return solution to the u_t vector
+                for (int i=0; i<sz1; i++){
+                    u_t[i][d+1] = qdot[i][d+1];
+                    u_t[i+sz1][d+1] = q[i][d+1];
+                }
+
+                printf("\n\nu=\n");
+                for (int i = 0;i<10;i++){
+                    //for (int j=0;j<1;j++){
+                    printf("    %10.8f, ",u_t[i][d+1]);
+                    //}
+                    printf("\n");
+                }
+
+                exit(55);
 
                 timeIntegrationNewmark<mytype>(); // TIME INTEGRATION WITH CRANK-NICOLSON 
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
@@ -680,6 +844,16 @@ int main(int argc, char **argv){
             deallocate2Darray<mytype>(sizeKMglob_aug,Cdamp);
             deallocate2Darray<mytype>(sizeKMglob_aug,u_t);  
             deallocate2Darray<mytype>(sz2, G); //[G(:,d), G(:,d+1)]
+
+            deallocate2Darray<mytype>(sz1,q); 
+            deallocate2Darray<mytype>(sz1,qdot); 
+            deallocate2Darray<mytype>(sz1,qdot2); 
+            deallocate2Darray<mytype>(sz1,AA); 
+            deallocate2Darray<mytype>(sz1,BB); 
+            //
+            deallocate2Darray<mytype>(sz1,qdot2_buffer);
+            deallocate2Darray<mytype>(sz1,pr_vel);
+            deallocate2Darray<mytype>(sz1,pr_disp);
 
 
         }

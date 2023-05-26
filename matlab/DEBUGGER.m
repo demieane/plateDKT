@@ -46,19 +46,32 @@ for i = 1:rowsUsol
     for j = 1:colsUsol
 %         Cdamp(i,j)=fread(fileID,1,precision);
 %         Gdebug(i,j)=fread(fileID,1,precision);
-        AA(i,j)=fread(fileID,1,precision);
+        AAdebug(i,j)=fread(fileID,1,precision);
+%         qdot2_debug(i,j)=fread(fileID,1,precision);
 %         Usol(i,j)=fread(fileID,1,precision);
     end
 end
 
-rowsUsol1 = fread(fileID,1,'int')
-colsUsol1 = fread(fileID,1,'int')
+rowsUsol = fread(fileID,1,'int')
+colsUsol = fread(fileID,1,'int')
 
-for i = 1:rowsUsol1
-    for j = 1:colsUsol1
+for i = 1:rowsUsol
+    for j = 1:colsUsol
 %         Cdamp(i,j)=fread(fileID,1,precision);
 %         Gdebug(i,j)=fread(fileID,1,precision);
         rhs(i,j)=fread(fileID,1,precision);
+    end
+end
+
+
+rowsUsol = fread(fileID,1,'int')
+colsUsol = fread(fileID,1,'int')
+
+for i = 1:rowsUsol
+    for j = 1:colsUsol
+%         Cdamp(i,j)=fread(fileID,1,precision);
+%         Gdebug(i,j)=fread(fileID,1,precision);
+        qdot2_buffer(i,j)=fread(fileID,1,precision);
     end
 end
 
@@ -74,15 +87,17 @@ fclose(fileID);
         
         
 
-Usol = AA\rhs;
+Usol = AAdebug\rhs;
 
-Usol(1:10)'
-u(1:10,1)'
+Usol(1:20)'
+qdot2_debug(1:20,1)'
+qdot2_buffer(1:20,1)'
 
-Usol(sizeM-3:sizeM+10)'
-u(sizeM-3:sizeM+10,2)'
+% Usol(sizeM-3:sizeM+10)'
+% u(sizeM-3:sizeM+10,2)'
 
-% max(max(abs(u(:,2:4) - Usol(:,2:4))))
+load test 
+max(max(abs(qdot2_buffer - qdot2(:,1))))
 
 
 

@@ -451,6 +451,7 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
         sgesv_(&rowsA, &nrhs, AA, &LDA, IPIV , BB, &LDB, &info); //INTEL DOCS
     #endif
     #if PRECISION_MODE_FEM == 1
+
         size_t dummyVar=1;
         const char NORM = 'I';
         T *workNorm;
@@ -486,7 +487,7 @@ void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol){
             printf("    arrA: Matrix is a sparse matrix, count=%d, criterion=%d\n",count, criterion);
         else
             printf("    arrA: Matrix is not sparse matrix, count=%d, criterion=%d\n",count, criterion);
-
+    
         /*
         The reciprocal condition number is a scale-invariant measure 
         of how close a given matrix is to the set of singular matrices. 

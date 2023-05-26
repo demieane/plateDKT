@@ -21,8 +21,8 @@ print(type(rowsA))
 for i in range(0,rowsA):
     for j in range(0,colsA):
         AA[i][j]=float(fileID.readline())
-print(i)
-print(j)
+#print(i)
+#print(j)
 
 rowsb = int(fileID.readline())
 colsb = int(fileID.readline())
@@ -36,7 +36,7 @@ for i in range(0,rowsb):
 #for i in range(0,10):
  #   var = rhs[i]/10**(-6)
 print(AA[0][0])
-print((rhs[0]*(10**7)))
+print(rhs[0])
 
 #The generic, symmetric, Hermitian and positive definite solutions 
 # are obtained via calling ?GESV, ?SYSV, ?HESV, and ?POSV 
@@ -46,9 +46,9 @@ print((rhs[0]*(10**7)))
 x = np.linalg.solve(AA, rhs)
 
 print(x[0:10])
-sizeM = int(rowsA/2)
-print(sizeM)
-print(x[sizeM-4:sizeM+10])
+#sizeM = int(rowsA/2)
+#print(sizeM)
+#print(x[sizeM-4:sizeM+10])
 
 np.linalg.inv(AA)
 

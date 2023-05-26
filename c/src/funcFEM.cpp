@@ -1652,8 +1652,8 @@ void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F){
 template<class T>
 void RayleighDampingCoefs(T *a, T *b){
     
-    *a = 2.5;//0.166328454612080;
-    *b = 0.001;//2.473011484105673*mypow<T>(10.0,-4.0);
+    *a = 0.166328454612080;
+    *b = 2.473011484105673*mypow<T>(10.0,-4.0);
 
 
 }
@@ -1672,7 +1672,8 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
     T lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
     T q = 0.0;
     T w3 = inDataFem->omega3;
-    T t = d*inDataFem->dt;
+    //T t = d*inDataFem->dt;
+    T t = (d+1)*inDataFem->dt; // to match matlab
     int cntFglob;
 
     if (inDataFem->LL == 2){

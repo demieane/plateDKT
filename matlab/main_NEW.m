@@ -512,7 +512,7 @@ if DYNAMIC_ANALYSIS == 1
         G = zeros(length(Fm),length(t));
     end
     G(:,d) = Fm;
-%     G(1:10,d)'
+    G(1:10,d)'
     
     u=[qdot;q]; % BEWAREEEE
 
@@ -530,6 +530,10 @@ if DYNAMIC_ANALYSIS == 1
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
         BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
         qdot2(:,1)=AA\BB;
+        
+        qdot2(1:10,1)'
+        
+%         error('er')
 
         for d = 1:length(t)-1
 
@@ -538,18 +542,35 @@ if DYNAMIC_ANALYSIS == 1
             [FxDYN,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
     %         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,FxDYN,Area,LM,Bdofs);
+            
+            Fglob_t(1:10)'
 
             pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
 
             AA = Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
             BB = Fglob_t - C*pr_vel- Kglob*pr_disp;
+%             BB = C(1:300,1:300)*pr_vel(1:300)
+%             BB(1:10)
+%             BB = C*pr_vel;
+%             BB(1:10)
             qdot2(:,d+1) = AA\BB; 
+            
+%             qdot2(1:10,d+1)'
+            
+%             error('er')
 
             q(:,d+1) = pr_disp+ddt^2*beta*qdot2(:,d+1);
             qdot(:,d+1) = pr_vel + gamma*ddt*qdot2(:,d+1);
             %
             u(:,d+1)=[qdot(:,d+1);q(:,d+1)];
+            
+            qdot2(1:10,d+1)'
+            qdot(1:10,d+1)'
+            q(1:10,d+1)'
+            u(1:10,d+1)'
+            
+            error('r');
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
 
         end   
