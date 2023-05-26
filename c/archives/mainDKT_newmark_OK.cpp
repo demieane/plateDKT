@@ -70,7 +70,16 @@ int main(int argc, char **argv){
 
         shepard_interp_2d<mytype>(nd, inDataFem.xcp, inDataFem.ycp, inDataFem.tcp, 
         pparam2, ni, wingMeshFem.xm, wingMeshFem.ym, distrThick);
+
+/*
+        printf("distrThick[i], distrLoad[i]\n");
+        for (int i = 0; i<10; i++){
+            printf("%f, %f\n", distrThick[i], distrLoad[i]);
+        }
+*/
     }
+
+
     mytype **BeSt;
     allocate2Darray<mytype>(3, 3, &(BeSt)); //[GEN x 1]
 
@@ -444,6 +453,10 @@ int main(int argc, char **argv){
 
     printf("\n    Kglob, Mglob OK... DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)\n");
 
+
+    //************************************************************************************
+    //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
+    //************************************************************************************
     //************************************************************************************
     //  DKT PLATE SOLVER: AUGMENTED GLOBAL MATRIX (for BCs)
     //************************************************************************************
@@ -481,7 +494,6 @@ int main(int argc, char **argv){
         }
     }
 
-/*
     printf("\n----\n");
     printf("Mglob_aug[i][j]\n");
     for (int i = 0;i<5;i++){
@@ -501,8 +513,8 @@ int main(int argc, char **argv){
         printf("\n");
     }
     printf("----\n");
-*/
 
+    //exit(55);
     //************************************************************************************
     //  DKT PLATE SOLVER: SOLUTION OPTIONS (1. EIGEN, 2. STATIC, 3. DYNAMIC)
     //************************************************************************************
@@ -603,6 +615,8 @@ int main(int argc, char **argv){
             createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                              distrLoad, G, d); //G(:,d)
 
+
+
             //writeMatrixInBinary(sz2, NtimeSteps, G);
 
             printf("\n    sizeKMglob_aug=%d, GEN=%d \n", sizeKMglob_aug, wingMeshFem.GEN);
@@ -611,6 +625,8 @@ int main(int argc, char **argv){
             for (int i=0;i<10;i++){
                 printf("    %10.8f, ",G[i][d]);
             }
+
+            
 
             //==========TIME INTEGRATION============
             mytype theta = 0.5; //Crank-Nicolson
@@ -647,6 +663,25 @@ int main(int argc, char **argv){
                 BB[i][0] = BB[i][0] + G[i][0];//maybe problematic but we will see
             }
 
+/*
+            writeMatrixInTextFile<mytype>(sz1, sz1, AA);
+            writeMatrixInTextFile<mytype>(sz1, 1, BB);
+
+            printf("\nAA=\n");
+            for (int i = 0; i<10; i++){
+                for (int j = 0;j<10; j++){
+                    printf("%f, ", AA[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\nBB=\n");
+            for (int i = 0;i<10;i++){
+                printf("%f, ", BB[i][0]);
+            }
+
+*/
+
             for (int i = 0;i<sz1;i++){
                 qdot2_buffer[i][0] = 0; // re-initialize
             }
@@ -670,6 +705,9 @@ int main(int argc, char **argv){
 
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                             distrLoad, G, d+1);//G(:,d+1)
+
+                           
+
 /*
                 printf("\n    G(1:10,%d)=\n",d);
                 for (int i=0;i<10;i++){
@@ -865,6 +903,7 @@ int main(int argc, char **argv){
     double cpu_time_used = ((double) (tend-tstart))/ CLOCKS_PER_SEC;
     printf("\n----\n Elapsed time [s]: %f\n----\n", cpu_time_used);
     printf("In Matlab the same operations using vectorization take 2.0383 sec.\n");
+
     
     // DE-ALLOCATE MEMORY TO RESOLVE MEMORY LEAKS
     free(distrLoad);
@@ -873,14 +912,18 @@ int main(int argc, char **argv){
     //
     freeInDataRecFem(&inDataFem);
     freetriangleDKT(GaussIntegrPoints,&wingMeshFem);
-    freefemArraysDKT<mytype>(&wingMeshFem, &elemFemArr);    
+
+    freefemArraysDKT<mytype>(&wingMeshFem, &elemFemArr);
+    
     deallocate2Darray<mytype>(wingMeshFem.GEN,Kglob);
     deallocate2Darray<mytype>(wingMeshFem.GEN,Mglob);
     //
     deallocate2Darray<int>(81,iii_col);
     deallocate2Darray<int>(81,rr_col);
+
     deallocate2Darray<int>(81,Ig);//LM(iii(:),:);
     deallocate2Darray<int>(81,Jg);//LM(rr(:),:);
+
 
     return 0;
 
