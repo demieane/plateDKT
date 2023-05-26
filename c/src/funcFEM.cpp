@@ -1727,19 +1727,3 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
     }
     
 }
-    
-/* 
-allocate2Darray<mytype>(sizeKMglob_aug,sizeKMglob_aug,&Cdamp);
-allocate2Darray<mytype>(sz2, NtimeSteps, &G); //[G(:,d), G(:,d+1)]
-allocate2Darray(sz2,NtimeSteps,&u_t); //u=[qdot;q]
-            allocate2Darray<mytype>(sz1,NtimeSteps,&q); 
-            allocate2Darray<mytype>(sz1,NtimeSteps,&qdot); 
-            allocate2Darray<mytype>(sz1,NtimeSteps,&qdot2); 
-            allocate2Darray<mytype>(sz1,1,&qdot2_buffer); 
-
-                        allocate2Darray<mytype>(sz1,sz1,&AA); 
-            allocate2Darray<mytype>(sz1,1,&BB); 
-
-                        allocate2Darray<mytype>(sz1,1,&pr_vel);
-            allocate2Darray<mytype>(sz1,1,&pr_disp);
-*/ 

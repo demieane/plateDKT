@@ -697,9 +697,6 @@ int main(int argc, char **argv){
             allocate2Darray<mytype>(sz1,1,&pr_vel);
             allocate2Darray<mytype>(sz1,1,&pr_disp);
 
-
-            
-
             mytype suma1, suma2;
             for (int d = 1; d< NtimeSteps-1 ; d++){  
             //for (int d = 0; d< 100 ; d++){   
@@ -759,7 +756,7 @@ int main(int argc, char **argv){
                     for (int j=0; j<sz1;j++){
                         //AA[i][j] = Mglob_aug[i][j] + gamma*dt*Cdamp[i][j] + mypow<mytype>(dt,2.0)*beta*Kglob_aug[i][j];
                         suma1 = suma1 -Cdamp[i][j]*pr_vel[j][0];
-                        suma2 = suma2 - Kglob_aug[i][j]*pr_disp[j][0];  
+                        suma2 = suma2 -Kglob_aug[i][j]*pr_disp[j][0];  
                         //printf("%10.8f,%10.8f,%10.8f\n", -Cdamp[i][j], pr_vel[j][0]/pow(10.0,-6.0), suma1);
                     }
                     //printf("%f", suma1);
