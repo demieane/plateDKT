@@ -217,14 +217,14 @@ elseif modeFem == 2
     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
 end
 
-error('er')
-%% RUN THE CODE
-if modeFem == 1
-    system('../c/./mainDKT_CPP');
-elseif modeFem == 2
-    system('../c/./mainDKT_CPP');
-%     system('../c/./mainDKT');
-end
+% error('er')
+% %% RUN THE CODE
+% if modeFem == 1
+%     system('../c/./mainDKT_CPP');
+% elseif modeFem == 2
+%     system('../c/./mainDKT_CPP');
+% %     system('../c/./mainDKT');
+% end
 
 %% Read solution from binary file
 
@@ -258,6 +258,8 @@ load solution_BENCH_matlab
 for d = 1:length(t)-1
     [solutionC] = solutionRetriever(GEN_fromC, sizeM, d+1, length(t), Usol, solutionC);%[w,bx,by]
 end
+
+error('er')
 
 
 % % load('FEM_sol_h182_r_h2');

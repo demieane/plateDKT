@@ -476,9 +476,9 @@ end
 if DYNAMIC_ANALYSIS == 1
     d=1; %starting point
     %select method for time integration
-    newmark = 1;
+    newmark = 0;
     implicitEuler = 0;
-    crankNicolson = 0;
+    crankNicolson = 1;
     % set up time discretization parameters
     T=2*pi/inData.omega3;%sec
     % wf=2*pi/T; %rad/s
