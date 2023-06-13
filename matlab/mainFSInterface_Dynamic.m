@@ -85,8 +85,8 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION*************
 % COMMENT: The numbering is offered by the pdeModeler
-% Bnodes = [Bound4(1), Bound3];
-Bnodes = [Bound1, Bound2, Bound3, Bound4];
+Bnodes = [Bound4(1), Bound3];
+% Bnodes = [Bound1, Bound2, Bound3, Bound4];
 %**************************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -218,13 +218,13 @@ elseif modeFem == 2
 end
 
 % error('er')
-% %% RUN THE CODE
-% if modeFem == 1
-%     system('../c/./mainDKT_CPP');
-% elseif modeFem == 2
-%     system('../c/./mainDKT_CPP');
-% %     system('../c/./mainDKT');
-% end
+%% RUN THE CODE
+if modeFem == 1
+    system('../c/./mainDKT_CPP');
+elseif modeFem == 2
+    system('../c/./mainDKT_CPP');
+%     system('../c/./mainDKT');
+end
 
 %% Read solution from binary file
 

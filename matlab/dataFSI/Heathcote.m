@@ -71,7 +71,8 @@ hold on; grid on;
 plot3(pp(1,BBnodesTIP),pp(2,BBnodesTIP),w(BBnodesTIP),'ks','MarkerSize',3);
 plot3(pp(1,BBnodesTIP(NODE)),pp(2,BBnodesTIP(NODE)),w(BBnodesTIP(NODE)),'ro','MarkerSize',10);
 hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap',viridis);
-colorbar;shading interp;view([25 25]);%axis equal;
+colorbar;shading interp;view([25 25]);
+%axis equal;
 title('matlab');
 
 % figure;
