@@ -22,7 +22,7 @@ close all;
 clc;
 
 MODAL_ANALYSIS = 1;
-DYNAMIC_ANALYSIS = 0;
+DYNAMIC_ANALYSIS = 1;
 
 tstart = tic;   
 
@@ -549,9 +549,9 @@ end
 %% TIME-MARCHING
 if DYNAMIC_ANALYSIS == 1
 
-    newmark = 0;
+    newmark = 1;
     implicitEuler = 0;
-    crankNicolson = 1;
+    crankNicolson = 0;
    
     T=2*pi/inData.omega3;%sec
     % wf=2*pi/T; %rad/s
@@ -676,7 +676,8 @@ if DYNAMIC_ANALYSIS == 1
     % save FEM_newmark
 
     % save FEM_sol_h15_r_h2
-    save FEM_sol_h182_r_h2
+%     save FEM_sol_h182_r_h2
+    save matlab_fem_h182_r_h1
 
 %     error('er')
     % save FEM_sol_h05_r_h1

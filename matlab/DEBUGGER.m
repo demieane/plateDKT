@@ -41,7 +41,6 @@ GEN_fromC = fread(fileID,1,'int')
 rowsUsol = fread(fileID,1,'int')
 colsUsol = fread(fileID,1,'int')
 
-
 for i = 1:rowsUsol
     for j = 1:colsUsol
 %         Cdamp(i,j)=fread(fileID,1,precision);

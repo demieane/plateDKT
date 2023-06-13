@@ -8,6 +8,7 @@ close all;
 clc;
 
 addpath('mesh/heathcote');
+addpath('dataFSI');
 load('mesh_h1_half');
 file1995 = 'bemDATA_h182_r';
 load(file1995);
@@ -84,8 +85,8 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION*************
 % COMMENT: The numbering is offered by the pdeModeler
-Bnodes = [Bound4(1), Bound3];
-% Bnodes = [Bound1, Bound2, Bound3, Bound4];
+% Bnodes = [Bound4(1), Bound3];
+Bnodes = [Bound1, Bound2, Bound3, Bound4];
 %**************************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -243,6 +244,19 @@ for i = 1:rowsUsol
     for j = 1:colsUsol
         Usol(i,j)=fread(fileID,1,precision);
     end
+end
+
+fclose(fileID);
+
+solutionC = struct( 'w',[], 'bx',[], 'by', [],...
+        'w_dot',[], 'bx_dot',[], 'by_dot', [],...
+        'uu', [], 'uu_dot',[]); 
+
+load solution_BENCH_matlab
+
+    
+for d = 1:length(t)-1
+    [solutionC] = solutionRetriever(GEN_fromC, sizeM, d+1, length(t), Usol, solutionC);%[w,bx,by]
 end
 
 
