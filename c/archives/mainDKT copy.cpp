@@ -182,6 +182,7 @@ int main(int argc, char **argv){
 //==========================DE - ALLOCATE ---->
             deallocate2Darray<mytype>(9,kb);
             deallocate2Darray<mytype>(9,kb1);
+
             //printf("It worked!");
 //==========================DE - ALLOCATE ---->
 

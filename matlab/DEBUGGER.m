@@ -1,4 +1,4 @@
-
+error('er')
 % % load mat
 % % 
 % % max(max(abs(A - Adebug)))

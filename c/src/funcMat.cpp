@@ -13,10 +13,10 @@
 
 //
 template<class T>
-T mypow(T base);
+T mypow(T base, T power);
 //
 template<class T>
-T mysqrt(T base, T root);
+T mysqrt(T base);
 //
 template<class T>
 T myabs(T var);
@@ -37,7 +37,7 @@ template<class T>
 void matSum2(T alpha, T beta, int rows, int cols, T **arrA, T **arrB, T **arrOut);
 //
 template<class T>
-void deallocate2Darray(int rows, T ***arrIn);
+void deallocate2Darray(int rows, T **arrIn); // BUG
 //
 template<class T>
 void linearSystemSolve(int rowsA, int colsA, T **arrA, T **arrB, T **Usol);
