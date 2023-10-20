@@ -819,7 +819,7 @@ int main(int argc, char **argv){
 */
                 //exit(55);
 
-                //timeIntegrationNewmark<mytype>(); // TIME INTEGRATION WITH CRANK-NICOLSON 
+                //Newmark<mytype>(); // TIME INTEGRATION WITH CRANK-NICOLSON 
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
 
             }

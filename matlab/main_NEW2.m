@@ -21,6 +21,7 @@ clear all;
 close all;
 clc;
 
+error('er')
 MODAL_ANALYSIS = 1;
 DYNAMIC_ANALYSIS = 1;
 
