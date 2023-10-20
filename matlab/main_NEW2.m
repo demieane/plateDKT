@@ -21,9 +21,9 @@ clear all;
 close all;
 clc;
 
-error('er')
+% error('er')
 MODAL_ANALYSIS = 1;
-DYNAMIC_ANALYSIS = 1;
+DYNAMIC_ANALYSIS = 0;
 
 tstart = tic;   
 
@@ -192,8 +192,8 @@ Bound4=find(e(5,:)==4);
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
 % Bnodes = [Bound4(1), Bound3];
 % Bnodes = [Bound2, Bound2];
-% Bnodes=Bound3; %for distributed load from function ANSYS
-Bnodes=[Bound1 Bound2 Bound3 Bound4];
+Bnodes=Bound3; %for distributed load from function ANSYS
+% Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -534,7 +534,8 @@ title('(contour)','FontWeight','normal');
 
 max(abs(w))/inData.a3;
 
-save solMatlab U
+Ustatic = U;
+save solMatlab Ustatic
 
 if MODAL_ANALYSIS == 1
     [XX,lamM,flag]=eigs(Kglob,Mglob,5,'sm');

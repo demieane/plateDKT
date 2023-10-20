@@ -8,6 +8,7 @@ close all;
 clc;
 
 addpath('mesh/heathcote');
+addpath('dataFSI');
 load('mesh_h1_half');
 file1995 = 'bemDATA_h182_r';
 load(file1995);
@@ -38,7 +39,7 @@ elseif CC==2
 end
 % Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=3;%2; %loading case
+lll=2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
 P_load = 1; %[Pa] %pointing towards the Z-axis
