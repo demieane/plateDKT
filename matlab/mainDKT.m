@@ -32,10 +32,18 @@ tstart = tic;
 FntSz = 15;
 
 %% MATERIAL PROPERTIES
+
+% in docx -> at the limit of moderately thick plates 
 m=7850;%kg/m2 [mass distribution]
-E=210*10^6;%Pa [Young modulus]
+E=210*10^9;%Pa [Young modulus]
 v=0.3;% [Poisson ratio]
-h=0.01;%m [thickness] 
+h=0.1;%m [thickness] 
+
+% Comparison with Pachenary 2014
+% m=7850;%kg/m2 [mass distribution]
+% E=210*10^6;%Pa [Young modulus]
+% v=0.3;% [Poisson ratio]
+% h=0.01;%m [thickness] 
 
 % G= E/(2*(1+v));
 % Dplate=E*h^3/(12*(1-v^2));
@@ -72,11 +80,23 @@ addpath('mesh/verification');
 
 chord = 10;
 span = 10;
-% load('eig_rect_1');%334
+load('eig_rect_1');%334
 % load('eig_rect_2');%1336
-load('eig_rect_3');%5344
+% load('eig_rect_3');%5344
 % load('eig_rect_4');%21376
 % load('eig_rect_5');%85504
+
+
+%  8.9632   18.2788   18.2788   26.9483   32.7641
+%  8.9699   18.3481   18.3538   27.1870   33.0950
+
+%   36.0086
+%    73.6559
+%    73.6788
+%   109.1383
+%   132.8553
+%   134.7860
+
 
 %Create Rectangular plate
 % pderect([0 10 0 10],'C1')
@@ -121,7 +141,8 @@ GEN=max(max(LM)); %Total number of nodal unknowns taking into account the
 % CC=1 , simply supported along selected edges
 % CC=2 , fully clamped along selected edges
 %--------------------------------------------------------------------------
-CC=1; %boundary condition toggle
+% CC=1; %boundary condition toggle
+CC=2;
 % CC=4 Special cantilever case from Aggelinas other files
 if CC==1
     disp(' SS case along selected edge (w=0)')
@@ -140,7 +161,8 @@ Bound4=find(e(5,:)==4);
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
 % Bnodes = Bound3; %for distributed load from function ANSYS
-Bnodes = [Bound1 Bound2 Bound3 Bound4];
+% Bnodes = [Bound1 Bound2 Bound3 Bound4];
+Bnodes = [Bound1];
 %**************************************************************************
 
 BBnodes = Bnodes.*0;
@@ -343,9 +365,9 @@ XXX=XX(1:GEN,:);
 
 %**************************************************************************
 % Select to view the eigen-fuction of (1) w (2) w,x (3) w,y
-% YY=XXX(1:3:end,:); %w
+YY=XXX(1:3:end,:); %w
 % YY=XXX(3:3:end,:);  %theta_x = w,y
-YY=-XXX(2:3:end,:); %theta_y = -w,x
+% YY=-XXX(2:3:end,:); %theta_y = -w,x
 %**************************************************************************
 
 % figure(2)
@@ -380,7 +402,7 @@ viewSet = [40 15];
 % viewSet = [90 90];
 
 figure(3)
-subplot(4,2,1); hold on; zlim(zlimSet);grid minor;
+subplot(4,2,1); hold on; zlim(zlimSet); grid minor;
 pdeplot(pp,ee,tt,'xydata',YY(:,1),'zdata',YY(:,1));
 colormap(viridis);%caxis([-0.1 0.1]);
 view(viewSet);
