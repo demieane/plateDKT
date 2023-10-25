@@ -1,4 +1,4 @@
-#ifndef MAIN_FEM_HEADER_FILENULLlinearSystemSolve
+#ifndef MAIN_FEM_HEADER_FILE
     #define MAIN_FEM_HEADER_FILE
 
     #include "../include/mainFem.h"

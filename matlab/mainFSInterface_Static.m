@@ -7,6 +7,8 @@ clear all;
 close all;
 clc;
 
+error('er')
+
 addpath('mesh/heathcote');
 addpath('dataFSI');
 load('mesh_h1_half');

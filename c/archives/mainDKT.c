@@ -1,9 +1,12 @@
+
+
 /*This form is used for header files of your own program.
 It searches for a file named 'file' in the directory containing the current file.
 You can prepend directories to this list with the -I 
 option while compiling your source code. */
 #include "../include/mainFem.h"
 #include <time.h>
+#include <stdio.h>
 /* 
 Search file for TODO
 Search file for COMMENT
@@ -16,10 +19,11 @@ Search file for COMMENT
 /*=========================================================================================*/
 int main(int argc, char **argv){
 
+    printf("\n----\n plateDKT solver in single precision");
+    printf("\n----\n\n");
     /* Variable declarations */
     clock_t tstart, tend;
     int Ng = 3; // Gauss integration points
-    
     struct InDataRecFem inDataFem;
     struct triangleDKT wingMeshFem;   
 
@@ -31,10 +35,16 @@ int main(int argc, char **argv){
     /* read input parameters from a file */
     /* Boundary conditions nodes, dofs */
     CuFEMNum2DReadInData( &inDataFem );
-
-    exit(100);
     /* Create or load from matlab IEN, ID, LM */
     ConnectivityFEM_IEN_ID_LM( &inDataFem, &wingMeshFem ); // BUG FOUND IN PREVIOUS VERSIONS in IEN_3
+
+
+    for (int i=0;i<15;i++){
+        printf("%f,",wingMeshFem.xm[i]);
+    }
+    //exit(5);
+
+
     /* Gauss integration function - read about it */
     float xw[Ng][3]; // {xg,yg,wg}
     TriGaussPoints(Ng, xw);
@@ -386,13 +396,21 @@ int main(int argc, char **argv){
     // solve linear system of eqs. using LAPACK sgels_ function
     linearSystemSolve(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
 
-    free(Fglob_aug);
+    printf("Usol[i]\n\n");
+    for (int i = 0; i<10;i++){
+        printf("%f,",Usol[i][0]);
+    }
+
+    
 
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
     //************************************************************************************
     //int optionSelect = 0;
     CuFEMNum2DWriteDataInBinary(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
+
+    CuFEMNum2DWriteKglobMglobBCs(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Mglob_aug, Fglob_aug);
+
 
     #if (MODAL_ANALYSIS == 1)
     //  TO DO : FIX - I GET INFINITE EIGENVALUES
@@ -414,7 +432,7 @@ int main(int argc, char **argv){
     //  DKT PLATE SOLVER: CLEAN UP AND EXIT
     //************************************************************************************
     /* TODO free pointers - after using the malloc() */
-
+    free(Fglob_aug);
     freefemArraysDKT(&wingMeshFem, &elemFemArr);
     freetriangleDKT(Ng,&wingMeshFem);
     freeInDataRecFem(&inDataFem);

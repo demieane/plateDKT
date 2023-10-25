@@ -51,9 +51,14 @@ debugOn=1;
 addpath('funcFEM');
 addpath('dataFSI');
 addpath('mesh');
-addpath('mesh/heathcote');
-
-load('mesh_h1_half');
+% addpath('mesh/heathcote');
+addpath('mesh/verification');
+% load('mesh_h1_half');
+load('eig_rect_1');%334
+% load('eig_rect_2');%1336
+% load('eig_rect_3');%5344
+% load('eig_rect_4');%21376
+% load('eig_rect_5');%85504
 
 %Create Rectangular plate
 % pderect([0 0.1 -0.3 0.3],'C1')
@@ -71,8 +76,8 @@ disp([' MESH SIZE (DKT Triangles 9-dofs)= ',num2str(size(t,2))]);
 %==========================================================================
 %                             PRE-PROCESSOR
 %==========================================================================
-chord=inData.cRoot;%0.33; %wing chord length
-span=inData.span;%1; % wing span length
+chord=10;%inData.cRoot;%0.33; %wing chord length
+span=10;%inData.span;%1; % wing span length
 Uvel =inData.U;%2.52;%m/s
 fluid_dens=1025;%kg/m3
 
@@ -83,9 +88,9 @@ fluid_dens=1025;%kg/m3
 % plate thickness 
 %% STEEL
 m=7850;
-E=210e9;
-v=0.28;
-h=1/1000;%0.12*chord;
+E=210*10^6;%200e9;
+v=0.3;
+h=0.001*10;%0.12*chord;
 
 %% ALUMINIUM
 % m=2689.8;
@@ -112,7 +117,7 @@ disp([' > h/span = ',num2str(h/span)]);
 % CC=1 , simply supported along selected edges
 % CC=2 , fully clamped along selected edges
 %--------------------------------------------------------------------------
-CC=2; % boundary condition toggle
+CC=1; % boundary condition toggle
 % Special Cantileaver Case CC=4
 if CC==1
     disp(' SS case along selected edge (w=0)')
@@ -191,9 +196,9 @@ Bound4=find(e(5,:)==4);
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
 % Bnodes = [Bound4(1), Bound3];
-% Bnodes = [Bound2, Bound2];
-Bnodes=Bound3; %for distributed load from function ANSYS
-% Bnodes=[Bound1 Bound2 Bound3 Bound4];
+% Bnodes = [Bound4];
+% Bnodes=Bound3; %for distributed load from function ANSYS
+Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -225,7 +230,7 @@ if debugOn
         plot(Pxy(1),Pxy(2),'bs');
     end
 end
-% error('r')
+error('r')
 %==========================================================================
 %                             PROCESSOR
 %==========================================================================
@@ -544,9 +549,14 @@ if MODAL_ANALYSIS == 1
     freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
 
     freq'
+    
+    DD=E*h^3/(12*(1-v^2));%rigidity
+    cl=sqrt(m*h/DD);
+    
+    NDfreq= freq*2*pi*10^2*cl %non-dimensional frequencies
 end
 
-% error('er')
+error('er')
 
 %% TIME-MARCHING
 if DYNAMIC_ANALYSIS == 1

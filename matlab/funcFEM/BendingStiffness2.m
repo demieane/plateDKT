@@ -10,7 +10,7 @@ function [BeSt]=BendingStiffness2(E,v,thick,h)
 % values of thickness
 % Monday from OMAE paper or IMAM
 %******************************************************
-max(h);
+% max(h);
 
 BeSt=zeros(3,3,length(thick));
 
