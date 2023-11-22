@@ -29,21 +29,21 @@ DYNAMIC_ANALYSIS = 0;
 
 tstart = tic;   
 
-FntSz = 15;
+FntSz = 18;
 
 %% MATERIAL PROPERTIES
 
 % in docx -> at the limit of moderately thick plates 
-m=7850;%kg/m2 [mass distribution]
-E=210*10^9;%Pa [Young modulus]
-v=0.3;% [Poisson ratio]
-h=0.1;%m [thickness] 
+% m=7850;%kg/m2 [mass distribution]
+% E=210*10^9;%Pa [Young modulus]
+% v=0.3;% [Poisson ratio]
+% h=0.1;%m [thickness] 
 
 % Comparison with Pachenary 2014
-% m=7850;%kg/m2 [mass distribution]
-% E=210*10^6;%Pa [Young modulus]
-% v=0.3;% [Poisson ratio]
-% h=0.01;%m [thickness] 
+m=7850;%kg/m2 [mass distribution]
+E=210*10^6;%Pa [Young modulus]
+v=0.3;% [Poisson ratio]
+h=0.01;%m [thickness] 
 
 % G= E/(2*(1+v));
 % Dplate=E*h^3/(12*(1-v^2));
@@ -90,7 +90,7 @@ load('eig_rect_1');%334
 %  8.9632   18.2788   18.2788   26.9483   32.7641
 %  8.9699   18.3481   18.3538   27.1870   33.0950
 
-%   36.0086
+%    36.0086
 %    73.6559
 %    73.6788
 %   109.1383
@@ -161,8 +161,8 @@ Bound4=find(e(5,:)==4);
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
 % Bnodes = Bound3; %for distributed load from function ANSYS
-% Bnodes = [Bound1 Bound2 Bound3 Bound4];
-Bnodes = [Bound1];
+Bnodes = [Bound1 Bound2 Bound3 Bound4];
+%Bnodes = [Bound1];
 %**************************************************************************
 
 BBnodes = Bnodes.*0;
@@ -188,11 +188,13 @@ h1=plot(p(1,:),p(2,:),'bo','MarkerSize',3);
 h2=plot(p(1,BBnodes),p(2,BBnodes),'ks','MarkerSize',8);
 % title('BC-affected element nodes','FontWeight','normal','Interpreter','latex',...
 %     'FontSize',FntSz);
-title('Case-1: Mesh-1','FontWeight','normal','Interpreter','latex',...
-    'FontSize',FntSz);
-xlabel('x','Interpreter','latex', 'FontSize',FntSz);
-ylabel('y','Interpreter','latex', 'FontSize',FntSz);
+%title('Case-1: Mesh-1','FontWeight','normal','Interpreter','latex',...
+%    'FontSize',FntSz);
+xlabel('x (m)','Interpreter','latex', 'FontSize',FntSz);
+ylabel('y (m)','Interpreter','latex', 'FontSize',FntSz);
 grid minor;
+set(gca,'FontSize',FntSz);
+set(gca,'TickLabelInterpreter','latex');
 pdeplot(pp,ee,tt);%,'colormap','copper')
 legend([h2], 'BC-affected nodes','Interpreter','latex',...
     'FontSize',FntSz,'Location','northeast');

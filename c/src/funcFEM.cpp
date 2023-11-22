@@ -345,10 +345,12 @@ void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem ){
             fread(&(inDataFem->tcp[i]),sizeof(T),1,file);
         }
     }
-    /* DYNAMIC ANALYSIS */
-    fread(&(inDataFem->omega3), sizeof(T) , 1, file);
-    fread(&(inDataFem->dt), sizeof(T) , 1, file);
-    fread(&(inDataFem->Nper), sizeof(T) , 1, file);
+    #if (DYNAMIC_ANALYSIS == 1)
+        /* DYNAMIC ANALYSIS */
+        fread(&(inDataFem->omega3), sizeof(T) , 1, file);
+        fread(&(inDataFem->dt), sizeof(T) , 1, file);
+        fread(&(inDataFem->Nper), sizeof(T) , 1, file);
+    #endif
     fclose(file);
 
 #if DEBUG_ON

@@ -7,7 +7,7 @@
     #include<math.h>
 
     #ifndef DEBUG_ON
-        #define DEBUG_ON 0 /*allow printf for debugging purposes*/
+        #define DEBUG_ON 1 /*allow printf for debugging purposes*/
     #endif
 
     #ifndef MODAL_ANALYSIS
@@ -20,7 +20,6 @@
         #ifndef TIME_MARCHING_METHOD
             #define TIME_MARCHING_METHOD 1 /* TODO 1. Newmark, 2. Crank-Nicolson */
         #endif
-
     #endif
 
     #ifndef PRECISION_MODE_FEM

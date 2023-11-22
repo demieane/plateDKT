@@ -8,3 +8,6 @@
 %   Boundary conditions
 %   Material properties
 %==========================================================================
+
+% PHD VERIFICATION SECTION
+% (UPDATED) mainDKT_eig.m 

@@ -7,7 +7,7 @@ clear all;
 close all;
 clc;
 
-error('er')
+% error('er')
 
 addpath('mesh/heathcote');
 addpath('dataFSI');

@@ -530,15 +530,17 @@ int main(int argc, char **argv){
     }
 
     // solve linear system of eqs. using LAPACK sgels_ function
-    linearSystemSolve<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
+    //linearSystemSolve<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
+    //printf("    SOLVED LINEAR SYSTEM\n");
 
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
     //************************************************************************************
     //int optionSelect = 0;
-    CuFEMNum2DWriteDataInBinary<mytype>(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
 
-    CuFEMNum2DWriteMatrix<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Mglob_aug, Fglob_aug);
+    //CuFEMNum2DWriteDataInBinary<mytype>(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
+
+    //CuFEMNum2DWriteMatrix<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Mglob_aug, Fglob_aug);
 
     //----
     // TODO: MODAL ANALYSIS
@@ -550,14 +552,14 @@ int main(int argc, char **argv){
         //http://matlab.izmiran.ru/help/techdoc/ref/eig.html
         // Real nonsymmetric A, real general B: sggev() from LAPACK
         mytype *eigVals;
-        int n_eigs = 5;
+        int n_eigs = 6;
         allocate1Darray<mytype>(n_eigs,&eigVals);
         printf(" (w/2/pi)");
         myeigs<mytype>(sizeKMglob_aug, Kglob_aug, Mglob_aug, n_eigs, eigVals);
     #endif
     //----
 
-    //exit(55);
+    exit(55);
 
     #if (DYNAMIC_ANALYSIS == 1)
         // select method for time integration
