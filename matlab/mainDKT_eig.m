@@ -17,6 +17,11 @@
 % Many questions have been answered in the 2-D version of the code!!
 
 % =========================================================================
+
+% COMMENT: Frequency non-dimensionalization is different in each work
+% make sure we compared against the correct quantity!!!!!! 
+% Typo in Pachenari Table 8, D: based on smallest thickness
+
 clear all;
 close all;
 clc;
@@ -39,9 +44,15 @@ FntSz = 18;
 % % % v=0.3;% [Poisson ratio]
 % % % h=0.1;%m [thickness] 
 
+% Comparison with Leissa 
+% m=7850;%kg/m2 [mass distribution]
+% E=210*10^6;%Pa [Young modulus]
+% v=0.3;% [Poisson ratio]
+% h=0.01;%m [thickness] 
+
 % Comparison with Pachenary 2014 & Thesis 
 m=7850;%kg/m2 [mass distribution]
-E=210*10^6;%Pa [Young modulus]
+E=2.10*10^6;%Pa [Young modulus]
 v=0.3;% [Poisson ratio]
 h=0.01;%m [thickness] 
 
@@ -83,7 +94,7 @@ span = 10;
 %load('eig_rect_1');%334
 %load('eig_rect_2');%1336
 load('eig_rect_3');%5344
-% load('eig_rect_4');%21376
+%load('eig_rect_4');%21376
 % load('eig_rect_5');%85504
 
 %  8.9632   18.2788   18.2788   26.9483   32.7641
@@ -158,10 +169,10 @@ Bound4=find(e(5,:)==4);
 
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION*************
 % COMMENT: The numbering is offered by the pdeModeler
-% Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
+Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
 % Bnodes = Bound3; %for distributed load from function ANSYS
 %Bnodes = [Bound1 Bound2 Bound3 Bound4];
-Bnodes = [Bound1];
+%Bnodes = [Bound1, Bound2(1)];
 %**************************************************************************
 
 BBnodes = Bnodes.*0;
@@ -228,12 +239,18 @@ Ng=3; %TO-DO
 
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
+CONSTANT_THICK = 0;
+LINEAR_THICK = 1;
 d=100;
-thick=h*ones(1,Nelem);
-txxBEM = thick;
-loadFEM = [];
-% [loadFEM,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
-%     1025, 1, h, d);
+if CONSTANT_THICK == 1
+    thick=h*ones(1,Nelem);
+    txxBEM = thick;
+    loadFEM = [];
+elseif LINEAR_THICK == 1
+    importFromFile.toggle = 0; % NO-FILE to read
+    [loadFEM,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
+        1025, 1, h, d);
+end
 % error('er')
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
 
@@ -355,33 +372,48 @@ telapsed = toc(tstart);
 [XX,lamM,flag]=eigs(Kglob,Mglob,15,'sm');
 cc=sort(diag(lamM));
 
-freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
+freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi); %Hz
+freq(1:5)
 
-DD=E*mean(txxBEM)^3/(12*(1-v^2));
-cl=sqrt(m*mean(txxBEM)/DD);
-% DD=E*h^3/(12*(1-v^2));
-% cl=sqrt(m*h/DD);
-NDfreq=cl*freq*2*pi*chord^2
+
+if CONSTANT_THICK == 1 || LINEAR_THICK == 1
+%     h=min(txxBEM); %Katsikadelis
+    h=max(txxBEM); % Shurfin & Eisenberger (from Pachenari)
+    DD=E*h^3/(12*(1-v^2));
+    cl=sqrt(m*h/DD);
+else
+    DD=E*mean(txxBEM)^3/(12*(1-v^2));
+    cl=sqrt(m*mean(txxBEM)/DD);
+end
+
+NDfreq=cl*(freq*2*pi)*chord^2
 XXX=XX(1:GEN,:);
+
+rho =m/1000;
+Katsikadelis_freq=(sqrt(rho/DD)*(freq*2*pi)*chord^2).^2
+
+shufrin_freq = (freq*2*pi)*span^2.*sqrt(m*max(txxBEM)/(E*(max(txxBEM))^3/(12*(1-v^2))))/pi^2
 
 %**************************************************************************
 % Select to view the eigen-fuction of (1) w (2) w,x (3) w,y
-YY=XXX(1:3:end,:); %w
+% YY=XXX(1:3:end,:); %w
 % YY=XXX(3:3:end,:);  %theta_x = w,y
-% YY=-XXX(2:3:end,:); %theta_y = -w,x
+YY=-XXX(2:3:end,:); %theta_y = -w,x
 %**************************************************************************
 
 % figure(2)
 % pdeplot(pp,ee,tt,'xydata',YY(:,1),'contour','on');
 % hold on;
 
-% % figure(2)
-% % subplot(4,2,1)
-% % pdeplot(pp,ee,tt,'zdata',YY(:,1));
-% % subplot(4,2,2)
-% % pdeplot(pp,ee,tt,'zdata',YY(:,2))
-% % subplot(4,2,3)
-% % pdeplot(pp,ee,tt,'zdata',YY(:,3))
+figure
+subplot(1,2,1)
+pdeplot(pp,ee,tt,'zdata',YY(:,1));
+xlabel('x');
+subplot(1,2,2)
+pdeplot(pp,ee,tt,'zdata',YY(:,2));
+xlabel('x');
+% subplot(4,2,3)
+% pdeplot(pp,ee,tt,'zdata',YY(:,3))
 % % subplot(4,2,4)
 % % pdeplot(pp,ee,tt,'zdata',YY(:,4))
 % % subplot(4,2,5)
