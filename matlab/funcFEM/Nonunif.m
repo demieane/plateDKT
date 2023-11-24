@@ -97,29 +97,44 @@ if importFromFile.toggle
 % %     end
 
 else
-   % linear thickness along the x-axis 
-   numSize = 150; 
-   [xx,yy]=meshgrid(linspace(0,chord,numSize),linspace(0,span,numSize));
-%    [xxfunc,yy]=meshgrid(linspace(0,chord,numSize),linspace(0,span,numSize));
-   alphaPachenari = 0.25;%0.25;%0.25;%0.75;%0.8;%0.75;%1.0;%0.8;%1.0;%0.8;
-   alpha = (1-alphaPachenari);
-%    [xxfunc,yy]=meshgrid(linspace(alpha*chord,chord/(1-alpha),numSize),linspace(0,span,numSize));
-   for i=1:numSize
-       for j=1:numSize
-           fx(i,j)=1.0;
-           h1=0.01;%0.001*span;
-           tx_modified(i,j) = h1*(1+alpha*xx(i,j)/chord).*(1+alpha*yy(i,j)/chord);%h1*xxfunc(i,j)/chord;
-%            tx_modified(i,j) = h1*(1-alphaPachenari*xx(i,j)/chord).*(1-alphaPachenari*2*yy(i,j)/span);
-%            tx_modified(i,j) = h1*(1-0.25*xx(i,j)/chord);%.*(1-alphaPachenari*2*yy(i,j)/span);
-% %            h2=0.001*span;
-% %            h1=h2*alphaPachenari;
-% %            tx_modified(i,j) = (h2-h1)/chord*xx(i,j)+h1;
+   %% BENCHMARKS
+   KATSIKADELIS = 0;
+   SHUFFRIN = 1;
+   if KATSIKADELIS 
+       % KATSIKADELIS C-C-C-C
+       % Katsikadelis & Sapoutzakis : A BEM solution to dynamic analysis of
+       % plates 1991 Computational Mechanics, 7, 369-379
+       % linear thickness along the x-axis 
+       numSize = 150; 
+       [xx,yy]=meshgrid(linspace(0,chord,numSize),linspace(0,span,numSize));
+       alphaPachenari = 0.8;%0.6;%0.6;%0.8;
+       alpha = (1-alphaPachenari);
+       for i=1:numSize
+           for j=1:numSize
+               fx(i,j)=1.0;
+               h1=0.001*span;
+               tx_modified(i,j) = h1*(1+alpha*xx(i,j)/chord);
+           end
+       end
+       taper_ratio_katsikadelis = max(max(tx_modified))/min(min(tx_modified))-1
+       
+   elseif SHUFFRIN == 1
+
+       % SHUFFRIN C-F-F-F
+       % linear thickness along the x-axis 
+       numSize = 100; 
+       [xx,yy]=meshgrid(linspace(0,chord,numSize),linspace(0,span,numSize));
+       [xxNUM, yyNUM]=meshgrid(linspace(0,1,numSize),linspace(0,1,numSize));
+       alphaShufrin = 0.5;% 0.25;%0.5;
+       for i=1:numSize
+           for j=1:numSize
+               fx(i,j)=1.0;
+               h0=0.1*span;%0.001*span;
+               tx_modified(i,j) = h0*(1-alphaShufrin*xxNUM(i,j));%.*(1-alphaShufrin*yyNUM(i,j));
+%                tx_modified(i,j) = h0*(1-alphaShufrin*xx(i,j)./chord);%.*(1-alphaShufrin*yyNUM(i,j));
+           end
        end
    end
-   taper_ratio = max(max(tx_modified))/min(min(tx_modified))-1
-%    error('er')
-   % Katsikadelis & Sapoutzakis : A BEM solution to dynamic analysis of
-   % plates 1991 Computational Mechanics, 7, 369-379
 
 end
 

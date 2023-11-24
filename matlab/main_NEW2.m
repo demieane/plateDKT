@@ -52,11 +52,12 @@ addpath('funcFEM');
 addpath('dataFSI');
 addpath('mesh');
 % addpath('mesh/heathcote');
-addpath('mesh/verification');
+%addpath('mesh/verification');
 % load('mesh_h1_half');
-load('eig_rect_1');%334
-% load('eig_rect_2');%1336
-% load('eig_rect_3');%5344
+addpath('phd_verification/rect_constant_thick');
+%load('eig_rect_1');%334
+load('eig_rect_2');%1336
+%load('eig_rect_3');%5344
 % load('eig_rect_4');%21376
 % load('eig_rect_5');%85504
 
@@ -88,9 +89,9 @@ fluid_dens=1025;%kg/m3
 % plate thickness 
 %% STEEL
 m=7850;
-E=210*10^6;%200e9;
+E=210*10^9;%200e9;
 v=0.3;
-h=0.001*10;%0.12*chord;
+h=0.01;%0.12*chord;
 
 %% ALUMINIUM
 % m=2689.8;
@@ -127,14 +128,18 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=2;%2; %loading case
+lll=2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
-P_load = 1; %[Pa] %pointing towards the Z-axis
+if lll==1
+    P_load = 100; %[N] %pointing towards the Z-axis
+elseif lll==2
+    P_load = 100/chord/span; %[Pa]
+end
 % in ANSYS load pointing in the negative of Z-axis is positive
 if lll==1
-%    Pxy=[5,5];%load position
-   Pxy=[0.05,-0.15];%load position
+   Pxy=[5,5];%load position
+%    Pxy=[0.05,-0.15];%load position
 end
 %
 %% Rigidity
@@ -230,7 +235,7 @@ if debugOn
         plot(Pxy(1),Pxy(2),'bs');
     end
 end
-error('r')
+% error('r')
 %==========================================================================
 %                             PROCESSOR
 %==========================================================================
@@ -248,11 +253,18 @@ Ng=3; %TO-DO
 
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
+CONSTANT_THICK = 1;
+LINEAR_THICK = 0;
 d=100;
-%  thick=h*ones(1,Nelem);
-[loadFem,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
-    fluid_dens, Uvel, h, d);
-% error('er')
+if CONSTANT_THICK == 1
+    thick=h*ones(1,Nelem);
+    txxBEM = thick;
+    loadFEM = [];
+elseif LINEAR_THICK == 1
+    importFromFile.toggle = 0; % NO-FILE to read
+    [loadFEM,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
+        1025, 1, h, d);
+end
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
 
 xg=xw(:,1);
@@ -704,7 +716,7 @@ end
 
 error('See below for comparisons with static case (analytic solution) & modal analysis!!!')
 
-
+%%
 % =========================================================================
 %                           GENERAL COMMENTS
 %
@@ -713,11 +725,12 @@ error('See below for comparisons with static case (analytic solution) & modal an
 % COMMENT: Discuss with Aggelina the bx, by fields in satisfying the BCs
 %==========================================================================
 % 
+DD=E*mean(txxBEM)^3/(12*(1-v^2));
 P=P_load;
 if lll==1 % concentrated load at the midddle of the rectangular plate
     %wanal=P/(16*pi*Dplate).*((a^2-rr1.^2)+2*rr1.^2.*log(rr1./a));
-    b=10;
-    a=10;
+    b=span;
+    a=chord;
     summ=zeros(size(x));
 
     for m=1:2:150
@@ -725,118 +738,56 @@ if lll==1 % concentrated load at the midddle of the rectangular plate
     summ=summ+sin(m*pi/a.*x).*sin(n*pi/b.*y).*sin(m*pi/(a).*(a/2)).*sin(n*pi/(b).*(b/2))/((m^2/a^2+n^2/b^2))^2;
         end
     end
-    wanal=4*P/(Dplate*a*b*pi^4)*summ;
+    wanal=4*P/(DD*a*b*pi^4)*summ;
 
-else  % uniformly distributed load
-
-    b=10;
-    a=10;
+elseif lll==2  % uniformly distributed load
+    b=span;
+    a=chord;
     summ=zeros(size(x));
     for m=1:2:150
         for n=1:2:16
     summ=summ+sin((m*pi*x)/a).*sin((n*pi*y)/b)/(m*n*(m^2/a^2+n^2/b^2)^2);
         end
     end
-    wanal=16*P/(Dplate*pi^6)*summ;
+    wanal=16*P/(DD*pi^6)*summ;
 end
 
-figure(2)
-pdeplot(p,e,t,'zdata',wanal,'colormap','copper')
-title('Concetrated Load Case')
+FntSz=16;
+figure
+h1=pdeplot(p,e,t,'zdata',w);%,'colormap','copper');
+colormap(viridis);
+hold on;
+h2=plot3(x,y,wanal,'ko','MarkerSize',3);
+legend([h1 h2], 'present (fem)','analytic','Location', 'northeast','Interpreter','Latex');
+grid minor;
+xlabel('x (m)','Interpreter','Latex');
+ylabel('y (m)','Interpreter','Latex');
+zlabel('w (m)','Interpreter','Latex');
+if lll==1
+    title('Concentrated load','FontWeight','normal','Interpreter','Latex');
+elseif lll==2
+    title('Uniform load','FontWeight','normal','Interpreter','Latex');
+end
+set(gca,'FontSize',FntSz);
+set(gca,'TickLabelInterpreter','latex');
 
-figure(3)
-subtitle('Concetrated Load Case')
-subplot(2,1,1)
-pdeplot(p,e,t,'xydata',w,'colormap','jet','contour','on')
-%title('FEM')
-axis equal
-subplot(2,1,2)
-pdeplot(p,e,t,'xydata',wanal,'colormap','jet','contour','on')
-title('Navier Solution')
-axis equal
+% % 
+% % figure
+% % subtitle('Concetrated Load Case')
+% % subplot(1,2,1)
+% % pdeplot(p,e,t,'xydata',w','colormap','jet','contour','on')
+% % colormap(viridis);
+% % %title('FEM')
+% % axis equal
+% % subplot(1,2,2)
+% % pdeplot(p,e,t,'xydata',wanal,'colormap','jet','contour','on')
+% % title('Navier Solution')
+% % colormap(viridis);
+% % axis equal
 
 
 MAx=max(max(abs(w)))
 MAxAnal=max(max(wanal))
 DEVpercent=(MAx-MAxAnal)/MAxAnal*100
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% [XX,lam,flag]=eigs(Kglob,15,'sm');
-% [XX,lam,flag]=eigs(Kglob,15,'sm');
-% [XX,lam,flag]=eigs(Kglob,15,'sm');
-[XX,lamM,flag]=eigs(Kglob,Mglob,15,'sm');
-cc=sort(diag(lamM));
-
-freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
-
-
-DD=E*mean(txxBEM)^3/(12*(1-v^2));
-cl=sqrt(m*mean(txxBEM)/DD);
-% DD=E*h^3/(12*(1-v^2));
-% cl=sqrt(m*h/DD);
-NDfreq=cl*freq*2*pi*100
-XXX=XX(1:GEN,:);
-YY=XXX(1:3:end,:);
-
-figure(1)
-pdeplot(pp,ee,tt,'xydata',YY(:,1),'contour','on')
-
-figure(2)
-subplot(4,2,1)
-pdeplot(pp,ee,tt,'zdata',YY(:,1),'colormap','copper')
-subplot(4,2,2)
-pdeplot(pp,ee,tt,'zdata',YY(:,2),'colormap','copper')
-subplot(4,2,3)
-pdeplot(pp,ee,tt,'zdata',YY(:,3),'colormap','copper')
-subplot(4,2,4)
-pdeplot(pp,ee,tt,'zdata',YY(:,4),'colormap','copper')
-subplot(4,2,5)
-pdeplot(pp,ee,tt,'zdata',YY(:,5),'colormap','copper')
-subplot(4,2,6)
-pdeplot(pp,ee,tt,'zdata',YY(:,6),'colormap','copper')
-subplot(4,2,7)
-pdeplot(pp,ee,tt,'zdata',YY(:,7),'colormap','copper')
-subplot(4,2,8)
-pdeplot(pp,ee,tt,'zdata',YY(:,8),'colormap','copper')
-
-figure(3)
-subplot(4,2,1)
-pdeplot(pp,ee,tt,'xydata',YY(:,1),'zdata',YY(:,1),'colormap','copper')
-subplot(4,2,2)
-pdeplot(pp,ee,tt,'xydata',YY(:,2),'zdata',YY(:,2),'colormap','copper')
-subplot(4,2,3)
-pdeplot(pp,ee,tt,'xydata',YY(:,3),'zdata',YY(:,3),'colormap','copper')
-subplot(4,2,4)
-pdeplot(pp,ee,tt,'xydata',YY(:,4),'zdata',YY(:,4),'colormap','copper')
-subplot(4,2,5)
-pdeplot(pp,ee,tt,'xydata',YY(:,5),'zdata',YY(:,5),'colormap','copper')
-subplot(4,2,6)
-pdeplot(pp,ee,tt,'xydata',YY(:,6),'zdata',YY(:,6),'colormap','copper')
-subplot(4,2,7)
-pdeplot(pp,ee,tt,'xydata',YY(:,7),'zdata',YY(:,7),'colormap','copper')
-subplot(4,2,8)
-pdeplot(pp,ee,tt,'xydata',YY(:,8),'zdata',YY(:,8),'colormap','copper')
-
-
-figure(4)
-subplot(4,2,1)
-pdeplot(pp,ee,tt,'xydata',YY(:,1),'zdata',YY(:,1),'colormap','copper')
-subplot(4,2,2)
-pdeplot(pp,ee,tt,'xydata',YY(:,1),'colormap','copper','contour','on')
-subplot(4,2,3)
-pdeplot(pp,ee,tt,'xydata',YY(:,4),'zdata',YY(:,4),'colormap','copper')
-subplot(4,2,4)
-pdeplot(pp,ee,tt,'xydata',YY(:,4),'colormap','copper','contour','on')
-subplot(4,2,5)
-pdeplot(pp,ee,tt,'xydata',YY(:,8),'zdata',YY(:,5),'colormap','copper')
-subplot(4,2,6)
-pdeplot(pp,ee,tt,'xydata',YY(:,8),'colormap','copper','contour','on')
-subplot(4,2,7)
-pdeplot(pp,ee,tt,'xydata',YY(:,15),'zdata',YY(:,15),'colormap','copper')
-subplot(4,2,8)
-pdeplot(pp,ee,tt,'xydata',YY(:,15),'colormap','copper','contour','on')
 
 

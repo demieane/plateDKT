@@ -52,9 +52,10 @@ FntSz = 18;
 
 % Comparison with Pachenary 2014 & Thesis 
 m=7850;%kg/m2 [mass distribution]
-E=2.10*10^6;%Pa [Young modulus]
+E=210*10^9;%Pa [Young modulus]
 v=0.3;% [Poisson ratio]
 h=0.01;%m [thickness] 
+% h=1; % Shufrin
 
 % G= E/(2*(1+v));
 % Dplate=E*h^3/(12*(1-v^2));
@@ -92,8 +93,8 @@ addpath('phd_verification/rect_constant_thick');
 chord = 10;
 span = 10;
 %load('eig_rect_1');%334
-%load('eig_rect_2');%1336
-load('eig_rect_3');%5344
+load('eig_rect_2');%1336
+%load('eig_rect_3');%5344
 %load('eig_rect_4');%21376
 % load('eig_rect_5');%85504
 
@@ -169,9 +170,9 @@ Bound4=find(e(5,:)==4);
 
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION*************
 % COMMENT: The numbering is offered by the pdeModeler
-Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
-% Bnodes = Bound3; %for distributed load from function ANSYS
-%Bnodes = [Bound1 Bound2 Bound3 Bound4];
+%Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
+%Bnodes = Bound2; %for distributed load from function ANSYS
+Bnodes = [Bound1 Bound2 Bound3 Bound4];
 %Bnodes = [Bound1, Bound2(1)];
 %**************************************************************************
 
@@ -239,8 +240,8 @@ Ng=3; %TO-DO
 
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
-CONSTANT_THICK = 0;
-LINEAR_THICK = 1;
+CONSTANT_THICK = 1;
+LINEAR_THICK = 0;
 d=100;
 if CONSTANT_THICK == 1
     thick=h*ones(1,Nelem);
@@ -375,7 +376,6 @@ cc=sort(diag(lamM));
 freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi); %Hz
 freq(1:5)
 
-
 if CONSTANT_THICK == 1 || LINEAR_THICK == 1
 %     h=min(txxBEM); %Katsikadelis
     h=max(txxBEM); % Shurfin & Eisenberger (from Pachenari)
@@ -389,16 +389,19 @@ end
 NDfreq=cl*(freq*2*pi)*chord^2
 XXX=XX(1:GEN,:);
 
-rho =m/1000;
-Katsikadelis_freq=(sqrt(rho/DD)*(freq*2*pi)*chord^2).^2
+rho =m*min(txxBEM);
+DDk=E*min(txxBEM)^3/(12*(1-v^2));
+Katsikadelis_freq=(sqrt(rho/DDk)*(freq*2*pi)*chord^2).^2
 
-shufrin_freq = (freq*2*pi)*span^2.*sqrt(m*max(txxBEM)/(E*(max(txxBEM))^3/(12*(1-v^2))))/pi^2
+omega = (freq*2*pi);
+d0 = E*max(txxBEM)^3/(12*(1-v^2));
+shufrin_freq = omega*span^2*sqrt(m*max(txxBEM)/d0)/pi^2
 
 %**************************************************************************
 % Select to view the eigen-fuction of (1) w (2) w,x (3) w,y
-% YY=XXX(1:3:end,:); %w
+YY=XXX(1:3:end,:); %w
 % YY=XXX(3:3:end,:);  %theta_x = w,y
-YY=-XXX(2:3:end,:); %theta_y = -w,x
+% YY=-XXX(2:3:end,:); %theta_y = -w,x
 %**************************************************************************
 
 % figure(2)
@@ -823,7 +826,7 @@ title(['$$\Omega_{12}=$$',num2str(round(NDfreq(12),decimals))],...
 
 %% LATEX TABLE 1a, 1b, 1c RESULTS
 
-%% CCCC
+%% CCCC constant thickness
 % a/b = 1.0
 anal_Leissa1973=[35.992, 73.413, 73.413, 108.27, 131.64, 132.24]';
 
@@ -845,7 +848,7 @@ Diff1336 = (anal_Leissa1973 - fem1336)./anal_Leissa1973*100
 fem5344 = [ 35.9870,   73.4138,   73.4159,  108.2833,  131.6832,  132.3826]';
 Diff5344 = (anal_Leissa1973 - fem5344)./anal_Leissa1973*100
 
-%% SSSS
+%% SSSS constant thickness
 % a/b = 1.0
 anal_Leissa1973=[19.7392, 49.3480, 49.3480, 78.9568, 98.6960, 98.6960]';
 
@@ -866,23 +869,35 @@ Diff1336 = (anal_Leissa1973 - fem1336)./anal_Leissa1973*100
 fem5344 = [19.7451,   49.3804,   49.3847,   79.0610,   98.8250,   98.8773]';
 Diff5344 = (anal_Leissa1973 - fem5344)./anal_Leissa1973*100
 
-%% CFFF
+%% CFFF constant thickness
 % a/b = 1.0
 anal_Leissa1973=[3.4917, 8.5246, 21.429, 27.331, 31.111, 54.443]';
 
-% load('CFFF_mesh334_constant_thick.mat'); 
-% NDfreq(1:6)
-fem334 = [ 3.4489,    8.4101,   21.1027,   27.1126,   30.6796,   53.7962]'; %thin plate a/h=0.001
+% load('CFFF_mesh334_constant_thick.mat'); 0.5986
+% NDfreq(1:6)0.
+fem334 = [    3.4674,    8.5045,   21.2803,   27.1772,   31.0194,   54.6274]'; %thin plate a/h=0.001
 Diff334 = (anal_Leissa1973 - fem334)./anal_Leissa1973*100
 
 % load('CFFF_mesh1336_constant_thick.mat'); 
 % NDfreq(1:6)
 
-fem1336 = [3.4661,    8.4806,   21.2369,   27.1776,   30.8790,   54.0933]';
+fem1336 = [  3.4702,    8.5059,   21.2835,   27.1947,   30.9730,   54.3050]';
 Diff1336 = (anal_Leissa1973 - fem1336)./anal_Leissa1973*100
 
 % load('CFFF_mesh5344_constant_thick.mat'); 
 % NDfreq(1:6)
 
-fem5344 = [3.4700,    8.4999,   21.2726,   27.1934,   30.9355,   54.1615]';
+fem5344 = [   3.4708,    8.5062,   21.2838,   27.1977,   30.9590,   54.2140]';
 Diff5344 = (anal_Leissa1973 - fem5344)./anal_Leissa1973*100
+
+%% LINEAR TAPER (
+% Shufrin vs present
+% CFFF
+shufrin=[0.3859 ,0.7563 ,1.8485 , 1.9438 ,2.4184 , 4.0317 ];
+present = [0.3813,    0.7510,    1.7513,    1.9800,    2.3520,    3.9302];
+diff = (shufrin-present)./shufrin*100
+% CCCC
+shufrin = [3.1767, 6.4650, 6.4782, 9.5610, 11.5702, 11.6375];
+present = [3.1521,    6.3541,    6.3662,    9.3067,   11.1978,   11.2804];
+diff = (shufrin-present)./shufrin*100
+
