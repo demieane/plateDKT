@@ -11,3 +11,5 @@
 
 % PHD VERIFICATION SECTION
 % (UPDATED) mainDKT_eig.m 
+
+% (UPDATED) main_NEW2.m (Static load Navier solution at the end) 

@@ -99,7 +99,7 @@ if importFromFile.toggle
 else
    %% BENCHMARKS
    KATSIKADELIS = 1;
-   SHUFFRIN = 0;
+   SHUFFRIN = 1;
    if KATSIKADELIS 
        % KATSIKADELIS C-C-C-C
        % Katsikadelis & Sapoutzakis : A BEM solution to dynamic analysis of

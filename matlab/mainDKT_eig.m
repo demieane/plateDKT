@@ -54,7 +54,7 @@ FntSz = 18;
 m=7850;%kg/m2 [mass distribution]
 E=210*10^9;%Pa [Young modulus]
 v=0.3;% [Poisson ratio]
-h=0.01;%m [thickness] 
+h=1;%0.01;%m [thickness] 
 % h=1; % Shufrin
 
 % G= E/(2*(1+v));
@@ -240,8 +240,8 @@ Ng=3; %TO-DO
 
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
-CONSTANT_THICK = 1;
-LINEAR_THICK = 0;
+CONSTANT_THICK = 0;%1;
+LINEAR_THICK = 1;
 d=100;
 if CONSTANT_THICK == 1
     thick=h*ones(1,Nelem);
@@ -892,12 +892,14 @@ Diff5344 = (anal_Leissa1973 - fem5344)./anal_Leissa1973*100
 
 %% LINEAR TAPER (
 % Shufrin vs present
-% CFFF
+% CFFF (taper=0.5)
 shufrin=[0.3859 ,0.7563 ,1.8485 , 1.9438 ,2.4184 , 4.0317 ];
 present = [0.3813,    0.7510,    1.7513,    1.9800,    2.3520,    3.9302];
-diff = (shufrin-present)./shufrin*100
-% CCCC
+present25=[0.3816,    0.7541,    1.7598,    1.9924,    2.3659,    3.9625];
+diff = (shufrin-present25)./shufrin*100
+% CCCC (taper=0.25)
 shufrin = [3.1767, 6.4650, 6.4782, 9.5610, 11.5702, 11.6375];
 present = [3.1521,    6.3541,    6.3662,    9.3067,   11.1978,   11.2804];
-diff = (shufrin-present)./shufrin*100
+present25=[3.1630,    6.3801,    6.3920,    9.3505,   11.2599,   11.3580];
+diff = (shufrin-present25)./shufrin*100
 
