@@ -52,7 +52,7 @@ addpath('funcFEM');
 addpath('dataFSI');
 addpath('mesh');
 % addpath('mesh/heathcote');
-%addpath('mesh/verification');
+addpath('phd_verification');
 % load('mesh_h1_half');
 addpath('phd_verification/rect_constant_thick');
 %load('eig_rect_1');%334
@@ -115,10 +115,10 @@ disp([' > h/span = ',num2str(h/span)]);
 %--------------------------------------------------------------------------
 % The present features a polygonal domain with 4 support senarios
 % controled by the choice of CC
-% CC=1 , simply supported along selected edges
+% CC=1 , simply supported along selected edges (Navier Solution static)
 % CC=2 , fully clamped along selected edges
 %--------------------------------------------------------------------------
-CC=1; % boundary condition toggle
+CC=2; % boundary condition toggle
 % Special Cantileaver Case CC=4
 if CC==1
     disp(' SS case along selected edge (w=0)')
@@ -128,13 +128,16 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=2; %loading case
+lll=3; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
 if lll==1
     P_load = 100; %[N] %pointing towards the Z-axis
 elseif lll==2
     P_load = 100/chord/span; %[Pa]
+end
+if lll==3
+    P_load = [];
 end
 % in ANSYS load pointing in the negative of Z-axis is positive
 if lll==1
@@ -199,11 +202,11 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION
 % COMMENT: The numbering is offered by the pdeModeler
-% Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
-% Bnodes = [Bound4(1), Bound3];
+Bnodes= [Bound4, Bound1(1)]; %FULL EDGE (x=0)
+%Bnodes = [Bound4(1), Bound3]; %(x=a)
 % Bnodes = [Bound4];
-% Bnodes=Bound3; %for distributed load from function ANSYS
-Bnodes=[Bound1 Bound2 Bound3 Bound4];
+%Bnodes=Bound3; %for distributed load from function ANSYS 
+%Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -253,14 +256,15 @@ Ng=3; %TO-DO
 
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
-CONSTANT_THICK = 1;
+CONSTANT_THICK = 0;
 LINEAR_THICK = 0;
+DISTRIBUTED_LOAD = 1;
 d=100;
 if CONSTANT_THICK == 1
     thick=h*ones(1,Nelem);
     txxBEM = thick;
     loadFEM = [];
-elseif LINEAR_THICK == 1
+elseif LINEAR_THICK == 1 || DISTRIBUTED_LOAD == 1
     importFromFile.toggle = 0; % NO-FILE to read
     [loadFEM,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
         1025, 1, h, d);
@@ -287,8 +291,9 @@ GGin2=inv(GGDKT);
 
 %************************************** DISTRIBUTED LOAD VIA MAPPING*******
 if lll==3
-    [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,...
-        fluid_dens, Uvel,h,  d);
+    Fx = loadFEM;
+%     [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,...
+%         fluid_dens, Uvel,h,  d);
 %     Fx = -Fx; %for ansys
 %     if debugOn
 %         hold on;grid on;
@@ -531,23 +536,41 @@ w=u(1:3:end);   % vertical displacement
 bx=u(2:3:end);  % rotation x
 by=u(3:3:end);  % rotation y
 
+%%
+FntSz = 16;
 figure;
-subplot(1,3,[1 2]);hold on;grid on;
-plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
-hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w);
-colorbar;
-shading interp;
-colormap(viridis);
-view([25 25]);%axis equal;
-zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
-xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
-%     title('w displacement','FontWeight','normal');
-title(['Static solution: lll=',num2str(lll)]); 
-subplot(1,3,3);hold on;grid on;
-pdeplot(pp,ee,tt,'XYData',w,'colormap',viridis,'contour','on');
-colorbar;shading interp;
-xlabel('x-axis');ylabel('y-axis');
-title('(contour)','FontWeight','normal');
+subplot(1,2,1);
+xlabel('$$x (m)$$', 'Interpreter','latex','FontSize',FntSz);
+ylabel('$$y (m)$$', 'Interpreter','latex','FontSize',FntSz);
+zlabel('$$w (m)$$', 'Interpreter','latex','FontSize',FntSz);
+set(gca,'FontSize',FntSz);
+set(gca,'TickLabelInterpreter','latex');
+hold on;grid minor;
+    h0=plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',5);
+    h1=pdeplot(p,e,t,'zdata',w);
+%     h1=pdeplot(pp,ee,tt,'XYData',w,"ZData",w);
+    h1.Color=[0.2550    0.2625    0.5290];
+    view([50 20]);
+    zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
+%     legend(h0,'Clamped','Location','best');
+
+subplot(1,2,2);
+xlabel('$$x (m)$$', 'Interpreter','latex','FontSize',FntSz);
+ylabel('$$y (m)$$', 'Interpreter','latex','FontSize',FntSz);
+zlabel('$$w (m)$$', 'Interpreter','latex','FontSize',FntSz);
+set(gca,'FontSize',FntSz);
+set(gca,'TickLabelInterpreter','latex');
+hold on;
+    plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',5);
+    pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'contour','on');
+    c = colorbar;
+    colormap(viridis);
+    c.Location='northoutside';
+    c.TickLabelInterpreter='latex';
+    view([50 40]);
+    zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
+
+%%
 
 max(abs(w))/inData.a3;
 

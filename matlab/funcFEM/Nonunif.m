@@ -98,7 +98,7 @@ if importFromFile.toggle
 
 else
    %% BENCHMARKS
-   KATSIKADELIS = 1;
+   KATSIKADELIS = 0;
    SHUFFRIN = 0;
    if KATSIKADELIS 
        % KATSIKADELIS C-C-C-C
@@ -135,6 +135,27 @@ else
            end
        end
    end
+   
+   DISTRIBUTED_LOAD = 1;
+   if DISTRIBUTED_LOAD
+       %% BENCHMARKS - DISTRIBUTED LOAD
+       % load distribution
+        Nx = 100;
+        Ny = 100;
+        [xdummy,ydummy]=meshgrid(linspace(-1,1,Nx),linspace(-1,1,Ny));
+        s=0.2;
+        m=0.6;
+        fx=1./s/sqrt(2*pi).*exp(-0.5*((xdummy-m)./s).^2); 
+        a = chord;
+        b = span;
+        xx = a*0.5*(-xdummy+1);
+        yy = b*0.5*(ydummy+1);
+        % thickness
+        h0 = 0.001*chord;
+        tx_modified = xx.*0 + h0;
+        prepareLoad_csv(xx,yy,fx,'load_fx.csv',1); %prepare .csv file for ANSYS
+        prepareLoad_csv(xx,yy,tx_modified,'sections_tx.csv',2); %prepare .csv file for ANSYS
+   end
 
 end
 
@@ -160,6 +181,9 @@ size(fx);
 
 % Shufrin parameter param=2.55
 param = 2.55;%20.55;
+if DISTRIBUTED_LOAD == 1
+    param = 5.55;
+end
 fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), param, length(xm(:)), xm, ym);
 % % % % fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 5.22, length(xm(:)), xm, ym);
 txx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx_modified(:), param, length(xm(:)), xm, ym);
