@@ -51,13 +51,14 @@ debugOn=1;
 addpath('funcFEM');
 addpath('dataFSI');
 addpath('mesh');
+addpath('mesh/hydrofoil');%naca functions
 % addpath('mesh/heathcote');
 addpath('phd_verification');
 % load('mesh_h1_half');
 addpath('phd_verification/rect_constant_thick');
 %load('eig_rect_1');%334
-load('eig_rect_2');%1336
-%load('eig_rect_3');%5344
+%load('eig_rect_2');%1336
+load('eig_rect_3');%5344
 % load('eig_rect_4');%21376
 % load('eig_rect_5');%85504
 
@@ -202,8 +203,8 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION
 % COMMENT: The numbering is offered by the pdeModeler
-Bnodes= [Bound4, Bound1(1)]; %FULL EDGE (x=0)
-%Bnodes = [Bound4(1), Bound3]; %(x=a)
+%Bnodes= [Bound4, Bound1(1)]; %FULL EDGE (x=0)
+Bnodes = [Bound4(1), Bound3]; %(x=a)
 % Bnodes = [Bound4];
 %Bnodes=Bound3; %for distributed load from function ANSYS 
 %Bnodes=[Bound1 Bound2 Bound3 Bound4];
@@ -305,7 +306,7 @@ if lll == 2 || lll == 1
     Fx = [];
 end
 %**************************************************************************
-
+% error('er');
 %==========================================================================
 %       PREPARE Kg, Mg
 %==========================================================================

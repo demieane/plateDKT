@@ -135,18 +135,69 @@ else
            end
        end
    end
-   %% BENCHMARKS - DISTRIBUTED LOAD
-   % load distribution
-    Nx = 100;
-    Ny = 100;
-    [xdummy,ydummy]=meshgrid(linspace(-1,1,Nx),linspace(-1,1,Ny));
-    s=0.2;
-    m=0.6;
-    fx=1./s/sqrt(2*pi).*exp(-0.5*((xdummy-m)./s).^2); 
-    a = chord;
-    b = span;
-    xx = a*0.5*(-xdummy+1);
-    yy = b*0.5*(ydummy+1);
+   
+   DISTRIBUTED_LOAD = 1;
+   if DISTRIBUTED_LOAD
+       %% BENCHMARKS - DISTRIBUTED LOAD
+       % load distribution
+        Nx = 100;
+        Ny = 100;
+        [xdummy,ydummy]=meshgrid(linspace(-1,1,Nx),linspace(-1,1,Ny));
+        s=0.2;
+        m=0.6;
+        fx=1./s/sqrt(2*pi).*exp(-0.5*((xdummy-m)./s).^2); 
+        a = chord;
+        b = span;
+        xx = a*0.5*(-xdummy+1);
+        yy = b*0.5*(ydummy+1);
+        
+           NACA = 0012;
+        [TAU,EPSMAX,PTMAX] = indata(NACA);
+        Npanels = 50;
+        [Nodtot,X,Y] = setup(Npanels,TAU,EPSMAX,NACA,PTMAX);
+        xFoil = (X(2:Npanels/2)-0.5)./0.5; %xdummy 
+        thickFoil = -Y(2:Npanels/2); %ydummy
+        
+        modfunc = (xFoil).^2;
+        modfunc = modfunc./max(abs(modfunc));
+        tx_foil_mod = thickFoil+ 1/100.*modfunc;
+        
+        figure
+        plot(X,Y,'ro');
+        hold on;grid on;
+        plot(xFoil, thickFoil,'ks');
+        plot(xFoil, tx_foil_mod,'b^');
+        axis equal;
+        
+        xFoil
+        tx_foil_mod
+        
+        thickdummy = interp1(xFoil, tx_foil_mod, xdummy(1,:),'linear','extrap');
+        xdummy(1,:)
+        thickdummy
+        plot(xdummy(1,:),thickdummy,'b*');
+        
+        figure
+        plot(xdummy(1,:), thickdummy,'ro');hold on;
+        plot(xdummy(1,1:5), thickdummy(1:5),'ks');
+        
+        % thickness constant
+        h0 = 0.001*chord;
+        tx_modified = xx.*0 + h0;
+        
+        for jj = 1:size(tx_modified,2)
+            for ii = 1:1%size(tx_modified,1)
+                            tx_modified(ii,jj) = thickdummy(ii);
+            end
+            tx_modified(1,:)
+            thickdummy
+            error('er')
+        end
+        
+          
+        prepareLoad_csv(xx,yy,fx,'load_fx.csv',1); %prepare .csv file for ANSYS
+        prepareLoad_csv(xx,yy,tx_modified,'sections_tx.csv',2); %prepare .csv file for ANSYS
+   end
 
 end
 
@@ -172,6 +223,9 @@ size(fx);
 
 % Shufrin parameter param=2.55
 param = 2.55;%20.55;
+if DISTRIBUTED_LOAD == 1
+    param = 5.55;
+end
 fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), param, length(xm(:)), xm, ym);
 % % % % fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 5.22, length(xm(:)), xm, ym);
 txx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx_modified(:), param, length(xm(:)), xm, ym);

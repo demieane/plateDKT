@@ -150,9 +150,43 @@ else
         b = span;
         xx = a*0.5*(-xdummy+1);
         yy = b*0.5*(ydummy+1);
-        % thickness
+        
+        NACA = 0012;
+        [TAU,EPSMAX,PTMAX] = indata(NACA);
+        Npanels = 50;
+        [Nodtot,X,Y] = setup(Npanels,TAU,EPSMAX,NACA,PTMAX);
+        xFoil = (X(2:Npanels/2)-0.5)./0.5; %xdummy 
+        thickFoil = -Y(2:Npanels/2)*a/10; %ydummy
+        
+        modfunc = (xFoil).^2;
+        modfunc = modfunc./max(abs(modfunc));
+        tx_foil_mod = thickFoil+ 1/100.*modfunc;
+        
+% %         figure
+% %         plot(X,Y,'ro');
+% %         hold on;grid on;
+% %         plot(xFoil, thickFoil,'ks');
+% %         plot(xFoil, tx_foil_mod,'b^');
+% %         axis equal;
+       
+        thickdummy = xdummy.*0;
+        for ii = 1:size(xdummy,2)
+            thickdummy(ii,:) = interp1(-xFoil, tx_foil_mod, xdummy(ii,:),'linear','extrap');
+        end
+        
+% %         figure
+% %         surf(xdummy,ydummy,thickdummy);
+       
+        % thickness constant
         h0 = 0.001*chord;
         tx_modified = xx.*0 + h0;
+        
+        for ii = 1:size(xx,1)
+            for jj = 1:size(xx,2)
+               tx_modified(ii,jj) = 2*thickdummy(ii,jj);
+            end
+        end
+        
         prepareLoad_csv(xx,yy,fx,'load_fx.csv',1); %prepare .csv file for ANSYS
         prepareLoad_csv(xx,yy,tx_modified,'sections_tx.csv',2); %prepare .csv file for ANSYS
    end
@@ -161,7 +195,7 @@ end
 
 % Triangle center
 xm=(1/3)*(x(IEN(1,:))+x(IEN(2,:))+x(IEN(3,:)));   % x barycentric coordinate
-ym=(1/3)*(y(IEN(1,:))+y(IEN(2,:))+y(IEN(3,:)));    % y barycentric coordinate
+ym=(1/3)*(y(IEN(1,:))+y(IEN(2,:))+y(IEN(3,:)));   % y barycentric coordinate
 
 size(xm);
 size(ym);
