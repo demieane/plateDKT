@@ -1,0 +1,107 @@
+# encoding: utf-8
+# 2023 R2
+SetScriptVersion(Version="23.2.142")
+system1 = GetSystem(Name="SYS")
+setup1 = system1.GetContainer(ComponentName="Setup")
+setup1.Edit()
+system2 = GetSystem(Name="SYS 1")
+setup2 = system2.GetContainer(ComponentName="Setup")
+externalLoadData1 = setup2.GetExternalLoadData()
+externalLoadFileData1 = externalLoadData1.GetExternalLoadFileData(Name="ExternalLoadFileData")
+externalLoadFileData1.ModifyFileData(FilePath=r"C:\Users\30697\Desktop\DA_ANSYS\load.csv")
+Save(Overwrite=True)
+setupComponent1 = system2.GetComponent(Name="Setup")
+setupComponent1.Update(AllDependencies=True)
+setupComponent2 = system1.GetComponent(Name="Setup")
+setupComponent2.Update(AllDependencies=True)
+externalLoadFileData2 = setup2.AddDataFile(FilePath="C:/Users/30697/Desktop/DA_ANSYS/sections_tx.csv")
+externalLoadFileDataProperty1 = externalLoadFileData2.GetDataProperty()
+externalLoadFileData2.SetStartImportAtLine(
+    FileDataProperty=externalLoadFileDataProperty1,
+    LineNumber=2)
+externalLoadColumnData1 = externalLoadFileDataProperty1.GetColumnData(Name="ExternalLoadColumnData 3")
+externalLoadFileDataProperty1.SetColumnDataType(
+    ColumnData=externalLoadColumnData1,
+    DataType="X Coordinate")
+externalLoadColumnData2 = externalLoadFileDataProperty1.GetColumnData(Name="ExternalLoadColumnData 4")
+externalLoadFileDataProperty1.SetColumnDataType(
+    ColumnData=externalLoadColumnData2,
+    DataType="X Coordinate")
+externalLoadColumnData3 = externalLoadFileDataProperty1.GetColumnData(Name="ExternalLoadColumnData 5")
+externalLoadFileDataProperty1.SetColumnDataType(
+    ColumnData=externalLoadColumnData3,
+    DataType="Thickness")
+Save(Overwrite=True)
+setupComponent1.Update(AllDependencies=True)
+setupComponent2.Update(AllDependencies=True)
+model1 = system1.GetContainer(ComponentName="Model")
+model1.Exit()
+setupComponent2.UpdateUpstreamComponents()
+setupComponent2.Update(AllDependencies=True)
+setup1.Edit()
+setupComponent2.UpdateUpstreamComponents()
+Save(Overwrite=True)
+Save(Overwrite=True)
+template1 = GetTemplate(TemplateName="External Data")
+system3 = template1.CreateSystem(
+    Position="Right",
+    RelativeTo=system1)
+externalLoadData1.DeleteFileData(FileData=externalLoadFileData2)
+setupComponent1.Update(AllDependencies=True)
+setup3 = system3.GetContainer(ComponentName="Setup")
+externalLoadFileData3 = setup3.AddDataFile(FilePath="C:/Users/30697/Desktop/DA_ANSYS/sections_tx.csv")
+externalLoadFileDataProperty2 = externalLoadFileData3.GetDataProperty()
+externalLoadColumnData4 = externalLoadFileDataProperty2.GetColumnData(Name="ExternalLoadColumnData")
+externalLoadFileDataProperty2.SetColumnDataType(
+    ColumnData=externalLoadColumnData4,
+    DataType="X Coordinate")
+externalLoadColumnData5 = externalLoadFileDataProperty2.GetColumnData(Name="ExternalLoadColumnData 1")
+externalLoadFileDataProperty2.SetColumnDataType(
+    ColumnData=externalLoadColumnData5,
+    DataType="Y Coordinate")
+externalLoadColumnData6 = externalLoadFileDataProperty2.GetColumnData(Name="ExternalLoadColumnData 2")
+externalLoadFileDataProperty2.SetColumnDataType(
+    ColumnData=externalLoadColumnData6,
+    DataType="Thickness")
+externalLoadFileDataProperty2.SetDimensionType(Dimensions="Dimension2D")
+externalLoadFileData3.SetStartImportAtLine(
+    FileDataProperty=externalLoadFileDataProperty2,
+    LineNumber=2)
+Save(Overwrite=True)
+setupComponent3 = system3.GetComponent(Name="Setup")
+modelComponent1 = system1.GetComponent(Name="Model")
+setupComponent3.TransferData(TargetComponent=modelComponent1)
+setupComponent3.Update(AllDependencies=True)
+modelComponent1.Update(AllDependencies=True)
+setupComponent3.TransferData(TargetComponent=setupComponent2)
+setupComponent3.DeleteTransfer(TargetComponent=modelComponent1)
+modelComponent1.Update(AllDependencies=True)
+setupComponent2.Update(AllDependencies=True)
+setupComponent3.DeleteTransfer(TargetComponent=setupComponent2)
+setupComponent2.Update(AllDependencies=True)
+system3.Delete()
+externalLoadFileData4 = setup2.AddDataFile(FilePath="C:/Users/30697/Desktop/DA_ANSYS/sections_tx.csv")
+externalLoadFileDataProperty3 = externalLoadFileData4.GetDataProperty()
+externalLoadColumnData7 = externalLoadFileDataProperty3.GetColumnData(Name="ExternalLoadColumnData 5")
+externalLoadFileDataProperty3.SetColumnDataType(
+    ColumnData=externalLoadColumnData7,
+    DataType="Thickness")
+externalLoadColumnData8 = externalLoadFileDataProperty3.GetColumnData(Name="ExternalLoadColumnData 4")
+externalLoadFileDataProperty3.SetColumnDataType(
+    ColumnData=externalLoadColumnData8,
+    DataType="Y Coordinate")
+externalLoadColumnData9 = externalLoadFileDataProperty3.GetColumnData(Name="ExternalLoadColumnData 3")
+externalLoadFileDataProperty3.SetColumnDataType(
+    ColumnData=externalLoadColumnData9,
+    DataType="Y Coordinate")
+externalLoadFileDataProperty3.SetColumnDataType(
+    ColumnData=externalLoadColumnData9,
+    DataType="X Coordinate")
+externalLoadFileData4.SetStartImportAtLine(
+    FileDataProperty=externalLoadFileDataProperty3,
+    LineNumber=2)
+Save(Overwrite=True)
+setupComponent1.Update(AllDependencies=True)
+setupComponent2.Update(AllDependencies=True)
+setup1.Edit()
+Save(Overwrite=True)
