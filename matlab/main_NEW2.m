@@ -203,8 +203,8 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION
 % COMMENT: The numbering is offered by the pdeModeler
-%Bnodes= [Bound4, Bound1(1)]; %FULL EDGE (x=0)
-Bnodes = [Bound4(1), Bound3]; %(x=a)
+Bnodes= [Bound4, Bound1(1)]; %FULL EDGE (x=0)
+%Bnodes = [Bound4(1), Bound3]; %(x=a)
 % Bnodes = [Bound4];
 %Bnodes=Bound3; %for distributed load from function ANSYS 
 %Bnodes=[Bound1 Bound2 Bound3 Bound4];

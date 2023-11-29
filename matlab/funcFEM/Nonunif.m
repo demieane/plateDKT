@@ -156,7 +156,8 @@ else
         Npanels = 50;
         [Nodtot,X,Y] = setup(Npanels,TAU,EPSMAX,NACA,PTMAX);
         xFoil = (X(2:Npanels/2)-0.5)./0.5; %xdummy 
-        thickFoil = -Y(2:Npanels/2)*a/10; %ydummy
+%         thickFoil = -Y(2:Npanels/2)*a/10; %ydummy (h/a<0.012)
+        thickFoil = -Y(2:Npanels/2)*a; %ydummy (h/a<0.12)
         
         modfunc = (xFoil).^2;
         modfunc = modfunc./max(abs(modfunc));
@@ -223,6 +224,7 @@ fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), param, length(xm(:)), xm,
 txx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx_modified(:), param, length(xm(:)), xm, ym);
         
 if debugOn
+        %% figure 1
         figure;
         colormap(viridis);
         subplot(2,2,[ 1 2]);
@@ -239,7 +241,6 @@ if debugOn
         xlabel('x [m]');ylabel('y [m]');
         title('plate thickness spanwise (from mat-file)');
 
-%         figure;
         subplot(2,2,3);
         hold on;grid on;
         surf(xx,yy,fx);
@@ -255,6 +256,34 @@ if debugOn
         title('bem data for tx');
         xlabel('x-axis');
         ylabel('y-axis');view([-25 25])
+
+        %% figure 2
+        FntSz = 16;
+        figure;
+        
+        subplot(3,3,[1 2 3]);
+        grid minor;hold on;
+        xlabel('x (m)','Interpreter','Latex');
+        %ylabel('y (m)','Interpreter','Latex');
+        ylabel('h (m)','Interpreter','Latex');
+
+        h1=plot(xx(1,:),tx_modified(1,:),'k.-');
+%         h2=plot(xm(1:5:end),txx(1:5:end),'ko','MarkerSize',4);
+%         legend([h1 h2], "data", "interpolated")
+        set(gca,'FontSize',FntSz);
+        set(gca,'TickLabelInterpreter','latex');
+
+        subplot(3,3,[ 4 5 6 7 8 9]);
+        grid minor;hold on;colormap(viridis);
+        xlabel('x (m)','Interpreter','Latex');
+        ylabel('y (m)','Interpreter','Latex');
+        zlabel('h (m)','Interpreter','Latex');
+
+        surf(xx,yy,tx_modified);
+%         plot3(xm,ym,txx,'b^', 'MarkerSize',2);
+        set(gca,'FontSize',FntSz);
+        set(gca,'TickLabelInterpreter','latex');
+        view([-15 45])
 
 % %     figure;hold on;grid on;
 % %     plot3(xm,ym,fxx,'o');
