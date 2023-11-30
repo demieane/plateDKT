@@ -524,6 +524,9 @@ Mglob=[Mglob mmm'; mmm zeros(length(Bdofs))];
 
 U = mldivide(Kglob,Fglob1); %or backslash
 
+Ustatic = U;
+save solMatlab Ustatic
+
 telapsed = toc(tstart);
 
 % BBnodes=BBnodes_old;%DIMITRA
@@ -537,7 +540,22 @@ w=u(1:3:end);   % vertical displacement
 bx=u(2:3:end);  % rotation x
 by=u(3:3:end);  % rotation y
 
-%%
+max(abs(w))/chord
+
+if MODAL_ANALYSIS == 1
+    [XX,lamM,flag]=eigs(Kglob,Mglob,6,'sm');
+    cc=sort(diag(lamM));
+
+    freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi); %[Hz]
+    inVacuo_Hz=freq(1:6)'
+    
+    DD=E*h^3/(12*(1-v^2));% bending rigidity (constant thickness, h)
+    cl=sqrt(m*h/DD);   
+    NDfreq= freq*2*pi*10^2*cl; %non-dimensional frequencies
+    inVacuo_normalized=NDfreq'
+end
+
+%% BENDING DISPLACEMENT - STATIC LOAD
 FntSz = 16;
 figure;
 subplot(1,2,1);
@@ -571,26 +589,6 @@ hold on;
     view([50 40]);
     zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
 
-%%
-
-max(abs(w))/inData.a3;
-
-Ustatic = U;
-save solMatlab Ustatic
-
-if MODAL_ANALYSIS == 1
-    [XX,lamM,flag]=eigs(Kglob,Mglob,5,'sm');
-    cc=sort(diag(lamM));
-
-    freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
-
-    freq'
-    
-    DD=E*h^3/(12*(1-v^2));%rigidity
-    cl=sqrt(m*h/DD);
-    
-    NDfreq= freq*2*pi*10^2*cl %non-dimensional frequencies
-end
 
 error('er')
 
@@ -742,13 +740,10 @@ error('See below for comparisons with static case (analytic solution) & modal an
 
 %%
 % =========================================================================
-%                           GENERAL COMMENTS
-%
-% COMMENT: Making the mesh more dense closer to the boundaries with clamped
-% edges could solve the problem of fine grids?
-% COMMENT: Discuss with Aggelina the bx, by fields in satisfying the BCs
-%==========================================================================
-% 
+%   COMPARISON WITH NAVIER SOLUTION S-S-S-S Rectangular plate
+%   Concentrated & Uniform load
+% =========================================================================
+
 DD=E*mean(txxBEM)^3/(12*(1-v^2));
 P=P_load;
 if lll==1 % concentrated load at the midddle of the rectangular plate
@@ -776,6 +771,10 @@ elseif lll==2  % uniformly distributed load
     wanal=16*P/(DD*pi^6)*summ;
 end
 
+MAx=max(max(abs(w)))
+MAxAnal=max(max(wanal))
+DEVpercent=(MAx-MAxAnal)/MAxAnal*100
+
 FntSz=16;
 figure
 h1=pdeplot(p,e,t,'zdata',w);%,'colormap','copper');
@@ -795,23 +794,5 @@ end
 set(gca,'FontSize',FntSz);
 set(gca,'TickLabelInterpreter','latex');
 
-% % 
-% % figure
-% % subtitle('Concetrated Load Case')
-% % subplot(1,2,1)
-% % pdeplot(p,e,t,'xydata',w','colormap','jet','contour','on')
-% % colormap(viridis);
-% % %title('FEM')
-% % axis equal
-% % subplot(1,2,2)
-% % pdeplot(p,e,t,'xydata',wanal,'colormap','jet','contour','on')
-% % title('Navier Solution')
-% % colormap(viridis);
-% % axis equal
-
-
-MAx=max(max(abs(w)))
-MAxAnal=max(max(wanal))
-DEVpercent=(MAx-MAxAnal)/MAxAnal*100
 
 

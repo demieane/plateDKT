@@ -20,9 +20,6 @@
 clear all;
 close all;
 clc;
-
-tstart = tic;   
-
 debugOn=1;
 %==========================================================================
 % INFORMATION ABOUT MESH GENERATION USING pdeModeler
@@ -47,8 +44,8 @@ debugOn=1;
 addpath('mesh');
 
 addpath('mesh/heathcote');
-% load('mesh_h1_half');
 load('mesh_h1_half');
+% load('mesh_h2_half');
 
 %Create Rectangular plate
 % pderect([0 0.1 -0.3 0.3],'C1')
@@ -125,8 +122,7 @@ importFromFile=struct('toggle',1,'filename',file1995);
 P_load = 1; %[Pa] %pointing towards the Z-axis
 % in ANSYS load pointing in the negative of Z-axis is positive
 if lll==1
-%    Pxy=[5,5];%load position
-   Pxy=[0.05,-0.15];%load position
+   Pxy=[5,5];%load position
 end
 %
 %% Rigidity
@@ -166,20 +162,17 @@ ID(2,:)=2:3:3*NN-1;
 ID(3,:)=3:3:3*NN;
 % LM array degrees of freedom per element edof*elements
 LM=zeros(9,Nelem);
-for k=1:Nelem
-   for i=1:3
-       for j=1:3
-           P=(3)*(j-1)+i; %the 9 dofs per triangle
-           LM(P,k)=ID(i,IEN(j,k));
+    for k=1:Nelem
+       for i=1:3
+           for j=1:3
+               P=(3)*(j-1)+i;
+               LM(P,k)=ID(i,IEN(j,k));
+           end
        end
-   end
-end
+    end
     
 GEN=max(max(LM)); %Total number of nodal unknowns taking into account the 
 % connectivity between the triangles
-
-% error('er')
-
 %
 %% Essential BCs (enforces on the displacements "w" and slopes "bx", "by")   
 Bound1=find(e(5,:)==1);
@@ -189,9 +182,8 @@ Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION
 % COMMENT: The numbering is offered by the pdeModeler
 % Bnodes= [Bound4, Bound1(1)]; %FULL EDGE
-% Bnodes = [Bound4(1), Bound3];
-% Bnodes = [Bound2, Bound2];
-Bnodes=Bound3; %for distributed load from function ANSYS
+Bnodes = [Bound4(1), Bound3];
+% Bnodes=Bound3; %for distributed load from function ANSYS
 % Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
@@ -220,9 +212,6 @@ if debugOn
     title('boundary condition affected element nodes','FontWeight','normal');
     xlabel('x-axis');
     ylabel('y-axis');
-    if lll == 1
-        plot(Pxy(1),Pxy(2),'bs');
-    end
 end
 % error('r')
 %==========================================================================
@@ -239,88 +228,34 @@ end
 % Number of GP
 Ng=3; %TO-DO
 [xw]=TriGaussPoints(Ng);
-
-xm=(1/3)*(x(IEN(1,:))+x(IEN(2,:))+x(IEN(3,:)));   % x barycentric coordinate
-ym=(1/3)*(y(IEN(1,:))+y(IEN(2,:))+y(IEN(3,:)));    % y barycentric coordinate
-% 
-
-
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
-d=100;
+d=1;
 %  thick=h*ones(1,Nelem);
-[loadFem,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, debugOn, importFromFile,...
+[~,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, debugOn, importFromFile,...
     fluid_dens, Uvel, h, d);
-% error('er')
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
 
 % error('er')
-% 
-% BeSt2(:,:,1)
-
 % [BeSt]=BendingStiffness(E,v,h); %[3,3] matrix
 % Ds=sc*G*h*eye(2,2);
 
-xg=xw(:,1);
-yg=xw(:,2);
+xg=xw(:,1);yg=xw(:,2);
 [l23,l31,l12,y12,y31,y23,x12,x31,x23,Area,a4,a5,a6,b4,b5,b6,...
     c4,c5,c6,d4,d5,d6,e4,e5,e6,C4,C5,C6,S4,S5,S6]=TrigElCoefsDKT(x,y,IEN);
-
-[l23(1), l23(end)]
-[l31(1), l31(end)]
-[l12(1), l12(end)]
-%
-[y23(1), y23(end)]
-[y31(1), y31(end)]
-[y12(1), y12(end)]
-%
-[x23(1), x23(end)]
-[x31(1), x31(end)]
-[x12(1), x12(end)]   
-%
-[C4(1), C4(end)]
-[C5(1), C5(end)]
-[C6(1), C6(end)]
-%
-[c4(1), c4(end)]
-[c5(1), c5(end)]
-[c6(1), c6(end)]  
 
 % Calculation of shape functions and their derivatives at gauss points on
 % the parent element
 [ SF,DxsiSF,DetaSF,D2xsiSF,D2xsietaSF,D2etaSF ] = LNShapeFunDST(xg,yg);
-
-
-
 [ SFm, DxsiSFm,DetaSFm] = LNShapeFunMassDST(xg,yg); 
 
 %
 %---> ax, ay, bx,by are constant for constant h (independednt of î,ç)
 % %%
-[GGDST,GGDKT] = matrixG();
-
-AA = [1.0, 75.0;
-      2.0, 1.0];
-inv(AA);
-
-% AA = [ 1.0  1.2  1.4  1.6  1.8  2.0  2.2  2.4  2.6 ;
-%         1.2  1.0  1.2  1.4  1.6  1.8  2.0  2.2  2.4 ;
-%         1.4  1.2  1.0  1.2  1.4  1.6  1.8  2.0  2.2 ;
-%         1.6  1.4  1.2  1.0  1.2  1.4  1.6  1.8  2.0 ;
-%         1.8  1.6  1.4  1.2  1.0  1.2  1.4  1.6  1.8 ;
-%         2.0  1.8  1.6  1.4  1.2  1.0  1.2  1.4  1.6 ;
-%         2.2  2.0  1.8  1.6  1.4  1.2  1.0  1.2  1.4 ;
-%         2.4  2.2  2.0  1.8  1.6  1.4  1.2  1.0  1.2 ;
-%         2.6  2.4  2.2  2.0  1.8  1.6  1.4  1.2  1.0 ];
-
-% [L,U,P] = lu(AA);
-% AA = P'*L*U
+[ GGDST,GGDKT] = matrixG();
 
 GGin=inv(GGDST);
 GGin2=inv(GGDKT);
-
-
-
 
 % error('er')
 % for i=1:Ng;
@@ -357,7 +292,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     mloc1=zeros(9,9);
     mloc2=zeros(9,9);
     %************************** ADDITION
-    floc1=zeros(10,1);
+        floc1=zeros(10,1);
     %***********************************
     [ Hxx,Hyy ] = rotationMass2(kk,a4,a5,a6,b4,b5,b6,c4,c5,c6,d4,d5,d6,e4,e5,e6 );
     [ Hxx1,Hyy1 ] = rotationMass(kk,l23,l31,l12,C4,C5,C6,S4,S5,S6);
@@ -365,23 +300,15 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     for ii=1:Ng % for each gauss point
     %% Stiffness
 %        [Hx, Hy, Hx_xsi, Hx_eta,Hy_xsi, Hy_eta, Bb ] = ShapeFunDKT(ii,kk,a4,a5,a6,b4,b5,b6,c4,c5,c6,d4,d5,d6,e4,e5,e6,Area,SF,DxsiSF,DetaSF,y31,x31,y12,x12) ;
-      [Hx, Hy, Hx_xsi,Hx_eta,Hy_xsi, Hy_eta, Bb ] = ShapeFunDKT2(ii,kk,C4,C5,C6,S4,S5,S6,Area,...
-          SF, DxsiSF,DetaSF,y31,x31,y12,x12,l23,l31,l12);
+      [Hx, Hy, Hx_xsi,Hx_eta,Hy_xsi, Hy_eta, Bb ] = ShapeFunDKT2(ii,kk,C4,C5,C6,S4,S5,S6,Area, SF, DxsiSF,DetaSF,y31,x31,y12,x12,l23,l31,l12);
 %       [Hx1, Hy1, Hx_xsi1, Hx_eta1,Hy_xsi1, Hy_eta1, Bb1 ] = ShapeFunDKT(ii,kk,a4,a5,a6,b4,b5,b6,c4,c5,c6,d4,d5,d6,e4,e5,e6,Area,SF,DxsiSF,DetaSF,y31,x31,y12,x12) ;
        
-       [ Nm, HW,LW,L,HX3,~] = pseudoMassDKT(ii,kk,l23,l31,l12,y12,y31,x12,x31,Area,...
-           Hm,GGin,GGin2,xg, yg,IEN,x,y,Hx,Hy,SFm,C4,C5,C6,S4,S5,S6,Hxx,Hyy,HW );
+       [ Nm, HW,LW,L,HX3,HY3] = pseudoMassDKT(ii,kk,l23,l31,l12,y12,y31,x12,x31,Area,Hm,GGin,GGin2,xg, yg,IEN,x,y,Hx,Hy,SFm,C4,C5,C6,S4,S5,S6,Hxx,Hyy,HW )   ;
 % %        [ Nm,LW,L] = pseudoMassDKT(ii,kk,l23,l31,l12,y12,y31,x12,x31,Area,Hm,GGin,GGin2,xg, yg,IEN,x,y,Hx,Hy,SFm,C4,C5,C6,S4,S5,S6,HW)   ;
 
        % we give one more dimension 
        % to the BeSt [3x3] original matrix
        kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk)*Bb);
-       
-       
-%        kbc = Area(kk)*xw(ii,3)*(Bb'*BeSt2(:,:,kk))*Bb
-%        
-%        kb
-%        size(kbc)
 %        kb=kb+Area(kk)*xw(ii,3)*(Bb'*BeSt*Bb);
 %        mloc=mloc+m*h*Area(kk)*xw(ii,3)*(Nm'*Nm);
 %        mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*(Nm'*Nm);
@@ -391,83 +318,40 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
        mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*((HW'*(LW'*LW)*HW)+txxBEM(kk)^2/12*(Hx'*Hx)+txxBEM(kk)^2/12*(Hy'*Hy));
 %        mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*((HW'*(LW'*LW)*HW));
     end
-    kb
-
+      
     kloc=kb;
     %************************** ADDITION
-%     if lll==1
 %         floc=P*HW'*floc1;
-%         floc=P_load*HW'*floc1;
     if lll==2 % uniform load
         floc=Area(kk)*P_load/3*[1 0 0 1 0 0 1 0 0]';% lumped mass approach for the uniform load
     elseif lll==3 %distributed load via mapping func
         floc=Area(kk)*Fx(kk)/3*[1 0 0 1 0 0 1 0 0]';
     end
-    floc
     %***********************************
     Mg(:,kk)=[mloc(:,1);mloc(:,2);mloc(:,3);mloc(:,4);mloc(:,5);mloc(:,6);mloc(:,7);mloc(:,8);mloc(:,9)];
 
     Kg(:,kk)=[kloc(:,1);kloc(:,2);kloc(:,3);kloc(:,4);kloc(:,5);kloc(:,6);kloc(:,7);kloc(:,8);kloc(:,9)];
-    
-    if lll == 2 || lll == 3
-        %************************** ADDITION
-        for q=1:9
-             Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
-        end 
-        %***********************************
-    end
+    %************************** ADDITION
+    for q=1:9
+         Fglob(LM(q,kk))=Fglob(LM(q,kk))+floc(q);
+    end 
+    %***********************************
 end
 
-% error('er')
 %% Global assembly (uses the LM)
-% The sparse function accumulate the values that have identical
-% subscripts. 
-% S(i(k),j(k)) = v(k)
+% COMMENT: The boundary conditions are enforced as extra equations
+% in the sense of constraints in the present version
 
-disp('===================ASSEMBLY==============================')
 iii=1:9; %Elnodes Number of element nodes
 iii=repmat(iii',1,9);
 
 rr=iii';
 Ig=LM(iii(:),:);  %LM ARRAY (Dofs per Element)X(Elements)   -   (Nnodes*Ndof)X(Nel)
 Jg=LM(rr(:),:);
-
-
 Kglob=sparse(Ig(:),Jg(:),Kg(:),GEN,GEN);
-% % spy(Kglob)
+% spy(Kglob)
 Mglob=sparse(Ig(:),Jg(:),Mg(:),GEN,GEN);
-    
-% A large condition number means that the matrix is close to being singular. 
-Kglobfull=full(Kglob);
-Mglobfull=full(Mglob);
 
-cond(Kglobfull)
-
-% error('er')
-clear Kglob_dense Mglob_dense
-Kglob_dense = zeros(GEN,GEN);
-Mglob_dense = zeros(GEN,GEN);
-for ii = 1:size(Ig,1)
-    for jj = 1:size(Ig,2)
-%         cnt = cnt + 1;
-        Kglob_dense(Ig(ii,jj),Jg(ii,jj)) = Kglob_dense(Ig(ii,jj),Jg(ii,jj)) + Kg(ii,jj);
-        Mglob_dense(Ig(ii,jj),Jg(ii,jj)) = Mglob_dense(Ig(ii,jj),Jg(ii,jj)) + Mg(ii,jj);
-    end
-end
-% cnt
-disp('===================Kglobfull=============================')
-Kglobfull(1:10,1:10)
-disp('===================Kglob_dense===========================')
-Kglob_dense(1:10,1:10)
-%
-disp('===================Mglobfull=============================')
-Mglobfull(1:10,1:10)
-disp('===================Mglob_dense===========================')
-Mglob_dense(1:10,1:10)
-
-% error('er')
-% COMMENT: The boundary conditions are enforced as extra equations
-% in the sense of constraints in the present version
 BBnodes_old=BBnodes; %DIMITRA
 BBnodes=Bdofs;%DIMITRA
 
@@ -484,106 +368,64 @@ end
 Kglob=[Kglob kkk'; kkk zeros(length(BBnodes))];
 Mglob=[Mglob mmm'; mmm zeros(length(BBnodes))];
 
-Kglob_dense2=[Kglob_dense kkk'; kkk zeros(length(BBnodes))];
-Kglob_dense2(GEN+1:end,1:27)
-Kglob_dense2(1:27,GEN+1:end)
-% error('er')
 
-%FORCING AND SOLUTION
-if lll==1
-%     Fglob=zeros(length(Kglob),1);
-    Fglob(ID(1,PNODE))=P_load;
-end
-%     U=Kglob\Fglob; %SOLVE SPARSE SYSTEM OF EQUATIONS
-%hughe [ch.9] newmark - 2nd order
-% else
-Fglob1=[Fglob; zeros(length(BBnodes),1)];
-%     U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
-
-U = mldivide(Kglob,Fglob1);
-
-
-
-telapsed = toc(tstart)
-
-% error('er')
-BBnodes=BBnodes_old;%DIMITRA
-
-%==========================================================================
-%                            POST-PROCESSOR
-%==========================================================================
-u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
-%
-w=u(1:3:end);   % vertical displacement
-bx=u(2:3:end);  % rotation x
-by=u(3:3:end);  % rotation y
-
-figure;
-subplot(1,3,[1 2]);hold on;grid on;
-plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
-hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
-colorbar;shading interp;view([25 25]);%axis equal;
-zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
-xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
-%     title('w displacement','FontWeight','normal');
-subplot(1,3,3);hold on;grid on;
-pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
-colorbar;shading interp;
-xlabel('x-axis');ylabel('y-axis');
-title('(contour)','FontWeight','normal');
-
-max(abs(w))/inData.a3;
-
-save solMatlab U
-
-
-[XX,lamM,flag]=eigs(Kglob,Mglob,5,'sm');
-cc=sort(diag(lamM));
-  
-freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
-
-freq'
-
-
-
-error('hh')
-%% MODAL ANALYSIS
-
-% Kglob = [50 -60 50 -27 6 6;
-% 38 -28 27 -17 5 5;
-% 27 -17 27 -17 5 5;
-% 27 -28 38 -17 5 5;
-% 27 -28 27 -17 16 5;
-% 27 -28 27 -17 5 16];
-% cond(Kglob)
+% [XX,lamM,flag]=eigs(Kglob,Mglob,15,'sm');
+% cc=sort(diag(lamM));
 % 
-% Mglob = [16 5 5 5 -6 5;
-% 5 16 5 5 -6 5;
-% 5 5 16 5 -6 5;
-% 5 5 5 16 -6 5;
-% 5 5 5 5 -6 16;
-% 6 6 6 6 -5 6];
-% cond(Mglob)
+% freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
+% 
+% error('yy')
 
-
-[XX,lamM,flag]=eigs(Kglob,Mglob,5,'sm');
-cc=sort(diag(lamM));
-  
-freq=sqrt(sort(diag(lamM),'ascend'))./(2*pi);
-
-freq'
-
-error('hh')
+% % % FORCING AND SOLUTION
+% % if lll==1
+% %     Fglob=zeros(length(Kglob),1);
+% %     Fglob(ID(1,PNODE))=P_load;
+% %     U=Kglob\Fglob; %SOLVE SPARSE SYSTEM OF EQUATIONS
+% % %hughe [ch.9] newmark - 2nd order
+% % else
+% %     Fglob1=[Fglob; zeros(length(BBnodes),1)];
+% %     U=Kglob\Fglob1;%SOLVE SPARSE SYSTEM OF EQUATIONS
+% % end
+% % 
+% % BBnodes=BBnodes_old;%DIMITRA
+% % 
+% % %==========================================================================
+% % %                             POST-PROCESSOR
+% % %==========================================================================
+% % % u=U(1:GEN); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+% % % %
+% % % w=u(1:3:end);   % vertical displacement
+% % % bx=u(2:3:end);  % rotation x
+% % % by=u(3:3:end);  % rotation y
+% % % 
+% % % figure;
+% % % subplot(1,3,[1 2]);hold on;grid on;
+% % % plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',3);
+% % % hh=pdeplot(pp,ee,tt,'XYData',w,"ZData",w,'colormap','jet');
+% % % colorbar;shading interp;view([25 25]);%axis equal;
+% % % zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
+% % % xlabel('x-axis');ylabel('y-axis');zlabel('w [m]');
+% % % %     title('w displacement','FontWeight','normal');
+% % % subplot(1,3,3);hold on;grid on;
+% % % pdeplot(pp,ee,tt,'XYData',w,'colormap','jet','contour','on');
+% % % colorbar;shading interp;
+% % % xlabel('x-axis');ylabel('y-axis');
+% % % title('(contour)','FontWeight','normal');
+% % % 
+% % % max(abs(w))/inData.a3
+% % % 
+% % % error('hh')
 
 %% TIME-MARCHING
 T=2*pi/inData.omega3;%sec
 % wf=2*pi/T; %rad/s
 ddt=inData.dt;%T/100; %time-step
-t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
+% t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
+t=[0:ddt:(2)*T];%[0:h:2*T]; %time [sec]
 
-newmark = 1;
+newmark = 0;
 implicitEuler = 0;
-crankNisolson =0 ; %like newmark
+crankNisolson = 1; %like newmark
 
 d=1; %starting point
 
@@ -594,13 +436,13 @@ qdot=zeros(sizeM,length(t)); %velocity
 C = 0.*Mglob;
 % 
 [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
-% a
-% b
+a
+b
 
 % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 
-error('er')
-[Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d),99);
+% error('er')
+[Fglob_t] = createFglob(lll, GEN, Nelem, P_load, Fx,Area,LM,BBnodes);
 Fm = [Fglob_t; zeros(sizeM,1)];
 if d==1
     G = zeros(length(Fm),length(t));
@@ -617,7 +459,7 @@ if newmark
     qdot2=zeros(sizeM,length(t)); %acceleration 
     beta = 0.25;
     gamma = 0.5;
-    [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d),99);
+    [Fglob_t] = createFglob(lll, GEN, Nelem, P_load, Fx,Area,LM,BBnodes);
 
     %initialization    
     AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
@@ -633,7 +475,7 @@ if newmark
         % Update load vector
         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
 %         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
-        [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d+1),99);
+        [Fglob_t] = createFglob(lll, GEN, Nelem, P_load, Fx,Area,LM,BBnodes);
 
         pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
         pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
@@ -660,7 +502,9 @@ else
         d
         % Update load vector
         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-        [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,BBnodes,t(d+1),99);
+        
+%         (lll,GEN,Nelem,P_load,Fx,Area,LM,BBnodes)
+        [Fglob_t] = createFglob(lll, GEN, Nelem, P_load, Fx,Area,LM,BBnodes);
         Fm = [Fglob_t; zeros(sizeM,1)];
         G(:,d+1) = Fm;
 
@@ -701,7 +545,17 @@ title('(contour)','FontWeight','normal');
 % save FEM_newmark
    
 % save FEM_sol_h15_r_h2
-save FEM_sol_h182_r_h2
+% save FEM_sol_h182_r_h2
+
+if newmark
+    solutionNewmark = solution;
+    save solution_newmark solutionNewmark pp ee tt BBnodes
+elseif implicitEuler
+    save solution_implicitEuler solution pp ee tt BBnodes
+elseif crankNisolson
+    solutionCrankNicolson = solution;
+    save solution_crankNicolson solutionCrankNicolson pp ee tt BBnodes
+end
 
 error('er')
 % save FEM_sol_h05_r_h1
@@ -725,11 +579,13 @@ bx=solution.bx(:,d+1);
 by=solution.by(:,d+1);
 
 if newmark
-    save solution_newmark solution pp ee tt BBnodes
+    solutionNewmark = solution;
+    save solution_newmark solutionNewmark pp ee tt BBnodes
 elseif implicitEuler
     save solution_implicitEuler solution pp ee tt BBnodes
 elseif crankNisolson
-    save solution_crankNicolson solution pp ee tt BBnodes
+    solutioncrankNicolson = solution;
+    save solution_crankNicolson crankNicolson pp ee tt BBnodes
 end
 %  
 % % 
