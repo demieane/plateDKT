@@ -1,15 +1,19 @@
 function [xw]=TriGaussPoints(Ng)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Function TriGaussPoints provides the Gaussian points and weights %
-% for the Gaussian quadrature of order n for the standard triangles. %
-% %
-% Input: n - the order of the Gaussian quadrature (n<=12) %
-% %
-% Output: xw - a n by 3 matrix: %
-% 1st column gives the x-coordinates of points %
-% 2nd column gives the y-coordinates of points %
-% 3rd column gives the weights %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%=========================================================================
+% Function TriGaussPoints provides the Gaussian points and weights 
+% for the Gaussian quadrature of order n for the standard triangles.
+%
+% Input:        n - the order of the Gaussian quadrature (n<=12) 
+% 
+% Output:       xw - a n by 3 matrix 
+%
+% 1st column gives the x-coordinates of points 
+% 2nd column gives the y-coordinates of points 
+% 3rd column gives the weights 
+%
+% REFERENCE: Bathe, Finite Element Procedures - Prentice Hall 1996 (Ch. 5)
+%=========================================================================
+
 
 xw = zeros(Ng,3);
 if (Ng == 1)   % order(1)
