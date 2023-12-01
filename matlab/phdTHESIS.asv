@@ -1,0 +1,19 @@
+%% VISUALIZING LANGRANGE SHAPE FUNCTIONS
+[xx,yy]=meshgrid(linspace(0,1,10),linspace(0,1,10));
+
+% bx1, by1, ... (on the three-nodes)
+
+for i=1:10
+    for j = 1:10
+        [ SF,~,~,~,~,~] = LNShapeFunDST(xx(i,j),yy(i,j));
+        if (xx(i,j)+yy(i,j)<1)
+            LLnew(i,j)='nan';
+        else
+            LLnew(i,j) = SF*sol;
+            en
+    end
+end
+
+
+figure
+surf(xx,yy,LLnew)
