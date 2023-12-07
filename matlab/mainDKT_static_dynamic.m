@@ -21,7 +21,7 @@ clear all;
 close all;
 clc;
 
-% error('er')
+error('er')
 MODAL_ANALYSIS = 1;
 DYNAMIC_ANALYSIS = 0;
 
@@ -347,7 +347,7 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
        %****************************ADDITION
 %        floc1=floc1+Area(kk)*xw(ii,3)*(LW');
        %************************************
-       mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*((HW'*(LW'*LW)*HW)+txxBEM(kk)^2/12*(Hx'*Hx)+txxBEM(kk)^2/12*(Hy'*Hy));
+       mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*((HW'*(LW'*LW)*HW)+txxBEM(kk)^2/12*(Hx'*Hx)+txxBEM(kk)^2/12*(Hy'*Hy)); %from Newton's law, rotary inertia angular acceleration!!!
 %        mloc=mloc+m*txxBEM(kk)*Area(kk)*xw(ii,3)*((HW'*(LW'*LW)*HW));
     end
     kloc=kb;
