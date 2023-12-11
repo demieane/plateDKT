@@ -15,12 +15,13 @@ function [fxx,txx,xx,yy]=Nonunif(x,y,IEN,p,e,t, chord, span, debugOn, importFrom
 % fx=1200*fx/max(max(fx));
 
 if importFromFile.toggle
-    load(importFromFile.filename); %xc_fem_data, yc_fem_data, DCoefpres
+    load(importFromFile.filename, 'xc_fem_data', 'yc_fem_data',...
+        'th_fem_data', 'DCoefpres', 'inData');
     xx=xc_fem_data;%/0.33*2;
     yy=yc_fem_data;
 
 %     dummy = 100;
-    fx=1*sin(inData.omega3*d*inData.dt+inData.phase3) + 0.*DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2);%*chord*span; %dimensionalize data [N]
+    fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2);%*chord*span; %dimensionalize data [N]
     
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2);%*chord*span; %dimensionalize data [N]
 
@@ -69,32 +70,32 @@ if importFromFile.toggle
 %     prepareLoad_csv(xx,yy,tx_modified,'eurodyn_linear.csv',2); %prepare .csv file for ANSYS
     prepareLoad_csv(xx,yy,tx_modified,'sections_tx.csv',2); %prepare .csv file for ANSYS
     
-% %     if debugOn
-% %         figure
-% %         subplot(2,2,[ 1 2]);
-% %         plot(xc_fem_data(1,:),th_fem_data(1,:),'ro');
-% %         hold on;grid on;
-% %         plot(xc_fem_data(1,:),tx_modified(1,:),'b^');
-% % %         plot(xc_fem_data(1,:),tx_linear(1,:),'k^-');
-% %         legend("original", "modified")
-% %         xlabel('x [m]');ylabel('y [m]');
-% %         title('plate thickness spanwise (from mat-file)');
-% % 
-% % %         figure;
-% %         subplot(2,2,3);
-% %         hold on;grid on;
-% %         surf(xx,yy,fx);
-% %         title('bem data for fx');
-% %         xlabel('x-axis');
-% %         ylabel('y-axis');
-% %         zlabel('P [Pa]');view([-25 25])
-% % 
-% %         subplot(2,2,4);hold on;grid on;
-% %         surf(xx,yy,tx_modified);
-% %         title('bem data for tx');
-% %         xlabel('x-axis');
-% %         ylabel('y-axis');view([-25 25])
-% %     end
+    if debugOn
+        figure
+        subplot(2,2,[ 1 2]);
+        plot(xc_fem_data(1,:),th_fem_data(1,:),'ro');
+        hold on;grid on;
+        plot(xc_fem_data(1,:),tx_modified(1,:),'b^');
+%         plot(xc_fem_data(1,:),tx_linear(1,:),'k^-');
+        legend("original", "modified")
+        xlabel('x [m]');ylabel('y [m]');
+        title('plate thickness spanwise (from mat-file)');
+
+%         figure;
+        subplot(2,2,3);
+        hold on;grid on;
+        surf(xx,yy,fx);
+        title('bem data for fx');
+        xlabel('x-axis');
+        ylabel('y-axis');
+        zlabel('P [Pa]');view([-25 25])
+
+        subplot(2,2,4);hold on;grid on;
+        surf(xx,yy,tx_modified);
+        title('bem data for tx');
+        xlabel('x-axis');
+        ylabel('y-axis');view([-25 25])
+    end
 
 else
    %% BENCHMARKS
@@ -215,10 +216,11 @@ size(fx);
 % % txx=interp2(xx,yy,tx_modified,xm,ym,'spline');%is this OK?
 
 % Shufrin parameter param=2.55
-param = 2.55;%20.55;
-if DISTRIBUTED_LOAD == 1
-    param = 5.55;
-end
+% param = 2.55;%20.55;
+
+% if importFromFile.toggle == 1 
+param = 5.55;
+% end
 fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), param, length(xm(:)), xm, ym);
 % % % % fxx2=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), 5.22, length(xm(:)), xm, ym);
 txx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx_modified(:), param, length(xm(:)), xm, ym);

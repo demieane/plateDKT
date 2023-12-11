@@ -131,7 +131,7 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=2; %loading case
+lll=3; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
 if lll==1
@@ -259,16 +259,16 @@ Ng=3; %TO-DO
 
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
-CONSTANT_THICK = 1;
+CONSTANT_THICK = 0;
 LINEAR_THICK = 0;
-DISTRIBUTED_LOAD = 0;
+DISTRIBUTED_LOAD = 1;
 d=100;
 if CONSTANT_THICK == 1
     thick=h*ones(1,Nelem);
     txxBEM = thick;
     loadFEM = [];
 elseif LINEAR_THICK == 1 || DISTRIBUTED_LOAD == 1
-    importFromFile.toggle = 0; % NO-FILE to read
+    importFromFile.toggle = 1; % NO-FILE to read
     [loadFEM,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
         1025, 1, h, d);
 end
