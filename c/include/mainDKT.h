@@ -1,5 +1,5 @@
-#ifndef MAIN_FEM_HEADER_FILE
-    #define MAIN_FEM_HEADER_FILE
+#ifndef MAIN_DKT_HEADER_FILE
+    #define MAIN_DKT_HEADER_FILE
 
     #include<stdio.h>
     #include<stdlib.h> //malloc

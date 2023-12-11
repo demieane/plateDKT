@@ -21,11 +21,11 @@ clear all;
 close all;
 clc;
 
+tstart_MATLAB = tic;
 % error('er')
 MODAL_ANALYSIS = 1;
 DYNAMIC_ANALYSIS = 0;
-
-tstart = tic;   
+ 
 
 debugOn=1;
 %==========================================================================
@@ -57,8 +57,8 @@ addpath('phd_verification');
 % load('mesh_h1_half');
 addpath('phd_verification/rect_constant_thick');
 %load('eig_rect_1');%334
-%load('eig_rect_2');%1336
-load('eig_rect_3');%5344
+load('eig_rect_2');%1336
+%load('eig_rect_3');%5344
 % load('eig_rect_4');%21376
 % load('eig_rect_5');%85504
 
@@ -119,7 +119,7 @@ disp([' > h/span = ',num2str(h/span)]);
 % CC=1 , simply supported along selected edges (Navier Solution static)
 % CC=2 , fully clamped along selected edges
 %--------------------------------------------------------------------------
-CC=2; % boundary condition toggle
+CC=1; % boundary condition toggle
 % Special Cantileaver Case CC=4
 if CC==1
     disp(' SS case along selected edge (w=0)')
@@ -129,7 +129,7 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=3; %loading case
+lll=2; %loading case
 importFromFile=struct('toggle',1,'filename',file1995);
 %
 if lll==1
@@ -203,11 +203,11 @@ Bound3=find(e(5,:)==3);
 Bound4=find(e(5,:)==4);
 %************************THIS IS THE ACTIVE BOUNDARY CONDITION
 % COMMENT: The numbering is offered by the pdeModeler
-Bnodes= [Bound4, Bound1(1)]; %FULL EDGE (x=0)
+%Bnodes= [Bound4, Bound1(1)]; %FULL EDGE (x=0)
 %Bnodes = [Bound4(1), Bound3]; %(x=a)
 % Bnodes = [Bound4];
 %Bnodes=Bound3; %for distributed load from function ANSYS 
-%Bnodes=[Bound1 Bound2 Bound3 Bound4];
+Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -257,9 +257,9 @@ Ng=3; %TO-DO
 
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
-CONSTANT_THICK = 0;
+CONSTANT_THICK = 1;
 LINEAR_THICK = 0;
-DISTRIBUTED_LOAD = 1;
+DISTRIBUTED_LOAD = 0;
 d=100;
 if CONSTANT_THICK == 1
     thick=h*ones(1,Nelem);
@@ -527,7 +527,7 @@ U = mldivide(Kglob,Fglob1); %or backslash
 Ustatic = U;
 save solMatlab Ustatic
 
-telapsed = toc(tstart);
+% telapsed = toc(tstart);
 
 % BBnodes=BBnodes_old;%DIMITRA
 
@@ -589,7 +589,7 @@ hold on;
     view([50 40]);
     zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
 
-
+telapsed_MATLAB = toc(tstart_MATLAB)
 error('er')
 
 %% TIME-MARCHING

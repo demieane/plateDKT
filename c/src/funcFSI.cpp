@@ -1,7 +1,7 @@
 #ifndef MAIN_FEM_HEADER_FILE
     #define MAIN_FEM_HEADER_FILE
 
-    #include "../include/mainFem.h"
+    //#include "../include/mainFem.h"
 
     #ifndef PRECISION_MODE_FEM
         #define PRECISION_MODE_FEM 1 /* 1. DOUBLE, 2. SINGLE */
