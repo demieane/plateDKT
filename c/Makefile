@@ -2,8 +2,9 @@
 # It compiles with 
 # >> gcc -Wall -g3 -fsanitize=address ./src/mainDKT.cpp ./src/funcFEM.cpp ./src/funcMat.cpp ./src/funcFSI.cpp -o mainDKT_CPP -lm -lblas -llapack
 TARGET_EXEC := mainDKT_CPP
-CC = gcc
-#CC = nvcc
+CC = g++
+# CC = nvcc
+# GCC is used for compiling C programs while G++ is used for compiling C++ programs. 
 
 # List your source and build output directories:
 SRC_DIR := src
@@ -26,7 +27,7 @@ OBJ := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
 CFLAGS   := -Wall -g3             # some warnings about bad code
 #CFLAGS   :=               # some warnings about bad code
 #LDFLAGS :=  -lm -lblas -llapack               # Left empty if no libs are needed
-LDFLAGS :=  -L/usr/lib -llapack -lblas -lm 
+LDFLAGS :=  -I/usr/include/eigen3 -L/usr/lib -llapack -lblas -lm 
 
 # this tells the make file which targets to execute based on their names
 all: mydir printInfo file1 file2 file3 file4 $(TARGET_EXEC) 

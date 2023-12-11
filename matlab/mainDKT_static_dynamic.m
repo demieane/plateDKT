@@ -21,12 +21,10 @@ clear all;
 close all;
 clc;
 
-<<<<<<< HEAD
 tstart_MATLAB = tic;
 % error('er')
-=======
+
 error('er')
->>>>>>> 7c23d4455581a77a558d86aa79d9fcc0378f0321
 MODAL_ANALYSIS = 1;
 DYNAMIC_ANALYSIS = 0;
  

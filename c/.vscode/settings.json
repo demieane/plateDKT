@@ -2,6 +2,7 @@
     "files.associations": {
         "mainfem.h": "c",
         "math.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "random": "cpp"
     }
 }

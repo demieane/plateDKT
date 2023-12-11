@@ -11,6 +11,11 @@ debugOn = 1;
 
 MODAL_ANALYSIS = 1;
 DYNAMIC_ANALYSIS = 0;
+addpath('mesh/hydrofoil');%naca functions
+% addpath('mesh/heathcote');
+addpath('phd_verification');
+
+addpath('phd_verification/rect_constant_thick');
 
 %load('eig_rect_1');%334
 load('eig_rect_2');%1336
@@ -245,7 +250,7 @@ elseif modeFem == 2
     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
 end
 
-%error('er')
+% error('er')
 
 %% RUN THE CODE
 

@@ -12,6 +12,16 @@
 #include "../src/funcFEM.cpp" // Karperaki functions for DKT fem
 #include "../src/funcFSI.cpp" // Functions used for the coupling of bem - fem 
 
+/*              Dec 11-2023 Sparse matrix handling */
+#include <Eigen/Sparse>
+#include <Eigen/Dense>
+
+typedef Eigen::SparseMatrix<double> SpMat; // declares a column-major sparse matrix type of double
+using Eigen::VectorXd;
+using Eigen::MatrixXd;
+/*              Dec 11-2023 Sparse matrix handling */
+
+
 #ifndef FUNCMAT
     #define FUNCMAT
     #include "../src/funcMat.cpp" // Functions used to facilitate martix, vector operations in c
@@ -23,6 +33,53 @@
 int main(int argc, char **argv){
 
     printf("\n----\n RUNNING IN MODE: %d (1. DOUBLE, 2. SINGLE) \n----\n", PRECISION_MODE_FEM);
+
+/*
+    int N = 10;
+    int M = 10;
+    SpMat m1(N,M);
+    VectorXd b(M);
+
+    b.coeffRef(1) = 1.0;
+    b.coeffRef(3) = 1.0;
+
+    //m1.reserve(VectorXi::Constant(M, 4)); // 4: estimated number of non-zero enties per column
+    m1.coeffRef(0,0) = 1;
+    m1.coeffRef(0,1) = 2.;
+    m1.coeffRef(1,1) = 3.;
+    m1.coeffRef(2,2) = 4.;
+    m1.coeffRef(2,3) = 5.;
+    m1.coeffRef(3,2) = 6.;
+    m1.coeffRef(3,3) = 7.;
+    m1.makeCompressed();
+
+    for (int ii = 0; ii<4; ii++){
+        for (int jj = 0; jj<4; jj++){
+            printf("%f, ", m1.coeffRef(ii,jj));
+        }
+        printf("\n");
+    }
+
+    for (int ii = 0; ii<4; ii++){
+        //for (int jj = 0; jj<4; jj++){
+        printf("%f, ", b.coeffRef(ii));
+        //}
+        printf("\n");
+    }
+
+    // Solving:
+    Eigen::SimplicialCholesky<SpMat> chol(m1);  // performs a Cholesky factorization of A
+    Eigen::VectorXd x = chol.solve(b);         // use the factorization to solve for the given right hand side
+
+    for (int ii = 0; ii<4; ii++){
+        //for (int jj = 0; jj<4; jj++){
+        printf("%f, ", x.coeffRef(ii));
+        //}
+        printf("\n");
+    }
+
+    exit(55);
+*/
 
     clock_t tstart, tend;
     tstart = clock();
@@ -530,8 +587,91 @@ int main(int argc, char **argv){
     }
 
     // solve linear system of eqs. using LAPACK sgels_ function
-    linearSystemSolve<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
-    printf("    SOLVED LINEAR SYSTEM\n");
+    //linearSystemSolve<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
+    //printf("    SOLVED LINEAR SYSTEM\n");
+
+/*              Dec 11-2023 Sparse matrix handling */
+
+    printf("    EIGEN (SPARSE MATRIX) \n");
+    int Sp_size = sizeKMglob_aug;
+    SpMat Sp_Kglob_aug(Sp_size,Sp_size);
+    VectorXd Sp_Fglob_aug(Sp_size);
+    MatrixXd Atest(Sp_size,Sp_size);
+
+    for (int ii=0;ii<Sp_size;ii++){
+        for (int jj=0;jj<Sp_size;jj++){
+            Atest(ii,jj) = Kglob_aug[ii][jj];
+            //Sp_Kglob_aug.coeffRef(ii,jj) = Kglob_aug[ii][jj];
+        }
+        Sp_Fglob_aug.coeffRef(ii) = Fglob_aug[ii][0];
+    }
+    Sp_Kglob_aug = Atest.sparseView(); // make dense -> sparse
+    Sp_Kglob_aug.makeCompressed(); // this is essential
+
+    // Solving using Cholesky: 
+    //Eigen::SimplicialCholesky<SpMat> chol(Sp_Kglob_aug);  // performs a Cholesky factorization of A
+    //Eigen::VectorXd Sp_Usol = chol.solve(Sp_Fglob_aug);   // use the factorization to solve for the given right hand side
+
+    // Solving using LU
+    Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int> >   solver_LU;
+    // Compute the ordering permutation vector from the structural pattern of A
+    solver_LU.analyzePattern(Sp_Kglob_aug); 
+    // Compute the numerical factorization 
+    solver_LU.factorize(Sp_Kglob_aug); 
+    //Use the factors to solve the linear system 
+    Eigen::VectorXd Sp_Usol = solver_LU.solve(Sp_Fglob_aug); 
+
+    printf("    SOLVED LINEAR SYSTEM - EIGEN (SPARSE MATRIX) \n");
+    for (int ii=0;ii<Sp_size;ii++){
+        Usol[ii][0] = Sp_Usol.coeffRef(ii);
+    }
+
+/*
+    b.coeffRef(1) = 1.0;
+    b.coeffRef(3) = 1.0;
+
+    //m1.reserve(VectorXi::Constant(M, 4)); // 4: estimated number of non-zero enties per column
+    m1.coeffRef(0,0) = 1;
+    m1.coeffRef(0,1) = 2.;
+    m1.coeffRef(1,1) = 3.;
+    m1.coeffRef(2,2) = 4.;
+    m1.coeffRef(2,3) = 5.;
+    m1.coeffRef(3,2) = 6.;
+    m1.coeffRef(3,3) = 7.;
+    m1.makeCompressed();
+
+    for (int ii = 0; ii<4; ii++){
+        for (int jj = 0; jj<4; jj++){
+            printf("%f, ", m1.coeffRef(ii,jj));
+        }
+        printf("\n");
+    }
+
+    for (int ii = 0; ii<4; ii++){
+        //for (int jj = 0; jj<4; jj++){
+        printf("%f, ", b.coeffRef(ii));
+        //}
+        printf("\n");
+    }
+
+    // Solving:
+    Eigen::SimplicialCholesky<SpMat> chol(m1);  // performs a Cholesky factorization of A
+    Eigen::VectorXd x = chol.solve(b);         // use the factorization to solve for the given right hand side
+
+    for (int ii = 0; ii<4; ii++){
+        //for (int jj = 0; jj<4; jj++){
+        printf("%f, ", x.coeffRef(ii));
+        //}
+        printf("\n");
+    }
+*/
+
+
+/*              Dec 11-2023 Sparse matrix handling */
+
+
+
+
 
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
