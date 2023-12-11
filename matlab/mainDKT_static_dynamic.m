@@ -24,8 +24,8 @@ clc;
 tstart_MATLAB = tic;
 % error('er')
 
-error('er')
-MODAL_ANALYSIS = 1;
+% error('er')
+MODAL_ANALYSIS = 0;
 DYNAMIC_ANALYSIS = 0;
  
 

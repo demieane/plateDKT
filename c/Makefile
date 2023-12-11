@@ -1,7 +1,7 @@
 # Name your final target, that is, your executable:
 # It compiles with 
 # >> gcc -Wall -g3 -fsanitize=address ./src/mainDKT.cpp ./src/funcFEM.cpp ./src/funcMat.cpp ./src/funcFSI.cpp -o mainDKT_CPP -lm -lblas -llapack
-TARGET_EXEC := mainDKT_CPP
+TARGET_EXEC := mainDKT_CPP2
 CC = g++
 # CC = nvcc
 # GCC is used for compiling C programs while G++ is used for compiling C++ programs. 
@@ -24,8 +24,8 @@ OBJ := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
 # Now let's handle the flags
 # If you want to print every warning so that you can examine 
 # your code and make it better than ever, use the -Wall flag.
-CFLAGS   := -Wall -g3             # some warnings about bad code
-#CFLAGS   :=               # some warnings about bad code
+#CFLAGS   := -Wall -g3             # gcc some warnings about bad code
+CFLAGS   :=   -std=c++14            # g++
 #LDFLAGS :=  -lm -lblas -llapack               # Left empty if no libs are needed
 LDFLAGS :=  -I/usr/include/eigen3 -L/usr/lib -llapack -lblas -lm 
 

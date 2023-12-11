@@ -586,12 +586,11 @@ int main(int argc, char **argv){
         printf("    UNIFORM LOAD: P=%f [Pa]\n",inDataFem.P_load);
     }
 
-    // solve linear system of eqs. using LAPACK sgels_ function
+    // ALTERNATIVE FROM BLAS/LAPACK solve linear system of eqs. using LAPACK sgels_ function
     //linearSystemSolve<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Fglob_aug, Usol);
     //printf("    SOLVED LINEAR SYSTEM\n");
 
 /*              Dec 11-2023 Sparse matrix handling */
-
     printf("    EIGEN (SPARSE MATRIX) \n");
     int Sp_size = sizeKMglob_aug;
     SpMat Sp_Kglob_aug(Sp_size,Sp_size);
@@ -625,48 +624,6 @@ int main(int argc, char **argv){
     for (int ii=0;ii<Sp_size;ii++){
         Usol[ii][0] = Sp_Usol.coeffRef(ii);
     }
-
-/*
-    b.coeffRef(1) = 1.0;
-    b.coeffRef(3) = 1.0;
-
-    //m1.reserve(VectorXi::Constant(M, 4)); // 4: estimated number of non-zero enties per column
-    m1.coeffRef(0,0) = 1;
-    m1.coeffRef(0,1) = 2.;
-    m1.coeffRef(1,1) = 3.;
-    m1.coeffRef(2,2) = 4.;
-    m1.coeffRef(2,3) = 5.;
-    m1.coeffRef(3,2) = 6.;
-    m1.coeffRef(3,3) = 7.;
-    m1.makeCompressed();
-
-    for (int ii = 0; ii<4; ii++){
-        for (int jj = 0; jj<4; jj++){
-            printf("%f, ", m1.coeffRef(ii,jj));
-        }
-        printf("\n");
-    }
-
-    for (int ii = 0; ii<4; ii++){
-        //for (int jj = 0; jj<4; jj++){
-        printf("%f, ", b.coeffRef(ii));
-        //}
-        printf("\n");
-    }
-
-    // Solving:
-    Eigen::SimplicialCholesky<SpMat> chol(m1);  // performs a Cholesky factorization of A
-    Eigen::VectorXd x = chol.solve(b);         // use the factorization to solve for the given right hand side
-
-    for (int ii = 0; ii<4; ii++){
-        //for (int jj = 0; jj<4; jj++){
-        printf("%f, ", x.coeffRef(ii));
-        //}
-        printf("\n");
-    }
-*/
-
-
 /*              Dec 11-2023 Sparse matrix handling */
 
 

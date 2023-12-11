@@ -256,7 +256,7 @@ end
 
 tstart = tic;
 if modeFem == 1
-    system('../c/./mainDKT_CPP');
+    system('../c/./mainDKT_CPP2');
 elseif modeFem == 2
     system('../c/./mainDKT_CPP');
 %     system('../c/./mainDKT');

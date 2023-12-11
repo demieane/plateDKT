@@ -11,7 +11,7 @@
     #endif
 
     #ifndef MODAL_ANALYSIS
-        #define MODAL_ANALYSIS 1 /* Find eigenfrequencies */
+        #define MODAL_ANALYSIS 0 /* Find eigenfrequencies */
     #endif
 
     #ifndef DYNAMIC_ANALYSIS
