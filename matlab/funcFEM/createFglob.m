@@ -53,6 +53,9 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
         floc=Area(kk)*P_load/3*[1 0 0 1 0 0 1 0 0]';% lumped mass approach for the uniform load
     elseif lll==3 %distributed load via mapping func
         floc=Area(kk)*Fx_new(kk)/3*[1 0 0 1 0 0 1 0 0]';
+        if kk == 1
+            LOAD = Fx_new(kk)
+        end
     end
 %     floc
     %***********************************

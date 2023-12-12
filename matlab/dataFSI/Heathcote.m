@@ -2,27 +2,28 @@
 load('solMatlab_dynamic_test_newmark');
 wNewmark = solution.w;
 
-load('solMatlab_dynamic_test_crankNicolson');
-wCrankNicolson = solution.w;
+% load('solMatlab_dynamic_test_crankNicolson');
+% wCrankNicolson = solution.w;
 
-load('solMatlab_dynamic_test_implicitEuler');
-wImplicitEuler = solution.w;
+% load('solMatlab_dynamic_test_implicitEuler');
+% wImplicitEuler = solution.w;
 
 NODE = 200;
 
 figure;
 hold on;grid on;
-for ii = 2:length(t)
+for ii = 1:224%length(t)
     wNM_data(ii) = wNewmark(NODE,ii);
-    wCR_data(ii) = wCrankNicolson(NODE,ii);
-    wIE_data(ii) = wImplicitEuler(NODE,ii);
-%     h0=plot(t(ii)/inData.T3,w(ii),'b.-', 'MarkerSize',2);
+    wNM_C(ii)=w_fromC(NODE,ii)*250;
+%     wCR_data(ii) = wCrankNicolson(NODE,ii);
+%     wIE_data(ii) = wImplicitEuler(NODE,ii);
 end
-h1 = plot(t/inData.T3,wNM_data,'b.-', 'MarkerSize',4);
+h1 = plot(t(1:224)/inData.T3,wNM_data,'b.-', 'MarkerSize',4);
 hold on;grid on;
-h2 = plot(t/inData.T3,wCR_data,'ro', 'MarkerSize',4);
-h3 = plot(t/inData.T3,wIE_data,'ks', 'MarkerSize',4);
-legend([h1 h2 h3],'newmark (MATLAB)', 'Crank-Nicolson (MATLAB)','Implicit Euler (MATLAB)');
+h1_C = plot(t(1:224)/inData.T3,wNM_C,'ks', 'MarkerSize',4);
+% h2 = plot(t/inData.T3,wCR_data,'ro', 'MarkerSize',4);
+% h3 = plot(t/inData.T3,wIE_data,'ks', 'MarkerSize',4);
+% legend([h1 h2 h3],'newmark (MATLAB)', 'Crank-Nicolson (MATLAB)','Implicit Euler (MATLAB)');
 xlabel('t/T');
 ylabel(['w, NODE=',num2str(NODE)]);
 

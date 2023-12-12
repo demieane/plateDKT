@@ -10,7 +10,7 @@ clc;
 debugOn = 1; 
 
 MODAL_ANALYSIS = 1;
-DYNAMIC_ANALYSIS = 0;
+DYNAMIC_ANALYSIS = 1;
 addpath('mesh/hydrofoil');%naca functions
 addpath('mesh/heathcote');
 load('mesh_h2_half');
@@ -216,8 +216,8 @@ if lll==3%distributed load & distributed thickness
     ycp=yc_fem_data;
     tinstance = 100;%100;
     fcp = DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
-%     tcp= 0.*th_fem_data + h;
-    tcp= th_fem_data + 2.5*chord.*(xc_fem_data-chord/2).^2;
+    tcp= 0.*th_fem_data + h;
+%     tcp= th_fem_data + 2.5*chord.*(xc_fem_data-chord/2).^2;
 %     tcp= th_fem_data;
     fwrite(file, length(xcp(:)),'int');
     % x-coords
@@ -242,6 +242,7 @@ if DYNAMIC_ANALYSIS == 1
     fwrite(file, inData.omega3, precision);
     fwrite(file, inData.dt, precision);
     fwrite(file, inData.Nper, precision);
+    fwrite(file, inData.T3, precision);
 end
 fclose(file);
 
@@ -251,7 +252,7 @@ elseif modeFem == 2
     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
 end
 
-% error('er')
+error('er')
 
 %% RUN THE CODE
 
@@ -284,12 +285,19 @@ for i = 1:rowsUsol
     end
 end
 
-u_fromC=Usol(1:GEN_fromC,:); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
+if DYNAMIC_ANALYSIS == 1
+    uu_dot99 = Usol(1:GEN_fromC,:); 
+    uu99 = Usol(sizeM+1:sizeM+GEN_fromC,:);
+    u_fromC = uu99;
+    % w99=uu99(1:3:end,:);   % vertical displacement
+else 
+    u_fromC=Usol(1:GEN_fromC,:); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)   
+end
 
 w_fromC=u_fromC(1:3:end,:);   % vertical displacement
 bx_fromC=u_fromC(2:3:end,:);  % rotation x
 by_fromC=u_fromC(3:3:end,:);  % rotation y
-
+    
 % % load('FEM_sol_h182_r_h2');
 % % 
 % % max(abs(Usol(1:sizeM,1:end-1) - u(1:sizeM,2:end) ))
@@ -298,11 +306,14 @@ by_fromC=u_fromC(3:3:end,:);  % rotation y
 % % 
 % % uu_dot = u(1:GEN,:);
 
-% uu_dot99 = Usol(1:GEN_fromC,:); 
+
 % 
-% uu99 = Usol(sizeM+1:sizeM+GEN_fromC,:);
-% 
-% w99=uu99(1:3:end,:);   % vertical displacement
+
+
+
+%% FOR DYNAMIC ANALYSIS
+
+
 
 
 %% DEBUG

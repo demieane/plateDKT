@@ -112,10 +112,10 @@ int main(int argc, char **argv){
             mytype p2 = 2.5;
         #endif
         #if PRECISION_MODE_FEM == 1 
-            //mytype p1 = 20.55;
-            //mytype p2 = 20.55;
-            mytype p1 = 5.55;
-            mytype p2 = 5.55;
+            mytype p1 = 20.55;
+            mytype p2 = 20.55;
+            //mytype p1 = 5.55;
+            //mytype p2 = 5.55;
         #endif
 
         mytype *pparam1, *pparam2;
@@ -627,15 +627,14 @@ int main(int argc, char **argv){
 /*              Dec 11-2023 Sparse matrix handling */
 
 
-
-
-
     //************************************************************************************
     //  DKT PLATE SOLVER: OUTPUT BINARY FILE for Matlab Post-Processor
     //************************************************************************************
     //int optionSelect = 0;
 
+    #if DYNAMIC_ANALYSIS == 0 // only for static analysis
     CuFEMNum2DWriteDataInBinary<mytype>(sizeKMglob_aug, 1, Usol, wingMeshFem.GEN);
+    #endif
 
     //CuFEMNum2DWriteMatrix<mytype>(sizeKMglob_aug, sizeKMglob_aug, Kglob_aug, Mglob_aug, Fglob_aug);
 
@@ -667,7 +666,7 @@ int main(int argc, char **argv){
             mytype t = 0.0;
             mytype dt = inDataFem.dt;
             mytype Tp = 2*M_PI/inDataFem.omega3; // period of motion
-            int NtimeSteps = ceil((2*Tp)/dt)+1;
+            int NtimeSteps = ceil((1*Tp)/dt)+1;
             //int NtimeSteps = ceil((inDataFem.Nper*Tp)/dt)+1;
             printf("    dt=%10.4f, Tp=%10.4f, NtimeSteps=%d \n", dt, Tp, NtimeSteps);
 
@@ -711,9 +710,8 @@ int main(int argc, char **argv){
                 printf("    %10.8f, ",G[i][d]);
             }
 
+            #if (TIME_MARCHING_METHOD == 1) /* 1. Newmark, 2. Crank-Nicolson */
             //==========TIME INTEGRATION============
-            mytype theta = 0.5; //Crank-Nicolson
-            //
             mytype **u_t; // u(:,d)
             allocate2Darray(sz2,NtimeSteps,&u_t); //u=[qdot;q]
             //
@@ -749,7 +747,7 @@ int main(int argc, char **argv){
             for (int i = 0;i<sz1;i++){
                 qdot2_buffer[i][0] = 0; // re-initialize
             }
-            linearSystemSolve<mytype>(sz1, sz1, AA, BB, qdot2_buffer);
+            linearSystemSolve<mytype>(sz1, sz1, AA, BB, qdot2_buffer); //fix with EIGEN
 
             //printf("qdot2_buffer[295][0]=%10.15f, ",qdot2_buffer[295][0]);
 
@@ -762,34 +760,27 @@ int main(int argc, char **argv){
             allocate2Darray<mytype>(sz1,1,&pr_disp);
 
             mytype suma1, suma2;
-            for (int d = 1; d< NtimeSteps-1 ; d++){  
-            //for (int d = 0; d< 100 ; d++){   
+            for (int d = 0; d< NtimeSteps-1; d++){    
                 printf("\n    d (time) = %d\n",d);   
                 t = t + dt; // t in [sec]
 
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                             distrLoad, G, d+1);//G(:,d+1)
-/*
+
                 printf("\n    G(1:10,%d)=\n",d);
                 for (int i=0;i<10;i++){
                     printf("%10.8f, ",G[i][d+1]);
                 }            
-*/
-                /* 
-                // DOES NOT WORK!!!! ILL-CONDITIONED DENSE SYSTEM (dgesv_) fails
-                timeIntegrationCN((d+1), dt, theta, sz2, G, Mglob_aug, Kglob_aug, Cdamp, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
-                */
 
-                // TO DO: Use newmark since it is the same with crank-nicolson
-
-                /*
+                exit(55);
+                /*===========================
                 pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
                 pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
 
                 AA = Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
                 BB = Fglob_t - C*pr_vel- Kglob*pr_disp;
                 qdot2(:,d+1) = AA\BB; 
-                */
+                ===========================*/
                 for (int i = 0; i <sz1;i++) {
                     pr_vel[i][0] = qdot[i][d] + (1.0-gamma)*dt*qdot2[i][d];
                     pr_disp[i][0] = q[i][d] + dt*qdot[i][d] + mypow<mytype>(dt, 2.0)*(0.5-beta)*qdot2[i][d];
@@ -835,7 +826,7 @@ int main(int argc, char **argv){
                 for (int i = 0;i<sz1;i++){
                     qdot2_buffer[i][0] = 0; // re-initialize
                 }
-                linearSystemSolve<mytype>(sz1, sz1, AA, BB, qdot2_buffer);
+                linearSystemSolve<mytype>(sz1, sz1, AA, BB, qdot2_buffer); // FIX WITH EIGEN
 
                 for (int i = 0;i<sz1;i++){
                     qdot2[i][d+1]=qdot2_buffer[i][0];
@@ -846,7 +837,6 @@ int main(int argc, char **argv){
                     printf("%f,",qdot2[i][d+1]);
                 }
 */
-
                 for (int i=0; i<sz1; i++){
                     q[i][d+1] = pr_disp[i][0] + mypow<mytype>(dt, 2.0)*beta*qdot2[i][d+1];
                     qdot[i][d+1] = pr_vel[i][0] + gamma*dt*qdot2[i][d+1];
@@ -882,8 +872,20 @@ int main(int argc, char **argv){
 
                 //timeIntegrationNewmark<mytype>(); // TIME INTEGRATION WITH CRANK-NICOLSON 
                 //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
-
             }
+            #endif
+            #if (TIME_MARCHING_METHOD == 2) /* 1. Newmark, 2. Crank-Nicolson */
+            //==========TIME INTEGRATION============
+            mytype theta = 0.5; //Crank-Nicolson
+            //
+            mytype **u_t; // u(:,d)
+            allocate2Darray(sz2,NtimeSteps,&u_t); //u=[qdot;q]
+            //======================================
+
+             
+            // DOES NOT WORK!!!! ILL-CONDITIONED DENSE SYSTEM (dgesv_) fails
+            timeIntegrationCN((d+1), dt, theta, sz2, G, Mglob_aug, Kglob_aug, Cdamp, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
+            #endif
 
             CuFEMNum2DWriteDataInBinary<mytype>(sz2, NtimeSteps, u_t, wingMeshFem.GEN);
 

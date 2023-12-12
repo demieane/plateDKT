@@ -25,14 +25,21 @@ if triangleData.ImportFromMatFile
     xx=xc_fem_data;
     yy=yc_fem_data;
 
-    fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data [N]
-    
+    dummy = 100;
+%     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data [N]
+    fx=DCoefpres(:,:,dummy)*(0.5*fluid_dens*Uvel^2); %dimensionalize data [N]
     % filter for smooth transition from rest to fully developed motion
-    f = inData.f0;
-    tt = d*(inData.dt/inData.T3); 
-    filter = 1.0 - exp(-f.*tt.^2);
-    fx = fx*filter;
+%     fx = fx*sin(inData.omega3*d*inData.dt);
     
+    d
+    SINUS = sin(inData.omega3*d*inData.dt)
+%     f = inData.f0;
+%     tt = d*(inData.dt/inData.T3); 
+%     filter = 1.0 - exp(-f.*tt.^2);
+%     fx = fx*filter.*sin(inData.omega3*tt);
+    
+%     figure
+%     plot(tt,filter);
 %     Area = chord*span; % IS THIS OK?
 %     fx=fx/Area;
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data

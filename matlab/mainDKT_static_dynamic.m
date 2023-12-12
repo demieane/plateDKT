@@ -607,16 +607,18 @@ telapsed_MATLAB = toc(tstart_MATLAB)
 %% TIME-MARCHING
 if DYNAMIC_ANALYSIS == 1
 
-    newmark = 0;
-    implicitEuler = 1;
+    newmark = 1;
+    implicitEuler = 0;
     crankNicolson = 0;
    
     T=2*pi/inData.omega3;%sec
     % wf=2*pi/T; %rad/s
     ddt=inData.dt;%T/100; %time-step
-    t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
+%     t=[0:ddt:(inData.Nper)*T];%[0:h:2*T]; %time [sec]
+    t=[0:ddt:(1)*T];%[0:h:2*T]; %time [sec]
     
-    Ntimesteps = ceil((inData.Nper)*T/ddt)+1
+    Ntimesteps = ceil((1)*T/ddt)+1
+%     Ntimesteps = ceil((inData.Nper)*T/ddt)+1
     length(t)
 
     d=1; %starting point
@@ -640,6 +642,9 @@ if DYNAMIC_ANALYSIS == 1
         G = zeros(length(Fm),length(t));
     end
     G(:,d) = Fm;
+    
+    Fglob_t(1:10)
+%     error('er')
 
     u=[qdot;q];
 
@@ -667,6 +672,10 @@ if DYNAMIC_ANALYSIS == 1
             % Update load vector
             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1,triangleData);
             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
+            
+            Fglob_t(1:10)
+            
+            error('er')
 
             pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
@@ -721,9 +730,9 @@ if DYNAMIC_ANALYSIS == 1
     xlabel('x-axis');ylabel('y-axis');
     title('(contour)','FontWeight','normal');
 
-%     save solMatlab_dynamic_test_newmark
+    save solMatlab_dynamic_test_newmark
 %     save solMatlab_dynamic_test_crankNicolson
-    save solMatlab_dynamic_test_implicitEuler
+%     save solMatlab_dynamic_test_implicitEuler
 
     if debugOn
         Name = 'dynamicFEM_h182_r';

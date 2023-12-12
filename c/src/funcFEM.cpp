@@ -79,6 +79,7 @@ struct InDataRecFem{
     T omega3;
     T dt;
     T Nper;
+    T T3;
 };
 
 template<class T>
@@ -350,6 +351,7 @@ void CuFEMNum2DReadInData(struct InDataRecFem<T> *inDataFem ){
         fread(&(inDataFem->omega3), sizeof(T) , 1, file);
         fread(&(inDataFem->dt), sizeof(T) , 1, file);
         fread(&(inDataFem->Nper), sizeof(T) , 1, file);
+        fread(&(inDataFem->T3), sizeof(T) , 1, file);
     #endif
     fclose(file);
 
@@ -1654,10 +1656,11 @@ void CuFEMNum2DWriteMatrix(int rows, int cols, T **K, T **M, T **F){
 template<class T>
 void RayleighDampingCoefs(T *a, T *b){
     
-    *a = 0.166328454612080;
-    *b = 2.473011484105673*mypow<T>(10.0,-4.0);
+    //*a = 0.166328454612080;
+    //*b = 2.473011484105673*mypow<T>(10.0,-4.0);
 
-
+    *a = 5.9397;
+    *b = 2.2403*mypow<T>(10.0,-4.0);
 }
 
 template<class T>
@@ -1671,9 +1674,10 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
         elemFemArr->Fglob[i][0] = 0;
     }
 
-    T lumpedMass[9] = {1, 0, 0, 1, 0, 0, 1, 0, 0};
+    T lumpedMass[9] = {1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
     T q = 0.0;
     T w3 = inDataFem->omega3;
+    T T3 = inDataFem->T3;
     //T t = d*inDataFem->dt;
     T t = (d+1)*inDataFem->dt; // to match matlab
     int cntFglob;
@@ -1686,12 +1690,21 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
     for (int kk = 0;kk<wingMeshFem->Nelem;kk++){
 
         if (inDataFem->LL == 3){
-            q = distrLoad[kk]*sin(w3*t);
             /*
-            if (kk == 0){
-                printf("\n    d = %4d, t=%10.4f, sin(w3 t)=%10.4f,\n",d, t, sin(w3*t));
-            }
+            T filter;
+            T tnonDim = t/T3;
+            filter = 1.0 - exp(-1.5*mypow<T>(tnonDim,2));
+            q = distrLoad[kk]*sin(w3*tnonDim)*filter;
             */
+            q = distrLoad[kk];//*sin(w3*t);
+            //printf("SINUS %f=\n",sin(w3*t));
+
+            //exit(55);
+            
+            if (kk == 0){
+                printf("\n    d = %4d, t=%10.4f, sin(w3 t)=%10.4f, q=%f\n",d, t, sin(w3*t), q);
+            }
+            
         }
         else{
             printf("Problem with load case! Inside createFglob\n");
