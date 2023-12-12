@@ -54,7 +54,7 @@ for d = 2:Nt%N+1
     % sure that in each time step I reveal the right amount of information
     % based on what was known until then.
     % Check out(!): ExistingUntilThatTime
-    pause(0.3);
+    pause(0.05);
     
     t
     ddt
@@ -76,7 +76,7 @@ for d = 2:Nt%N+1
 
 %     set(hPlate(1,1),'ZData',w);
     view([-25 25]);
-    htit = title(hax,['t=',num2str(t, '%5.3f sec')]);
+    htit = title(hax,['t/T=',num2str(t/inData.T3, '%5.3f')]);
 
 
     Fig=getframe(hfig);

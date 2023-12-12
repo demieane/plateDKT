@@ -1,4 +1,34 @@
 %% POST-PROCESSING;
+load('solMatlab_dynamic_test_newmark');
+wNewmark = solution.w;
+
+load('solMatlab_dynamic_test_crankNicolson');
+wCrankNicolson = solution.w;
+
+load('solMatlab_dynamic_test_implicitEuler');
+wImplicitEuler = solution.w;
+
+NODE = 200;
+
+figure;
+hold on;grid on;
+for ii = 2:length(t)
+    wNM_data(ii) = wNewmark(NODE,ii);
+    wCR_data(ii) = wCrankNicolson(NODE,ii);
+    wIE_data(ii) = wImplicitEuler(NODE,ii);
+%     h0=plot(t(ii)/inData.T3,w(ii),'b.-', 'MarkerSize',2);
+end
+h1 = plot(t/inData.T3,wNM_data,'b.-', 'MarkerSize',4);
+hold on;grid on;
+h2 = plot(t/inData.T3,wCR_data,'ro', 'MarkerSize',4);
+h3 = plot(t/inData.T3,wIE_data,'ks', 'MarkerSize',4);
+legend([h1 h2 h3],'newmark (MATLAB)', 'Crank-Nicolson (MATLAB)','Implicit Euler (MATLAB)');
+xlabel('t/T');
+ylabel(['w, NODE=',num2str(NODE)]);
+
+
+error('er')
+
 
 % u_fromC=Usol(1:GEN_fromC); % the vector of nodal unknowns (w1;bx1;by1;....wN;bxN;byN)
 % 
@@ -11,7 +41,7 @@
 % load solution_crankNicolson;
 % load solution_TEST;
 
-load solution_BENCH_matlab
+% load solution_BENCH_matlab
 
 e = ee;
 p = pp;
@@ -57,7 +87,7 @@ for ii = 2:length(t)
     w = solution.w(:,ii);
     h0=plot(t(ii)/inData.T3,w(BBnodesTIP(NODE)),'go-', 'MarkerSize',2);
     %
-    w_fromC = solutionC.w(:,ii);
+    w_fromC = 0;%solutionC.w(:,ii);
     h99=plot(t(ii)/inData.T3,w_fromC(BBnodesTIP(NODE)),'m^-', 'MarkerSize',2);
 end
 legend([h0 h99],'newmark (MATLAB)','newmark (C)');

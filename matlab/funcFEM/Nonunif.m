@@ -27,6 +27,12 @@ if triangleData.ImportFromMatFile
 
     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data [N]
     
+    % filter for smooth transition from rest to fully developed motion
+    f = inData.f0;
+    tt = d*(inData.dt/inData.T3); 
+    filter = 1.0 - exp(-f.*tt.^2);
+    fx = fx*filter;
+    
 %     Area = chord*span; % IS THIS OK?
 %     fx=fx/Area;
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data
@@ -41,8 +47,8 @@ if triangleData.ImportFromMatFile
     
     fx = fx  - 0.*7850*h*ddheave; %FIX
     
-%     tx_modified= 0.*th_fem_data + h; 
-    tx_modified= th_fem_data + 2.5*chord.*(xc_fem_data-chord/2).^2;
+    tx_modified= 0.*th_fem_data + h; 
+%     tx_modified= th_fem_data + 2.5*chord.*(xc_fem_data-chord/2).^2;
 
     prepareLoad_csv(xx,yy,fx,'load_fx.csv',1); %prepare .csv file for ANSYS
     prepareLoad_csv(xx,yy,tx_modified,'sections_tx.csv',2); %prepare .csv file for ANSYS
@@ -187,8 +193,8 @@ ym=(1/3)*(y(IEN(1,:))+y(IEN(2,:))+y(IEN(3,:)));   % y barycentric coordinate
 
 param = 2.55;
 if importFromFile.toggle == 1 || DISTRIBUTED_LOAD == 1
-%     param = 20.55;
-    param = 5.55;
+    param = 20.55;
+%     param = 5.55;
 end
 
 fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), param, length(xm(:)), xm, ym);

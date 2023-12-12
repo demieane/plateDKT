@@ -21,12 +21,14 @@ clear all;
 close all;
 clc;
 
+restoredefaultpath;
+
 tstart_MATLAB = tic;
 % error('er')
 
 % error('er')
 MODAL_ANALYSIS = 0;
-DYNAMIC_ANALYSIS = 0;
+DYNAMIC_ANALYSIS = 1;
  
 
 debugOn=1;
@@ -210,8 +212,8 @@ Bound4=find(e(5,:)==4);
 %Bnodes= [Bound4, Bound1(1)]; %FULL EDGE (x=0)
 %Bnodes = [Bound4(1), Bound3]; %(x=a)
 % Bnodes = [Bound4];
-%Bnodes=Bound3; %for distributed load from function ANSYS 
-Bnodes=[Bound1 Bound2 Bound3 Bound4];
+Bnodes=Bound3; %for distributed load from function ANSYS 
+%Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -265,7 +267,7 @@ triangleData = struct('ImportFromMatFile', 0, 'VerificationPhD', 0,...
                       'StandardCase',0);
 triangleData.ImportFromMatFile = 1;
 
-d=100;
+d=1;
 if triangleData.StandardCase == 1
     thick=h*ones(1,Nelem);
     txxBEM = thick;
@@ -600,13 +602,13 @@ hold on;
     zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])
 
 telapsed_MATLAB = toc(tstart_MATLAB)
-error('er')
+% error('er')
 
 %% TIME-MARCHING
 if DYNAMIC_ANALYSIS == 1
 
-    newmark = 1;
-    implicitEuler = 0;
+    newmark = 0;
+    implicitEuler = 1;
     crankNicolson = 0;
    
     T=2*pi/inData.omega3;%sec
@@ -623,12 +625,12 @@ if DYNAMIC_ANALYSIS == 1
 
     q=zeros(sizeM,length(t)); %displacement unknown vector (previous U)
     qdot=zeros(sizeM,length(t)); %velocity
-    C = 0.*Mglob;
     % 
     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
     % a
     % b
-    Cfull=full(C);Cfull(1:10,1:10)
+%     Cfull=full(C);
+%     Cfull(1:10,1:10)
 
     % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
 
@@ -650,7 +652,7 @@ if DYNAMIC_ANALYSIS == 1
         qdot2=zeros(sizeM,length(t)); %acceleration 
         beta = 0.25;
         gamma = 0.5;
-        [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
+        [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
 
         %initialization    
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
@@ -658,14 +660,13 @@ if DYNAMIC_ANALYSIS == 1
         qdot2(:,1)=AA\BB;
     end
 
-    if newmark
+    if newmark == 1
+        %
         for d = 1:length(t)-1
-
             d
             % Update load vector
-            [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-    %         [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, U, d);
-            [Fglob_t] = createFglob(GEN, Nelem,Fx,Area,LM,Bdofs);
+            [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1,triangleData);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
 
             pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
@@ -681,18 +682,15 @@ if DYNAMIC_ANALYSIS == 1
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
 
         end
-    %    
-    %    
-    else
-    %
-    %
-    % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
-    % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
+        %
+    elseif crankNicolson == 1 || implicitEuler == 1
+        % Am = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
+        % Bm = [C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
         for d = 1:length(t)-1
             d
             % Update load vector
-            [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1);
-            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load,Fx,Area,LM,Bdofs);
+            [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1,triangleData);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
 
@@ -701,17 +699,11 @@ if DYNAMIC_ANALYSIS == 1
 
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
         end
-    %
-    %
-    %
     end
 
 
     hmax = max(max(abs(solution.w)))
-
     (inData.a3 + hmax)/inData.a3
-
-    chord
 
     w = solution.w(:,d);
 
@@ -729,20 +721,14 @@ if DYNAMIC_ANALYSIS == 1
     xlabel('x-axis');ylabel('y-axis');
     title('(contour)','FontWeight','normal');
 
-    % save FEM_newmark
+%     save solMatlab_dynamic_test_newmark
+%     save solMatlab_dynamic_test_crankNicolson
+    save solMatlab_dynamic_test_implicitEuler
 
-    % save FEM_sol_h15_r_h2
-%     save FEM_sol_h182_r_h2
-    save matlab_fem_h182_r_h1
-
-%     error('er')
-    % save FEM_sol_h05_r_h1
-
-
-%     if debugOn
-%         Name = 'dynamicFEM_h182_r';
-%         animatorFunc(solution,length(t),ddt,pp,ee,tt,BBnodes,Name,inData)
-%     end
+    if debugOn
+        Name = 'dynamicFEM_h182_r';
+        animatorFunc(solution,length(t),ddt,pp,ee,tt,BBnodes,Name,inData)
+    end
 
 end
 

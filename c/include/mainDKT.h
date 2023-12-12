@@ -15,7 +15,7 @@
     #endif
 
     #ifndef DYNAMIC_ANALYSIS
-        #define DYNAMIC_ANALYSIS 0 /* Time-varying load */
+        #define DYNAMIC_ANALYSIS 1 /* Time-varying load */
 
         #ifndef TIME_MARCHING_METHOD
             #define TIME_MARCHING_METHOD 1 /* TODO 1. Newmark, 2. Crank-Nicolson */
