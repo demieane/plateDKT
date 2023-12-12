@@ -114,8 +114,8 @@ int main(int argc, char **argv){
         #if PRECISION_MODE_FEM == 1 
             //mytype p1 = 20.55;
             //mytype p2 = 20.55;
-            mytype p1 = 20.55;
-            mytype p2 = 20.55;
+            mytype p1 = 5.55;
+            mytype p2 = 5.55;
         #endif
 
         mytype *pparam1, *pparam2;

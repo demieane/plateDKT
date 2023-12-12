@@ -54,17 +54,15 @@ addpath('funcFEM');
 addpath('dataFSI');
 addpath('mesh');
 addpath('mesh/hydrofoil');%naca functions
-addpath('mesh/heathcote');
-load('mesh_h2_half');
-
+% addpath('mesh/heathcote');
 addpath('phd_verification');
+% load('mesh_h1_half');
 addpath('phd_verification/rect_constant_thick');
-% load('eig_rect_1');%334
-% load('eig_rect_2');%1336
-% load('eig_rect_3');%5344
+%load('eig_rect_1');%334
+load('eig_rect_2');%1336
+%load('eig_rect_3');%5344
 % load('eig_rect_4');%21376
 % load('eig_rect_5');%85504
-
 
 %Create Rectangular plate
 % pderect([0 0.1 -0.3 0.3],'C1')
@@ -82,8 +80,8 @@ disp([' MESH SIZE (DKT Triangles 9-dofs)= ',num2str(size(t,2))]);
 %==========================================================================
 %                             PRE-PROCESSOR
 %==========================================================================
-chord=inData.cRoot;%0.33; %wing chord length
-span=inData.span/2;%1; % wing span length
+chord=10;%inData.cRoot;%0.33; %wing chord length
+span=10;%inData.span;%1; % wing span length
 Uvel =inData.U;%2.52;%m/s
 fluid_dens=1025;%kg/m3
 
@@ -123,7 +121,7 @@ disp([' > h/span = ',num2str(h/span)]);
 % CC=1 , simply supported along selected edges (Navier Solution static)
 % CC=2 , fully clamped along selected edges
 %--------------------------------------------------------------------------
-CC=2; % boundary condition toggle
+CC=1; % boundary condition toggle
 % Special Cantileaver Case CC=4
 if CC==1
     disp(' SS case along selected edge (w=0)')
@@ -261,27 +259,22 @@ Ng=3; %TO-DO
 
 %==========================================================================
 % BENDING STIFFNESS MATRIX (3x3) FOR EACH TRIANGLE
-triangleData = struct('ImportFromMatFile', 0, 'VerificationPhD', 0,...
-                      'StandardCase',0);
-triangleData.ImportFromMatFile = 1;
+triangleData = struct(')
 
+CONSTANT_THICK = 0;
+LINEAR_THICK = 0;
+DISTRIBUTED_LOAD = 1;
 d=100;
-if triangleData.StandardCase == 1
+if CONSTANT_THICK == 1
     thick=h*ones(1,Nelem);
     txxBEM = thick;
     loadFEM = [];
-elseif triangleData.VerificationPhD == 1
-    importFromFile.toggle = 0; % NO-FILE to read
+elseif LINEAR_THICK == 1 || DISTRIBUTED_LOAD == 1
+    importFromFile.toggle = 1; % NO-FILE to read
     [loadFEM,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
-        1025, 1, h, d, triangleData);
-    
-elseif triangleData.ImportFromMatFile == 1
-    importFromFile.toggle = 1; % FILE to read
-    [loadFEM,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
-        1025, 1, h, d, triangleData);
+        1025, 1, h, d);
 end
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
-% error('er')
 
 xg=xw(:,1);
 yg=xw(:,2);
@@ -578,6 +571,7 @@ set(gca,'TickLabelInterpreter','latex');
 hold on;grid minor;
     h0=plot3(pp(1,BBnodes),pp(2,BBnodes),w(BBnodes),'ks','MarkerSize',5);
     h1=pdeplot(p,e,t,'zdata',w);
+%     h1=pdeplot(pp,ee,tt,'XYData',w,"ZData",w);
     h1.Color=[0.2550    0.2625    0.5290];
     view([50 20]);
     zlim([-2.5*max(max(abs(w))) 2.5*max(max(abs(w)))])

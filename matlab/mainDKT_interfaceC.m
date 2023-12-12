@@ -12,17 +12,17 @@ debugOn = 1;
 MODAL_ANALYSIS = 1;
 DYNAMIC_ANALYSIS = 0;
 addpath('mesh/hydrofoil');%naca functions
-% addpath('mesh/heathcote');
+addpath('mesh/heathcote');
+load('mesh_h2_half');
+
 addpath('phd_verification');
-
 addpath('phd_verification/rect_constant_thick');
-
 %load('eig_rect_1');%334
-load('eig_rect_2');%1336
+%load('eig_rect_2');%1336
 %load('eig_rect_3');%5344
-%
-chord=10; %wing chord length
-span=10;  % wing span length
+
+chord=0.1;%10; %wing chord length
+span=0.30;%10;  % wing span length
 Uvel = 1;%inData.U;%2.52;%m/s
 fluid_dens=1025;%kg/m3
 
@@ -39,7 +39,7 @@ h=0.01;%0.12*chord;
 % CC=1 , simply supported along selected edges (Navier Solution static)
 % CC=2 , fully clamped along selected edges
 %--------------------------------------------------------------------------
-CC=1; % boundary condition toggle
+CC=2;%1; % boundary condition toggle
 % Special Cantileaver Case CC=4
 if CC==1
     disp(' SS case along selected edge (w=0)')
@@ -49,7 +49,7 @@ end
 %
 %% Forcing
 % 1- concetrated load, 2- uniform load, 3- distributed load (mapping func)
-lll=2; %loading case
+lll=3;%2; %loading case
 % % importFromFile=struct('toggle',1,'filename',file1995);
 %
 if lll==1
@@ -214,9 +214,10 @@ if lll==3%distributed load & distributed thickness
     load(file1995); %xc_fem_data, yc_fem_data, DCoefpres
     xcp=xc_fem_data;
     ycp=yc_fem_data;
-    tinstance = 100;
+    tinstance = 100;%100;
     fcp = DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
-    tcp= th_fem_data.*0 + h;
+%     tcp= 0.*th_fem_data + h;
+    tcp= th_fem_data + 2.5*chord.*(xc_fem_data-chord/2).^2;
 %     tcp= th_fem_data;
     fwrite(file, length(xcp(:)),'int');
     % x-coords
