@@ -14,7 +14,7 @@ figure;
 hold on;grid on;
 for ii = 1:224%length(t)
     wNM_data(ii) = wNewmark(NODE,ii);
-    wNM_C(ii)=w_fromC(NODE,ii)*250;
+    wNM_C(ii)=w_fromC(NODE,ii);
 %     wCR_data(ii) = wCrankNicolson(NODE,ii);
 %     wIE_data(ii) = wImplicitEuler(NODE,ii);
 end

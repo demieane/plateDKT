@@ -1680,6 +1680,9 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
     T T3 = inDataFem->T3;
     //T t = d*inDataFem->dt;
     T t = (d+1)*inDataFem->dt; // to match matlab
+    T tnondim = t/T3;
+    T filter;
+
     int cntFglob;
 
     if (inDataFem->LL == 2){
@@ -1690,19 +1693,18 @@ void createRHS(struct InDataRecFem<T> *inDataFem,
     for (int kk = 0;kk<wingMeshFem->Nelem;kk++){
 
         if (inDataFem->LL == 3){
-            /*
-            T filter;
-            T tnonDim = t/T3;
-            filter = 1.0 - exp(-1.5*mypow<T>(tnonDim,2));
-            q = distrLoad[kk]*sin(w3*tnonDim)*filter;
-            */
-            q = distrLoad[kk];//*sin(w3*t);
+
+            //filter = 1.0 - exp(-1.5*mypow<T>(tnondim,2));
+            q = distrLoad[kk]*sin(w3*t);//*filter;
+            
+            //q = 100*sin(w3*t);
             //printf("SINUS %f=\n",sin(w3*t));
 
             //exit(55);
             
             if (kk == 0){
-                printf("\n    d = %4d, t=%10.4f, sin(w3 t)=%10.4f, q=%f\n",d, t, sin(w3*t), q);
+                printf("    distrLoad(kk)=%f\n", distrLoad[kk]);
+                printf("\n    d=%4d, t=%10.4f, sin(w3*t)=%10.4f, q=%f\n",d, t, sin(w3*t), q);
             }
             
         }

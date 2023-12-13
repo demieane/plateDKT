@@ -25,18 +25,26 @@ if triangleData.ImportFromMatFile
     xx=xc_fem_data;
     yy=yc_fem_data;
 
-    dummy = 100;
+    dummy = 120;
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data [N]
     fx=DCoefpres(:,:,dummy)*(0.5*fluid_dens*Uvel^2); %dimensionalize data [N]
+    LALA = fx(1)
+    
+%     error('er')
+% % %     fx = fx.*0 + 100;
     % filter for smooth transition from rest to fully developed motion
 %     fx = fx*sin(inData.omega3*d*inData.dt);
     
-    d
-    SINUS = sin(inData.omega3*d*inData.dt)
-%     f = inData.f0;
-%     tt = d*(inData.dt/inData.T3); 
-%     filter = 1.0 - exp(-f.*tt.^2);
-%     fx = fx*filter.*sin(inData.omega3*tt);
+%     [d, sin(inData.omega3*d*inData.dt)]
+    
+    
+    
+%     d
+%     SINUS = sin(inData.omega3*d*inData.dt)
+% %     f = inData.f0;
+% %     tt = d*(inData.dt/inData.T3); 
+% %     filter = 1.0 - exp(-f.*tt.^2);
+% %     fx = fx*filter.*sin(inData.omega3*tt);
     
 %     figure
 %     plot(tt,filter);
@@ -203,6 +211,7 @@ if importFromFile.toggle == 1 || DISTRIBUTED_LOAD == 1
     param = 20.55;
 %     param = 5.55;
 end
+param
 
 fxx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),fx(:), param, length(xm(:)), xm, ym);
 txx=shepard_interp_2d(length(xx(:)),xx(:),yy(:),tx_modified(:), param, length(xm(:)), xm, ym);

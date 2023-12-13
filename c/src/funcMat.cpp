@@ -692,8 +692,7 @@ void timeIntegrationCN(int d, T dt, T theta, int rowsColsG, T **G, T **Mglob_aug
     allocate2Darray<T>(sz2,sz2,&B);
     allocate2Darray<T>(sz2,sz2,&AA);
     allocate2Darray<T>(sz2,sz2,&BB);
-
-    
+ 
     for (int i = 0;i<sz1;i++){
         for (int j = 0;j<sz1;j++){
             // a: part of matrix

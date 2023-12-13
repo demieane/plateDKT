@@ -678,7 +678,7 @@ int main(int argc, char **argv){
             RayleighDampingCoefs<mytype>(&a, &b); // TO DO (based on eigenfrequencies)
             matSum2<mytype>(a, b, sizeKMglob_aug, sizeKMglob_aug, Mglob_aug, Kglob_aug, Cdamp); //C = a*Mglob+b*Kglob;
 
-            printf("    Rayleigh damping coefs. a=%10.4f, b=%10.4f\n",a,b);
+            /*printf("    Rayleigh damping coefs. a=%10.4f, b=%10.4f\n",a,b);
 
             printf("\nCdamp: \n");
             for (int i=0;i<10;i++){
@@ -688,6 +688,7 @@ int main(int argc, char **argv){
                 printf("\n");
             }
             //printf("\nCdamp(end,end)=%10.4f\n", Cdamp[sizeKMglob_aug-1][sizeKMglob_aug-1]/mypow<mytype>(10.0,3.0));
+            */
             //==========DAMPING MATRIX============
 
             //writeMatrixInBinary(sizeKMglob_aug, sizeKMglob_aug, Cdamp);
@@ -703,15 +704,16 @@ int main(int argc, char **argv){
 
             //writeMatrixInBinary(sz2, NtimeSteps, G);
 
+            /*
             printf("\n    sizeKMglob_aug=%d, GEN=%d \n", sizeKMglob_aug, wingMeshFem.GEN);
             printf("    sz1 = %d, sz2 = %d\n",sz1,sz2);
             printf("\n    G(1:10,%d)=\n",d);
             for (int i=0;i<10;i++){
-                printf("    %10.8f, ",G[i][d]);
+                printf(" d=%d,   %10.8f, \n",d, G[i][d]);
             }
-
+            */
             #if (TIME_MARCHING_METHOD == 1) /* 1. Newmark, 2. Crank-Nicolson */
-            //==========TIME INTEGRATION============
+            
             mytype **u_t; // u(:,d)
             allocate2Darray(sz2,NtimeSteps,&u_t); //u=[qdot;q]
             //
@@ -734,45 +736,72 @@ int main(int argc, char **argv){
             mytype **AA,**BB;
             allocate2Darray<mytype>(sz1,sz1,&AA); 
             allocate2Darray<mytype>(sz1,1,&BB); 
-            //printf("\nsz1=%d",sz1);
-
+            //
             for (int i=0; i<sz1;i++){
                 for (int j=0; j<sz1; j++){
                     AA[i][j] = Mglob_aug[i][j] + gamma*dt*Cdamp[i][j] + mypow<mytype>(dt,2.0)*beta*Kglob_aug[i][j];
                     BB[i][0] = BB[i][0] -Cdamp[i][j]*qdot[j][0] - Kglob_aug[i][j]*q[j][0];
                 }
-                BB[i][0] = BB[i][0] + G[i][0];//maybe problematic but we will see
-            }
-
-            for (int i = 0;i<sz1;i++){
+                BB[i][0] = BB[i][0] + G[i][d];//maybe problematic but we will see
                 qdot2_buffer[i][0] = 0; // re-initialize
             }
-            linearSystemSolve<mytype>(sz1, sz1, AA, BB, qdot2_buffer); //fix with EIGEN
+
+            // EIGEN LINEAR SYSTEM OF EQS. SPARSE
+            printf("    Newmark initial guess for qdot2 \n");
+            SpMat Sp_AA(sz1,sz1);
+            VectorXd Sp_BB(sz1);
+            MatrixXd AAtest(sz1,sz1);
+
+            for (int ii=0;ii<sz1;ii++){
+                for (int jj=0;jj<sz1;jj++){
+                    AAtest(ii,jj) = AA[ii][jj];
+                }
+                Sp_BB.coeffRef(ii) = BB[ii][0];
+            }
+            Sp_AA = AAtest.sparseView(); // make dense -> sparse
+            Sp_AA.makeCompressed(); // this is essential
+            // Solving using LU
+            //Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int> >   solver_LU;
+            // Compute the ordering permutation vector from the structural pattern of A
+            solver_LU.analyzePattern(Sp_AA); 
+            // Compute the numerical factorization 
+            solver_LU.factorize(Sp_AA); 
+            //Use the factors to solve the linear system 
+            Eigen::VectorXd Sp_qdot2_buffer = solver_LU.solve(Sp_BB); 
+
+            printf("    SOLVED LINEAR SYSTEM - EIGEN (SPARSE MATRIX) \n");
+            for (int ii=0;ii<sz1;ii++){
+                qdot2[ii][d] = Sp_qdot2_buffer.coeffRef(ii);
+            }
+            // EIGEN LINEAR SYSTEM OF EQS. SPARSE
+
+/*
+            linearSystemSolve<mytype>(sz1, sz1, AA, BB, qdot2_buffer); //fix with EIGEN         
 
             //printf("qdot2_buffer[295][0]=%10.15f, ",qdot2_buffer[295][0]);
 
             for (int i = 0;i<sz1;i++){
                 qdot2[i][d]=qdot2_buffer[i][0];
             }
-
+*/
             mytype **pr_vel, **pr_disp;
             allocate2Darray<mytype>(sz1,1,&pr_vel);
             allocate2Darray<mytype>(sz1,1,&pr_disp);
 
             mytype suma1, suma2;
-            for (int d = 0; d< NtimeSteps-1; d++){    
+            for (int d = 0; d< NtimeSteps-1; d++){  
+            //for (int d = 0; d< 10; d++){   
                 printf("\n    d (time) = %d\n",d);   
                 t = t + dt; // t in [sec]
 
                 createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
                             distrLoad, G, d+1);//G(:,d+1)
 
-                printf("\n    G(1:10,%d)=\n",d);
-                for (int i=0;i<10;i++){
-                    printf("%10.8f, ",G[i][d+1]);
-                }            
+                //printf("\nIN-THE-LOOP    G(1:10,%d)=\n",d);
+                //for (int i=0;i<10;i++){
+                //    printf("%10.8f, ",G[i][d+1]);
+                //}            
 
-                exit(55);
                 /*===========================
                 pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
                 pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
@@ -784,24 +813,10 @@ int main(int argc, char **argv){
                 for (int i = 0; i <sz1;i++) {
                     pr_vel[i][0] = qdot[i][d] + (1.0-gamma)*dt*qdot2[i][d];
                     pr_disp[i][0] = q[i][d] + dt*qdot[i][d] + mypow<mytype>(dt, 2.0)*(0.5-beta)*qdot2[i][d];
+                    BB[i][0] = 0.0;// re - initialize BB 
+                    qdot2_buffer[i][0] = 0; // re-initialize
                 }
-/*
-                printf("\n    pr_vel=\n");
-                for (int i=0;i<10;i++){
-                    printf("%10.8f, ",pr_vel[i][0]);
-                }
-
-                printf("\n    pr_disp=\n");
-                for (int i=0;i<10;i++){
-                    printf("%10.8f, ",pr_disp[i][0]);
-                }
-*/
-                // re - initialize BB 
-                for (int i=0; i<sz1;i++){
-                    BB[i][0] = 0.0;
-                }
-
-                //printf("%\n");
+                //
                 for (int i=0; i<sz1;i++){
                     suma1 = 0;
                     suma2 = 0;
@@ -814,64 +829,37 @@ int main(int argc, char **argv){
                     //printf("%f", suma1);
                     BB[i][0] = suma1 + suma2 + G[i][d+1];//maybe problematic but we will see
                 }
-/*
-                printf("\n   BB=\n");
-                // re - initialize BB 
-                for (int i=0; i<10;i++){
-                    printf("%10.15f, ", BB[i][0]);
-                }
-*/
-                //printf("qdot2[295][0]=%10.15f, ",qdot2[295][0]);
 
-                for (int i = 0;i<sz1;i++){
-                    qdot2_buffer[i][0] = 0; // re-initialize
+                // EIGEN LINEAR SYSTEM OF EQS. SPARSE
+                for (int ii=0;ii<sz1;ii++){
+                    Sp_BB.coeffRef(ii) = BB[ii][0];
                 }
+                Eigen::VectorXd Sp_qdot2_buffer = solver_LU.solve(Sp_BB); 
+
+                printf("    SOLVED LINEAR SYSTEM - EIGEN (SPARSE MATRIX) \n");
+                for (int ii=0;ii<sz1;ii++){
+                    qdot2[ii][d+1] = Sp_qdot2_buffer.coeffRef(ii);
+                }
+                // EIGEN LINEAR SYSTEM OF EQS. SPARSE
+
+/*
                 linearSystemSolve<mytype>(sz1, sz1, AA, BB, qdot2_buffer); // FIX WITH EIGEN
 
                 for (int i = 0;i<sz1;i++){
                     qdot2[i][d+1]=qdot2_buffer[i][0];
-                }
-/*
-                printf("\n qdot2=\n");
-                for (int i = 0;i<10;i++){
-                    printf("%f,",qdot2[i][d+1]);
                 }
 */
                 for (int i=0; i<sz1; i++){
                     q[i][d+1] = pr_disp[i][0] + mypow<mytype>(dt, 2.0)*beta*qdot2[i][d+1];
                     qdot[i][d+1] = pr_vel[i][0] + gamma*dt*qdot2[i][d+1];
                 }
-/*
-                printf("\n q=\n");
-                for (int i = 0;i<10;i++){
-                    printf("%f,",q[i][d+1]/pow(10.0,-7));
-                }
-
-                printf("\n qdot=\n");
-                for (int i = 0;i<10;i++){
-                    printf("%f,",qdot[i][d+1]/pow(10.0,-4));
-                }
-
-*/              
                 // return solution to the u_t vector
                 for (int i=0; i<sz1; i++){
                     u_t[i][d+1] = qdot[i][d+1];
                     u_t[i+sz1][d+1] = q[i][d+1];
                 }
 
-/*
-                printf("\n\nu=\n");
-                for (int i = 0;i<10;i++){
-                    //for (int j=0;j<1;j++){
-                    printf("    %10.8f, ",u_t[i][d+1]);
-                    //}
-                    printf("\n");
-                }
-*/
-                //exit(55);
-
                 //timeIntegrationNewmark<mytype>(); // TIME INTEGRATION WITH CRANK-NICOLSON 
-                //u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
             }
             #endif
             #if (TIME_MARCHING_METHOD == 2) /* 1. Newmark, 2. Crank-Nicolson */
@@ -927,17 +915,22 @@ int main(int argc, char **argv){
             printf("UP TP HERE..\n");
 
             deallocate2Darray<mytype>(sz1,Cdamp);
-            deallocate2Darray<mytype>(sz1,AA); 
-            deallocate2Darray<mytype>(sz1,BB);
+
             //
             deallocate2Darray<mytype>(sz2,u_t);  
             deallocate2Darray<mytype>(sz2,G); //[G(:,d), G(:,d+1)] 
+
+
+            #if TIME_MARCHING_METHOD == 1 
+            deallocate2Darray<mytype>(sz1,AA); 
+            deallocate2Darray<mytype>(sz1,BB);
             deallocate2Darray<mytype>(sz1,q); 
             deallocate2Darray<mytype>(sz1,qdot); 
             deallocate2Darray<mytype>(sz1,qdot2); 
             deallocate2Darray<mytype>(sz1,qdot2_buffer);
             deallocate2Darray<mytype>(sz1,pr_vel);
             deallocate2Darray<mytype>(sz1,pr_disp);
+            #endif
            
 
         }

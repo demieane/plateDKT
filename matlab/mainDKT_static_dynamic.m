@@ -275,12 +275,11 @@ if triangleData.StandardCase == 1
 elseif triangleData.VerificationPhD == 1
     importFromFile.toggle = 0; % NO-FILE to read
     [loadFEM,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
-        1025, 1, h, d, triangleData);
-    
+        1025, 1, h, d, triangleData);   
 elseif triangleData.ImportFromMatFile == 1
     importFromFile.toggle = 1; % FILE to read
     [loadFEM,txxBEM]=Nonunif(x,y,IEN,p,e,t, chord, span, 1, importFromFile,...
-        1025, 1, h, d, triangleData);
+      fluid_dens, Uvel, h, d, triangleData);
 end
 [BeSt2]=BendingStiffness2(E,v,txxBEM,h); %[3,3] matrix
 % error('er')
@@ -395,7 +394,7 @@ if lll==1
     Fglob(ID(1,PNODE))=P_load;
     Fglob1=[Fglob; zeros(length(Bdofs),1)];
 else
-    [Fglob1] = createFglob(lll,GEN,Nelem,P_load,Fx,Area,LM,Bdofs);
+    [Fglob1] = createFglob(lll,GEN,Nelem,P_load,Fx,Area,LM,Bdofs,d,inData); %FIX, FIX
 end
 
 % % Fglob=zeros(GEN,1);
@@ -605,8 +604,8 @@ telapsed_MATLAB = toc(tstart_MATLAB)
 % error('er')
 
 %% TIME-MARCHING
-if DYNAMIC_ANALYSIS == 1
 
+if DYNAMIC_ANALYSIS == 1
     newmark = 1;
     implicitEuler = 0;
     crankNicolson = 0;
@@ -631,19 +630,20 @@ if DYNAMIC_ANALYSIS == 1
     [ C , res_Freq, a, b] = RayleighDamping( [], [], [], [], [], Kglob, Mglob, 1);
     % a
     % b
-%     Cfull=full(C);
-%     Cfull(1:10,1:10)
+% %      Cfull=full(C);
+% %      Cfull(1:10,1:10)/10^(3)
 
     % C=0.005*Mglob + 0.005*Kglob;   %a litte damping helps crank nicolson/newmark
-
-    [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
+    [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d,triangleData);
+    [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx, Area,LM,Bdofs,d,inData);
     Fm = [Fglob_t; zeros(sizeM,1)];
     if d==1
         G = zeros(length(Fm),length(t));
     end
     G(:,d) = Fm;
     
-    Fglob_t(1:10)
+    Fglob_t(1:10)'
+    
 %     error('er')
 
     u=[qdot;q];
@@ -657,13 +657,27 @@ if DYNAMIC_ANALYSIS == 1
         qdot2=zeros(sizeM,length(t)); %acceleration 
         beta = 0.25;
         gamma = 0.5;
-        [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
+        [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs,d,inData);
+        
+%         Fglob_t(1:10)
 
         %initialization    
         AA=Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
         BB=Fglob_t - C*qdot(:,1)- Kglob*q(:,1);
+        
+%         
+%         full(AA(50+1:60+1,50+1:60+1))/10^(4)
+%         BB(22+1:30+1)'
+        
+        
         qdot2(:,1)=AA\BB;
+        
+%         qdot2(1:10,1)'
     end
+    
+%     max(abs(BB_C-BB))
+    
+%     error('err')
 
     if newmark == 1
         %
@@ -671,24 +685,44 @@ if DYNAMIC_ANALYSIS == 1
             d
             % Update load vector
             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1,triangleData);
-            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
             
-            Fglob_t(1:10)
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs,d+1,inData);
             
-            error('er')
+%             Fglob_t(1:10)'
+% %             
+%             error('er')
 
             pr_vel = qdot(:,d)+(1-gamma)*ddt*qdot2(:,d);% + gamma*hhh*qdot2(:,d);
             pr_disp = q(:,d)+ddt*qdot(:,d)+ddt^2*(1/2-beta)*qdot2(:,d);%+hhh^2*beta*qdot2(:,d);
+            
+%             pr_vel(1:10)'
+%             pr_disp(1:10)'
 
             AA = Mglob + gamma*ddt*C + ddt^2*beta*Kglob;
-            BB=Fglob_t - C*pr_vel- Kglob*pr_disp;
+            BB = Fglob_t - C*pr_vel- Kglob*pr_disp;
+            
+%             BB(1:10)
+%             
+%             error('er')
+            
             qdot2(:,d+1) = AA\BB; 
+            
+%             qdot2(1:10,d+1)
 
+            
             q(:,d+1) = pr_disp+ddt^2*beta*qdot2(:,d+1);
             qdot(:,d+1) = pr_vel + gamma*ddt*qdot2(:,d+1);
+            
+%             q(1:10,d+1)
+%             qdot(1:10,d+1)
+            
             %
             u(:,d+1)=[qdot(:,d+1);q(:,d+1)];
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
+            
+% %             u(1:10,d+1)
+% %             
+% %             error('er')
 
         end
         %
@@ -699,7 +733,7 @@ if DYNAMIC_ANALYSIS == 1
             d
             % Update load vector
             [Fx,~]=Nonunif(x,y,IEN,pp,ee,tt, chord, span, 0, importFromFile,fluid_dens, Uvel, h, d+1,triangleData);
-            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs);
+            [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs,d+1,inData);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
 
@@ -710,6 +744,7 @@ if DYNAMIC_ANALYSIS == 1
         end
     end
 
+%     error('er')
 
     hmax = max(max(abs(solution.w)))
     (inData.a3 + hmax)/inData.a3

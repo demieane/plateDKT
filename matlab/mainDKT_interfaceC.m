@@ -14,6 +14,7 @@ DYNAMIC_ANALYSIS = 1;
 addpath('mesh/hydrofoil');%naca functions
 addpath('mesh/heathcote');
 load('mesh_h2_half');
+file1995 = 'bemDATA_h182_r';
 
 addpath('phd_verification');
 addpath('phd_verification/rect_constant_thick');
@@ -23,7 +24,8 @@ addpath('phd_verification/rect_constant_thick');
 
 chord=0.1;%10; %wing chord length
 span=0.30;%10;  % wing span length
-Uvel = 1;%inData.U;%2.52;%m/s
+load(file1995,'inData');
+Uvel = inData.U;%inData.U;%2.52;%m/s
 fluid_dens=1025;%kg/m3
 
 %% STEEL
@@ -118,8 +120,8 @@ Bound4=find(e(5,:)==4);
 %Bnodes= [Bound4, Bound1(1)]; %FULL EDGE (x=0)
 %Bnodes = [Bound4(1), Bound3]; %(x=a)
 % Bnodes = [Bound4];
-%Bnodes=Bound3; %for distributed load from function ANSYS 
-Bnodes=[Bound1 Bound2 Bound3 Bound4];
+Bnodes=Bound3; %for distributed load from function ANSYS 
+%Bnodes=[Bound1 Bound2 Bound3 Bound4];
 %*************************************************************
 %
 BBnodes = Bnodes.*0;
@@ -210,11 +212,11 @@ if lll==1%point load
     fwrite(file, PNODE, 'int');
 end
 if lll==3%distributed load & distributed thickness
-    file1995 = 'bemDATA_h182_r';
-    load(file1995); %xc_fem_data, yc_fem_data, DCoefpres
+%     file1995 = 'bemDATA_h182_r';
+    load(file1995, 'xc_fem_data', 'yc_fem_data', 'th_fem_data', 'DCoefpres');
     xcp=xc_fem_data;
     ycp=yc_fem_data;
-    tinstance = 100;%100;
+    tinstance = 120;%100;
     fcp = DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
     tcp= 0.*th_fem_data + h;
 %     tcp= th_fem_data + 2.5*chord.*(xc_fem_data-chord/2).^2;
@@ -252,7 +254,7 @@ elseif modeFem == 2
     system('cp INDATA_FEM_single.bin ../c/INDATA_FEM_single.bin');
 end
 
-error('er')
+% error('er')
 
 %% RUN THE CODE
 
@@ -266,6 +268,7 @@ end
 telapsed = toc(tstart)
 
 %% Read solution from binary file
+modeFem=1;precision='double';
 
 if modeFem == 1
     fileID = fopen('../c/OUTDATA_FEM_double.bin','rb')
@@ -306,8 +309,8 @@ by_fromC=u_fromC(3:3:end,:);  % rotation y
 % % 
 % % uu_dot = u(1:GEN,:);
 
-
-% 
+error('er')
+ 
 
 
 

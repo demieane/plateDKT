@@ -1,13 +1,13 @@
-function [Fglob1] = createFglob(lll,GEN,Nelem,P_load,Fx,Area,LM,BBnodes)
+function [Fglob1] = createFglob(lll,GEN,Nelem,P_load,Fx,Area,LM,BBnodes,d,inData)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
 Fglob=zeros(GEN,1);
 % GEN
 % Nelem
-
-% Fx_new = Fx.*sin(wf*t);
-Fx_new = Fx;
+Fx(1)
+Fx_new = Fx.*sin(inData.omega3*d*inData.dt);
+% Fx_new = Fx;
 
 for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
   
@@ -54,7 +54,9 @@ for kk=1:Nelem %for each element (iS THIS TRIANGLE 1 IN t?)
     elseif lll==3 %distributed load via mapping func
         floc=Area(kk)*Fx_new(kk)/3*[1 0 0 1 0 0 1 0 0]';
         if kk == 1
-            LOAD = Fx_new(kk)
+            LOAD = Fx(kk)
+            [d, d*inData.dt, sin(inData.omega3*d*inData.dt), Fx_new(kk)]
+            
         end
     end
 %     floc
