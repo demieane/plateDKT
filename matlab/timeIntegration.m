@@ -40,6 +40,9 @@ Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
 % error('er')
 u(:,d) = AA\(BB*u(:,d-1) + Q);
 
+rhs = BB*u(:,d-1) + Q;
+RR = rhs(1:10)'
+
 % rhs = (BB*u(:,d-1) + Q);
 
 % % %     file = fopen('test_lin_solve.bin', 'wb');

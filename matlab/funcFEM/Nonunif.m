@@ -25,7 +25,7 @@ if triangleData.ImportFromMatFile
     xx=xc_fem_data;
     yy=yc_fem_data;
 
-    dummy = 120;
+    dummy = 400;
 %     fx=DCoefpres(:,:,d)*(0.5*fluid_dens*Uvel^2); %dimensionalize data [N]
     fx=DCoefpres(:,:,dummy)*(0.5*fluid_dens*Uvel^2); %dimensionalize data [N]
     LALA = fx(1)

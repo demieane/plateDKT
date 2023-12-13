@@ -216,7 +216,7 @@ if lll==3%distributed load & distributed thickness
     load(file1995, 'xc_fem_data', 'yc_fem_data', 'th_fem_data', 'DCoefpres');
     xcp=xc_fem_data;
     ycp=yc_fem_data;
-    tinstance = 120;%100;
+    tinstance = 400;%120;%100;
     fcp = DCoefpres(:,:,tinstance)*(0.5*fluid_dens*Uvel^2);
     tcp= 0.*th_fem_data + h;
 %     tcp= th_fem_data + 2.5*chord.*(xc_fem_data-chord/2).^2;
@@ -268,7 +268,7 @@ end
 telapsed = toc(tstart)
 
 %% Read solution from binary file
-modeFem=1;precision='double';
+% modeFem=1;precision='double';
 
 if modeFem == 1
     fileID = fopen('../c/OUTDATA_FEM_double.bin','rb')

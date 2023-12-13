@@ -606,9 +606,9 @@ telapsed_MATLAB = toc(tstart_MATLAB)
 %% TIME-MARCHING
 
 if DYNAMIC_ANALYSIS == 1
-    newmark = 1;
+    newmark = 0;
     implicitEuler = 0;
-    crankNicolson = 0;
+    crankNicolson = 1;
    
     T=2*pi/inData.omega3;%sec
     % wf=2*pi/T; %rad/s
@@ -642,7 +642,7 @@ if DYNAMIC_ANALYSIS == 1
     end
     G(:,d) = Fm;
     
-    Fglob_t(1:10)'
+%     Fglob_t(1:10)'
     
 %     error('er')
 
@@ -736,9 +736,13 @@ if DYNAMIC_ANALYSIS == 1
             [Fglob_t] = createFglob(lll,GEN, Nelem,P_load, Fx,Area,LM,Bdofs,d+1,inData);
             Fm = [Fglob_t; zeros(sizeM,1)];
             G(:,d+1) = Fm;
+            
+%             GG=G(1:10,d+1)'
 
             theta = implicitEuler*(1) + crankNicolson*(1/2);
             u(:,d+1) = timeIntegration(u, d+1, GEN, Mglob, Kglob, C, G, ddt, theta); %[w,bx,by,lambda]
+            
+%             HH=u(1:10,d+1)'
 
             [solution] = solutionRetriever(GEN, sizeM, d+1, length(t), u, solution);%[w,bx,by]
         end

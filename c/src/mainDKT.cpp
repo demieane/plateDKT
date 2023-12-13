@@ -870,9 +870,131 @@ int main(int argc, char **argv){
             allocate2Darray(sz2,NtimeSteps,&u_t); //u=[qdot;q]
             //======================================
 
-             
+            // MAKE MATRICES FOR THE SECOND ORDER SYSTEM OF EQS. //
+            /*
+                sizeM=size(Mglob,1);
+
+                A = [Mglob, sparse(sizeM,sizeM); sparse(sizeM,sizeM), speye(sizeM,sizeM)];
+                B = -[C, Kglob; -speye(sizeM,sizeM), sparse(sizeM,sizeM)];
+
+                %lamda (1: implicit Euler, 1/2: Crank - Nicolson)
+
+                AA =  A - theta*dt*B;
+                BB =  A + (1 - theta)*dt*B;
+
+                MAT = [a, b; 
+                    c, d]
+            */
+
+            mytype **Acn, **Bcn, **AAcn, **BBcn;
+            allocate2Darray<mytype>(sz2,sz2,&Acn);
+            allocate2Darray<mytype>(sz2,sz2,&Bcn);
+            allocate2Darray<mytype>(sz2,sz2,&AAcn);
+            allocate2Darray<mytype>(sz2,sz2,&BBcn);
+        
+            for (int i = 0;i<sz1;i++){
+                for (int j = 0;j<sz1;j++){
+                    // a: part of matrix
+                    Acn[i][j] = Mglob_aug[i][j];
+                    Bcn[i][j] = -Cdamp[i][j];
+                    // b: part of matrix
+                    Bcn[i][j+sz1] = -Kglob_aug[i][j];
+                    // Ieye
+                    if (i == j){
+                        // c: part of matrix
+                    Bcn[i+sz1][j] = 1.0;
+                        // d: part of matrix
+                    Acn[i+sz1][j+sz1] = 1.0;
+                    }
+                }
+            }
+
+            //AA =  A - theta*dt*B;
+            matSum2<mytype>(1.0, (-theta*dt), sz2, sz2, Acn, Bcn, AAcn);
+            //BB =  A + (1 - theta)*dt*B;
+            matSum2<mytype>(1.0, ( (1.0-theta)*dt ), sz2, sz2, Acn, Bcn, BBcn);
+
+            // EIGEN LINEAR SYSTEM OF EQS. SPARSE
+            printf("   Factorize AAcn \n");
+            SpMat Sp_AAcn(sz2,sz2);
+            VectorXd Sp_rhscn(sz2);
+            MatrixXd AAcntest(sz2,sz2);
+
+            for (int ii=0;ii<sz2;ii++){
+                for (int jj=0;jj<sz2;jj++){
+                    AAcntest(ii,jj) = AAcn[ii][jj];
+                }
+            }
+            Sp_AAcn = AAcntest.sparseView(); // make dense -> sparse
+            Sp_AAcn.makeCompressed(); // this is essential
+            // Solving using LU
+            //Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int> >   solver_LU;
+            // Compute the ordering permutation vector from the structural pattern of A
+            solver_LU.analyzePattern(Sp_AAcn); 
+            // Compute the numerical factorization 
+            solver_LU.factorize(Sp_AAcn); 
+            // EIGEN LINEAR SYSTEM OF EQS. SPARSE
+
+            mytype **Q;
+            allocate2Darray<mytype>(sz2,1,&Q);
+            mytype **rhs;//, **rhsDEBUG;
+            allocate2Darray<mytype>(sz2,1,&rhs);
+            mytype **Usol;
+            allocate2Darray<mytype>(sz2,1,&Usol);
+
+            for (int d = 0; d< NtimeSteps-1; d++){  
+            //for (int d = 0; d< 2; d++){   
+                printf("\n    d (time) = %d\n",d);   
+                t = t + dt; // t in [sec]
+
+                createRHS<mytype>(&inDataFem, &wingMeshFem, &elemFemArr,
+                            distrLoad, G, d+1);//G(:,d+1)
+
+                for (int ii=0;ii<10;ii++){
+                    printf("    GG=%f, ", G[ii][d+1]/mypow<mytype>(10,-3));
+                }
+                //==================================================================
+                //Q = (1 - theta)*dt*G(:,d-1) + (theta)*dt*G(:,d);
+                //==================================================================
+                for (int i = 0; i<sz2; i++){
+                    Q[i][0] = (1.0-theta)*dt*G[i][d] + theta*dt*G[i][d+1];
+                    rhs[i][0] = 0; //re-initialize
+                }
+                //==================================================================
+                for (int ii = 0; ii<sz2; ii++){
+                    for (int jj = 0; jj<sz2; jj++){      
+                        rhs[ii][0] = rhs[ii][0] + BBcn[ii][jj]*u_t[jj][d];//matrix multiplication
+                    }
+                    rhs[ii][0] = rhs[ii][0] + Q[ii][0];//matrix addition
+                }
+
+                printf("\n");
+                for (int ii=0;ii<10;ii++){
+                    printf("    rhs=%f, ", rhs[ii][0]/mypow<mytype>(10,-6));
+                }
+
+                // EIGEN LINEAR SYSTEM OF EQS. SPARSE
+                for (int ii=0;ii<sz2;ii++){
+                    Sp_rhscn.coeffRef(ii) = rhs[ii][0];
+                }
+                //Use the factors to solve the linear system 
+                Eigen::VectorXd Sp_Usol_buffer = solver_LU.solve(Sp_rhscn); 
+
+                printf("\n    SOLVED LINEAR SYSTEM - EIGEN (SPARSE MATRIX) \n");
+                for (int ii=0;ii<sz2;ii++){
+                    u_t[ii][d+1] = Sp_Usol_buffer.coeffRef(ii);
+                }
+                // EIGEN LINEAR SYSTEM OF EQS. SPARSE
+
+                for (int ii=0;ii<10;ii++){
+                    printf("    HH=%f, ", u_t[ii][d+1]/mypow<mytype>(10,-3));
+                }
+            }
+
+            //exit(11);
+
             // DOES NOT WORK!!!! ILL-CONDITIONED DENSE SYSTEM (dgesv_) fails
-            timeIntegrationCN((d+1), dt, theta, sz2, G, Mglob_aug, Kglob_aug, Cdamp, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
+            //timeIntegrationCN((d+1), dt, theta, sz2, G, Mglob_aug, Kglob_aug, Cdamp, u_t); // TIME INTEGRATION WITH CRANK-NICOLSON 
             #endif
 
             CuFEMNum2DWriteDataInBinary<mytype>(sz2, NtimeSteps, u_t, wingMeshFem.GEN);
@@ -930,6 +1052,14 @@ int main(int argc, char **argv){
             deallocate2Darray<mytype>(sz1,qdot2_buffer);
             deallocate2Darray<mytype>(sz1,pr_vel);
             deallocate2Darray<mytype>(sz1,pr_disp);
+            #endif
+            #if TIME_MARCHING_METHOD == 2
+            deallocate2Darray<mytype>(sz2,Acn);
+            deallocate2Darray<mytype>(sz2,Bcn);
+            deallocate2Darray<mytype>(sz2,AAcn);
+            deallocate2Darray<mytype>(sz2,BBcn);
+            deallocate2Darray<mytype>(sz2,Q);
+            deallocate2Darray<mytype>(sz2,rhs);
             #endif
            
 
