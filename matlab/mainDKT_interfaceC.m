@@ -7,6 +7,8 @@ clear all;
 close all;
 clc;
 
+setenv('LD_LIBRARY_PATH', '/lib/x86_64-linux-gnu/libstdc++.so.6'); 
+
 debugOn = 1; 
 
 MODAL_ANALYSIS = 1;
@@ -14,6 +16,8 @@ DYNAMIC_ANALYSIS = 1;
 addpath('mesh/hydrofoil');%naca functions
 addpath('mesh/heathcote');
 load('mesh_h2_half');
+
+addpath('dataFSI');
 file1995 = 'bemDATA_h182_r';
 
 addpath('phd_verification');

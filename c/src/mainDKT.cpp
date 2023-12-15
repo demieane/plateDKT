@@ -21,7 +21,6 @@ using Eigen::VectorXd;
 using Eigen::MatrixXd;
 /*              Dec 11-2023 Sparse matrix handling */
 
-
 #ifndef FUNCMAT
     #define FUNCMAT
     #include "../src/funcMat.cpp" // Functions used to facilitate martix, vector operations in c
